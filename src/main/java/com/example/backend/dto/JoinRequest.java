@@ -1,12 +1,12 @@
 package com.example.backend.dto;
 
+import com.example.backend.model.entity.User;
+import com.example.backend.dto.UserRole;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import study.loginstudy.domain.UserRole;
-import study.loginstudy.domain.entity.User;
 
-import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
@@ -34,9 +34,8 @@ public class JoinRequest {
     // 비밀번호 암호화
     public User toEntity(String encodedPassword) {
         return User.builder()
-                .loginId(this.loginId)
+
                 .password(encodedPassword)
-                .nickname(this.nickname)
                 .role(UserRole.USER)
                 .build();
     }

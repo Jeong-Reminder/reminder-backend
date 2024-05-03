@@ -5,7 +5,8 @@ import com.example.backend.dto.JoinRequest;
 import com.example.backend.dto.LoginRequest;
 import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
+import com.example.backend.model.entity.User;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,7 +19,7 @@ public class LoginService {
     private final UserRepository userRepository;
 
     // Spring Security를 사용한 로그인 구현 시 사용
-    // private final BCryptPasswordEncoder encoder;
+    private final BCryptPasswordEncoder encoder;
 
     /**
      * loginId 중복 체크
@@ -29,14 +30,14 @@ public class LoginService {
         return userRepository.existsByLoginId(loginId);
     }
 
-    /**
+    /*
      * 회원가입 기능 1
      * 화면에서 JoinRequest(loginId, password, nickname)을 입력받아 User로 변환 후 저장
      * loginId, nickname 중복 체크는 Controller에서 진행 => 에러 메세지 출력을 위해
-     */
+     *
     public void join(JoinRequest req) {
         userRepository.save(req.toEntity());
-    }
+    }*/
 
     /**
      * 회원가입 기능 2
@@ -50,11 +51,11 @@ public class LoginService {
 
     /**
      *  로그인 기능
-     *  화면에서 LoginRequest(loginId, password)을 입력받아 loginId와 password가 일치하면 User return
+     *  화면에서 LoginRequest(stident_Id, password)을 입력받아 loginId와 password가 일치하면 User return
      *  loginId가 존재하지 않거나 password가 일치하지 않으면 null return
      */
     public User login(LoginRequest req) {
-        Optional<User> optionalUser = userRepository.findByLoginId(req.getLoginId());
+        Optional<User> optionalUser = userRepository.findByLoginId(req.getStudent_Id());
 
         // loginId와 일치하는 User가 없으면 null return
         if(optionalUser.isEmpty()) {
@@ -101,6 +102,5 @@ public class LoginService {
 
         return optionalUser.get();
     }
-}
 
 }

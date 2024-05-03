@@ -1,27 +1,40 @@
 package com.example.backend.controller;
 
-
+import ch.qos.logback.core.model.Model;
+import com.example.backend.dto.JoinRequest;
+import com.example.backend.dto.LoginRequest;
+import com.example.backend.dto.UserRole;
+import com.example.backend.service.LoginService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.example.backend.model.entity.User;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/login")
 public class LoginController {
 
-    private final UserService userService;
+    private final LoginService loginService;
 
     @GetMapping(value = {"", "/"})
-    public String home(Model model, @SessionAttribute(name = "userId", required = false) Long userId) {
+    public String home(Model model, @SessionAttribute(name = "student_Id", required = false) Long student_Id) {
 
-        User loginUser = userService.getLoginUserById(userId);
+        User loginUser = loginService.getLoginUserById(student_Id);
 
         if(loginUser != null) {
-            model.addAttribute("nickname", loginUser.getNickname());
+
         }
 
         return "home";
@@ -29,7 +42,6 @@ public class LoginController {
 
     @GetMapping("/join")
     public String joinPage(Model model) {
-        model.addAttribute("joinRequest", new JoinRequest());
         return "join";
     }
 
@@ -37,7 +49,7 @@ public class LoginController {
     public String join(@Valid @ModelAttribute JoinRequest joinRequest, BindingResult bindingResult) {
 
         // loginId 중복 체크
-        if(userService.checkLoginIdDuplicate(joinRequest.getLoginId())) {
+        if(loginService.checkLoginIdDuplicate(joinRequest.getLoginId())) {
             bindingResult.addError(new FieldError("joinRequest", "loginId", "로그인 아이디가 중복됩니다."));
         }
 
@@ -50,20 +62,20 @@ public class LoginController {
             return "join";
         }
 
-        userService.join(joinRequest);
+
         return "redirect:/session-login";
     }
 
     @GetMapping("/login")
     public String loginPage(Model model) {
-        model.addAttribute("loginRequest", new LoginRequest());
+
         return "login";
     }
 
     @PostMapping("/login")
     public String login(@ModelAttribute LoginRequest loginRequest, BindingResult bindingResult,
                         HttpServletRequest httpServletRequest) {
-        User user = userService.login(loginRequest);
+        User user = loginService.login(loginRequest);
 
         // 로그인 아이디나 비밀번호가 틀린 경우 global error return
         if(user == null) {
@@ -101,19 +113,19 @@ public class LoginController {
     @GetMapping("/info")
     public String userInfo(@SessionAttribute(name = "userId", required = false) Long userId, Model model) {
 
-        User loginUser = userService.getLoginUserById(userId);
+        User loginUser = loginService.getLoginUserById(userId);
 
         if(loginUser == null) {
             return "redirect:/session-login/login";
         }
 
-        model.addAttribute("user", loginUser);
+
         return "info";
     }
 
     @GetMapping("/admin")
     public String adminPage(@SessionAttribute(name = "userId", required = false) Long userId) {
-        User loginUser = userService.getLoginUserById(userId);
+        User loginUser = loginService.getLoginUserById(userId);
 
         if(loginUser == null) {
             return "redirect:/session-login/login";
