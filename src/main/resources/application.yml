@@ -21,3 +21,5 @@ spring:
 
   thymeleaf3:
     decoupled-logic: true
+
+
