@@ -4,34 +4,30 @@ import com.example.backend.model.entity.Member;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.lang.reflect.GenericArrayType;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-public class CustomUserDetails implements UserDetails {
-
+public class CustomMemberDetails implements UserDetails {
 
     private final Member member;
+    //private final MemberRole memberRole;
 
-    public CustomUserDetails(Member member) {
-
+    public CustomMemberDetails(Member member) {
         this.member = member;
+
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
         Collection<GrantedAuthority> collection = new ArrayList<>();
-
-        collection.add(new GrantedAuthority() {
-
-            @Override
-            public String getAuthority() {
-
-                return member.getRole();
-            }
-        });
+//        collection.add(new GrantedAuthority() {
+//
+////            @Override
+////            public String getAuthority() {
+////
+////                //return memberRole.name();
+////            }
+//        });
 
         return collection;
     }

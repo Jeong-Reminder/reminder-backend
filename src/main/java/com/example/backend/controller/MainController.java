@@ -20,8 +20,6 @@ public class MainController {
 
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
 
-
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();

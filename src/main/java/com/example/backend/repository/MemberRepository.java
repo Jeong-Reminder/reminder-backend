@@ -5,8 +5,9 @@ import com.example.backend.model.entity.Member;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<Member, Long> {
-
-
+public interface MemberRepository extends JpaRepository<Member, Long> {
+    //Member findByStudent_Id(String student_Id);
     Member findByName(String name);
+
+    Optional<Member> findByStudentId(String studentId);
 }

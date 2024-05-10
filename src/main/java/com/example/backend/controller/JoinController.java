@@ -1,6 +1,5 @@
 package com.example.backend.controller;
 
-
 import com.example.backend.dto.JoinRequest;
 import com.example.backend.service.JoinService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +19,9 @@ public class JoinController {
         return "join";
     }
 
-    @PostMapping("joinProc")
+    @PostMapping("/joinProc")
     public String joinProcess(JoinRequest joinRequest) {
+
         System.out.println(joinRequest.getName());
 
         joinService.joinProcess(joinRequest);
@@ -29,6 +29,4 @@ public class JoinController {
         return "redirect:/login";
     }
 
-    }
-
-
+}

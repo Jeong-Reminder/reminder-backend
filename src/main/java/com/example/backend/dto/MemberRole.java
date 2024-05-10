@@ -1,5 +1,5 @@
 package com.example.backend.dto;
 
-public enum UserRole {
+public enum MemberRole {
     USER, ADMIN;
 }
