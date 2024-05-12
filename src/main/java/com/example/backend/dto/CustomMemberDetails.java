@@ -10,7 +10,6 @@ import java.util.Collection;
 public class CustomMemberDetails implements UserDetails {
 
     private final Member member;
-    //private final MemberRole memberRole;
 
     public CustomMemberDetails(Member member) {
         this.member = member;
@@ -19,15 +18,17 @@ public class CustomMemberDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+
         Collection<GrantedAuthority> collection = new ArrayList<>();
-//        collection.add(new GrantedAuthority() {
-//
-////            @Override
-////            public String getAuthority() {
-////
-////                //return memberRole.name();
-////            }
-//        });
+
+        collection.add(new GrantedAuthority() {
+
+            @Override
+            public String getAuthority() {
+
+                return member.getRole();
+            }
+        });
 
         return collection;
     }

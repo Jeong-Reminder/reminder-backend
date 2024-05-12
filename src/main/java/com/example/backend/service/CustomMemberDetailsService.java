@@ -11,14 +11,19 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomMemberDetailsServices implements UserDetailsService {
+public class CustomMemberDetailsService implements UserDetailsService {
 
-    @Autowired
     private MemberRepository memberRepository;
 
+    public CustomMemberDetailsService(MemberRepository userRepository) {
+
+        this.memberRepository = userRepository;
+    }
+
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Member memberData = memberRepository.findByName(username);
+    public UserDetails loadUserByUsername(String name) throws UsernameNotFoundException {
+        //DB에서 조회
+        Member memberData = memberRepository.findByMembername(name);
 
         if (memberData != null) {
             return new CustomMemberDetails(memberData);

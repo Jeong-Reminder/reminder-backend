@@ -1,7 +1,6 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.LoginRequest;
-import com.example.backend.dto.MemberRole;
 import com.example.backend.model.entity.Member;
 import com.example.backend.service.LoginService;
 import jakarta.servlet.http.HttpServletRequest;

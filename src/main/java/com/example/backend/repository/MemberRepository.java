@@ -6,8 +6,9 @@ import com.example.backend.model.entity.Member;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
-    //Member findByStudent_Id(String student_Id);
-    Member findByName(String name);
+    Boolean existsByMembername(String membername);
 
+    //username을 받아 DB 테이블에서 회원을 조회하는 메소드 작성
+    Member findByMembername(String membername);
     Optional<Member> findByStudentId(String studentId);
 }

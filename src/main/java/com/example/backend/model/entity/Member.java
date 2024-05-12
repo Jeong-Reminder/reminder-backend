@@ -2,7 +2,6 @@ package com.example.backend.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import com.example.backend.dto.MemberRole;
 
 @Entity
 @Setter
@@ -23,7 +22,7 @@ public class Member {
     private Integer level;
     private String status;
 
-    private MemberRole role;
+    private String role;
     //매개변수를 받는 생성자
 //    public Member(String student_Id,String password, String name,Integer level, String status, String role) {
 //        this.student_Id=student_Id;

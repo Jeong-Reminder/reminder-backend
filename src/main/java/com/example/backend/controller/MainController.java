@@ -7,18 +7,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 @Controller
+@ResponseBody
 public class MainController {
 
+    @GetMapping("/")
+    public String mainP() {
 
-    @GetMapping("/)")
-    public String mainP(Model model) {
-
-        String id = SecurityContextHolder.getContext().getAuthentication().getName();
+        String name = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -27,13 +28,7 @@ public class MainController {
         GrantedAuthority auth = iter.next();
         String role = auth.getAuthority();
 
-
-        model.addAttribute("id", id);
-        model.addAttribute("role", role);
-
-
-        return "main";
+    return "Main Controller " + name +  role;
     }
-
 
 }
