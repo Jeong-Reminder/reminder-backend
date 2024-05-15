@@ -1,9 +1,6 @@
 package com.example.backend.config;
 
 
-import com.example.backend.jwt.JWTUtil;
-import com.example.backend.jwt.LoginFilter;
-import com.example.backend.jwt.JWTFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +13,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.example.backend.jwt.JWTUtil;
+import com.example.backend.jwt.LoginFilter;
+import com.example.backend.jwt.JWTFilter;
 
 @Configuration
 @ResponseBody
