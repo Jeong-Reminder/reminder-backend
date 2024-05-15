@@ -11,7 +11,8 @@ import lombok.*;
 @AllArgsConstructor
 public class Member {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
 
@@ -23,15 +24,5 @@ public class Member {
     private String status;
 
     private String role;
-    //매개변수를 받는 생성자
-//    public Member(String student_Id,String password, String name,Integer level, String status, String role) {
-//        this.student_Id=student_Id;
-//        this.password=password;
-//        this.name=name;
-//        this.level=level;
-//        this.status=status;
-//        this.role=role;
-//
-//    }
 
 }

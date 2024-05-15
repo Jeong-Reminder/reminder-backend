@@ -1,6 +1,5 @@
 package com.example.backend.dto;
 
-import com.example.backend.model.entity.Member;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
