@@ -29,12 +29,12 @@ public class JoinService {
             return;
         }
 
-        Member data = new Member();
+        // 미리 저장된 회원 정보를 조회
+        Member preSavedMember = memberRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Pre-saved member not found"));
 
-        data.setStudentId(studentId);
-        data.setPassword(bCryptPasswordEncoder.encode(password));
-        data.setRole("ROLE_ADMIN");
-
-        memberRepository.save(data);
+        preSavedMember.setPassword(bCryptPasswordEncoder.encode(password));
+        preSavedMember.setRole(joinRequest.isAdmin() ? "ROLE_ADMIN" : "ROLE_USER"); // 역할 설정
+        memberRepository.save(preSavedMember);
     }
 }

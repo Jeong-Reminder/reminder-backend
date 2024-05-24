@@ -67,8 +67,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.getWriter().write("HTTP Status 401 - " + failed.getMessage());
     }
 
-
-
     private Cookie createCookie(String key, String value) {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(24 * 60 * 60);

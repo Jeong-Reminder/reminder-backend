@@ -5,6 +5,8 @@ import com.example.backend.model.entity.Member;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,14 +18,27 @@ public class MemberController {
     private final MemberService memberService;
 
     @PutMapping("/update-tech-stack/{studentId}")
-    public String updateTechStack(@PathVariable String studentId, @RequestBody TechStackDTO techStackDTO) {
-        memberService.techStack(studentId, techStackDTO);
-        return "Tech stack updated successfully";
+    public ResponseEntity<String> techStack(@PathVariable String studentId, @RequestBody TechStackDTO techStackDTO) {
+        try {
+            memberService.techStack(studentId, techStackDTO);
+            return ResponseEntity.ok("Tech stack updated successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{studentId}")
-    public Member getMember(@PathVariable String studentId) {
-        return memberRepository.findByStudentId(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+    public ResponseEntity<Member> getMember(@PathVariable String studentId) {
+        try {
+            Member member = memberRepository.findByStudentId(studentId)
+                    .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+            return ResponseEntity.ok(member);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }

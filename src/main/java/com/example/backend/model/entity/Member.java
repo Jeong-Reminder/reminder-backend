@@ -22,10 +22,8 @@ public class Member {
 
     private String role;
 
-    // 새로 추가된 필드
-    private String githubLink;
-    private String developmentField;
-    private String developmentTool;
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    private Profile profile;  // 프로필 정보
 
     public Member(String studentId, String password, String name, Integer level, String status, String role) {
         this.studentId = studentId;
