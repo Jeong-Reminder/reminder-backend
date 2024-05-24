@@ -9,18 +9,49 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jwt:
-    secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
+    secret: ${SPRING_JWT_SECRET}
 
   jpa:
     defer-datasource-initialization: true
     hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
       ddl-auto: update
     open-in-view: false
     show-sql: true
     properties:
       hibernate:
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         format_sql: true
         default_batch_fetch_size: 100
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   thymeleaf3:
     decoupled-logic: true
+
+  data:
+    redis:
+      host: reminder_redis
+      port: 6379
+      password: ${REDIS_PASSWORD}
+    lettuce:
+      pool:
+        max-active: 10
+        max-idle: 5
+        min-idle: 0
+        max-wait: -1ms
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+  endpoint:
+    health:
+      show-details: always
+

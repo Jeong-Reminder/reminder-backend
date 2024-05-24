@@ -1,77 +1,67 @@
 package com.example.backend.jwt;
 
-import com.example.backend.dto.CustomMemberDetails;
-import com.example.backend.model.entity.Member;
+import com.example.backend.service.CustomUserDetailsService;
+import io.jsonwebtoken.ExpiredJwtException;
+import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.FilterChain;
 
 import java.io.IOException;
-
+import java.io.PrintWriter;
 
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    public JWTFilter(JWTUtil jwtUtil) {
-
+    public JWTFilter(JWTUtil jwtUtil, CustomUserDetailsService customUserDetailsService) {
         this.jwtUtil = jwtUtil;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        try {
+            String jwt = resolveToken(request);
+            logger.debug("JWT Token: " + jwt);
 
-        //request에서 Authorization 헤더를 찾음
-        String authorization= request.getHeader("Authorization");
+            if (StringUtils.hasText(jwt) && jwtUtil.validateToken(jwt)) {
+                Authentication authentication = jwtUtil.getAuthentication(jwt);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.debug("Set Authentication to security context for '" + authentication.getName() + "'");
+            } else {
+                logger.debug("No valid JWT token found for request URI: " + request.getRequestURI());
+            }
 
-        //Authorization 헤더 검증
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-
-            System.out.println("token null");
             filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return;
+        } catch (ExpiredJwtException e) {
+            logger.warn("Expired JWT token.", e);
+            sendErrorResponse(response, "Expired JWT token");
+        } catch (Exception e) {
+            logger.error("Could not set user authentication in security context", e);
+            sendErrorResponse(response, "Could not set user authentication in security context");
         }
+    }
 
-        System.out.println("authorization now");
-        //Bearer 부분 제거 후 순수 토큰만 획득
-        String token = authorization.split(" ")[1];
+    private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        PrintWriter writer = response.getWriter();
+        writer.print(message);
+        writer.flush();
+    }
 
-        //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(token)) {
-
-            System.out.println("token expired");
-            filterChain.doFilter(request, response);
-
-            //조건이 해당되면 메소드 종료 (필수)
-            return;
+    private String resolveToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
         }
-
-        //토큰에서 username과 role 획득
-        String name = jwtUtil.getUsername(token);
-        String role = jwtUtil.getRole(token);
-
-        //userEntity를 생성하여 값 set
-        Member userEntity = new Member();
-        userEntity.setName(name);
-        userEntity.setPassword("temppassword");
-        userEntity.setRole(role);
-
-        //UserDetails에 회원 정보 객체 담기
-        CustomMemberDetails customUserDetails = new CustomMemberDetails(userEntity);
-
-        //스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-        //세션에 사용자 등록
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
+        return null;
     }
 }

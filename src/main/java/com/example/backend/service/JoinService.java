@@ -1,19 +1,16 @@
 package com.example.backend.service;
 
-
 import com.example.backend.dto.JoinRequest;
 import com.example.backend.model.entity.Member;
 import com.example.backend.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class JoinService {
 
-    @Autowired
-    private MemberRepository memberRepository;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final MemberRepository memberRepository;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public JoinService(MemberRepository memberRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
 
@@ -23,19 +20,18 @@ public class JoinService {
 
     public void joinProcess(JoinRequest joinRequest) {
 
-        String name = joinRequest.getName();
+        String studentId = joinRequest.getStudentId();
         String password = joinRequest.getPassword();
 
-        Boolean isExist = memberRepository.existsByMembername(name);
+        Boolean isExist = memberRepository.existsByStudentId(studentId);
 
         if (isExist) {
-
             return;
         }
 
         Member data = new Member();
 
-        data.setName(name);
+        data.setStudentId(studentId);
         data.setPassword(bCryptPasswordEncoder.encode(password));
         data.setRole("ROLE_ADMIN");
 
