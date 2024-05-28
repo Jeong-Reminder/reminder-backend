@@ -27,6 +27,10 @@ public class JWTUtil {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
+    public String getStudentIdFromToken(String token) {
+        return getClaims(token).getSubject();
+    }
+
     public String getStudentId(String token) {
         return getClaims(token).getSubject();
     }

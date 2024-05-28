@@ -1,6 +1,5 @@
 package com.example.backend.jwt;
 
-import com.example.backend.service.RefreshTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -15,7 +14,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -24,7 +22,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenService refreshTokenService;
 
     // 로그인 시도 시 실행되는 메서드
     @Override
@@ -50,8 +47,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String access = jwtUtil.createJwt("access", studentId, role, 600000L);
         String refresh = jwtUtil.createJwt("refresh", studentId, role, 86400000L);
 
-        // Refresh 토큰을 Redis에 저장
-        refreshTokenService.saveRefreshToken(studentId, refresh, 86400000L);
+//        // Refresh 토큰을 Redis에 저장
+//        refreshTokenService.saveRefreshToken(studentId, refresh, 86400000L);
 
         // Access 토큰을 응답 헤더에 설정
         response.setHeader("access", access);

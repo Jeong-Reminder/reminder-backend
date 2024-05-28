@@ -5,7 +5,6 @@ import com.example.backend.jwt.JWTUtil;
 import com.example.backend.jwt.LoginFilter;
 import com.example.backend.jwt.TokenProvider;
 import com.example.backend.service.CustomUserDetailsService;
-import com.example.backend.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +31,6 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final TokenProvider tokenProvider;
-    private final RefreshTokenService refreshTokenService;
     private final CustomUserDetailsService customUserDetailsService;
 
     @Bean
@@ -71,7 +69,7 @@ public class SecurityConfig {
                 .requestMatchers("/login", "/join", "/api/v1/reissue", "/").permitAll()
                 .anyRequest().authenticated());
         http.addFilterBefore(new JWTFilter(jwtUtil, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterAt(new LoginFilter(authenticationManager(), jwtUtil, refreshTokenService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(new LoginFilter(authenticationManager(), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

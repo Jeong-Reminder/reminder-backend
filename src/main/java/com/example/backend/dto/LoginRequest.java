@@ -9,5 +9,4 @@ public class LoginRequest {
 
     private String studentId;
     private String password;
-    //private String name;
 }
