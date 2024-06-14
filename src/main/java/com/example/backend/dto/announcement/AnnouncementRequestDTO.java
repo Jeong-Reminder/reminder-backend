@@ -1,0 +1,34 @@
+package com.example.backend.dto.announcement;
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+public class AnnouncementRequestDTO {
+    private String announcementTitle;
+    private String announcementContent;
+    private AnnouncementCategory announcementCategory;
+    private Boolean announcementImportant;
+    private int announcementLevel;
+    private String img;
+    private String file;
+    private boolean visible;
+    private Long managerId;
+    private int good;
+
+    @Builder
+    public AnnouncementRequestDTO(String announcementTitle, String announcementContent, AnnouncementCategory announcementCategory, Boolean announcementImportant, int announcementLevel, String img, String file, boolean visible, Long managerId, int good) {
+        this.announcementTitle = announcementTitle;
+        this.announcementContent = announcementContent;
+        this.announcementCategory = announcementCategory;
+        this.announcementImportant = announcementImportant;
+        this.announcementLevel = announcementLevel;
+        this.img = img;
+        this.file = file;
+        this.visible = visible;
+        this.managerId = managerId;
+        this.good = good;
+    }
+}
