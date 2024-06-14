@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.JoinRequest;
 import com.example.backend.model.entity.Member;
+import com.example.backend.model.entity.UserRole;
 import com.example.backend.repository.MemberRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class JoinService {
 
         String studentId = joinRequest.getStudentId();
         String password = joinRequest.getPassword();
-
+        UserRole userRole = joinRequest.getUserRole();
         Boolean isExist = memberRepository.existsByStudentId(studentId);
 
         if (isExist) {
@@ -36,7 +37,7 @@ public class JoinService {
         data.setName("Default Name"); // 기본 값 설정 또는 입력 받도록 변경
         data.setLevel(1);             // 기본 값 설정 또는 입력 받도록 변경
         data.setStatus("Enrolled");   // 기본 값 설정 또는 입력 받도록 변경
-        data.setRole("ROLE_USER");    // 기본 사용자 역할 설정
+        data.setUserRole(userRole);    // 기본 사용자 역할 설정
 
         memberRepository.save(data);
 

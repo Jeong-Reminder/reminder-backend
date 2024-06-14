@@ -70,4 +70,5 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         cookie.setHttpOnly(true);
         return cookie;
     }
+
 }

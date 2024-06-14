@@ -2,6 +2,7 @@ package com.example.backend.jwt;
 
 import com.example.backend.dto.CustomUserDetails;
 import com.example.backend.model.entity.Member;
+import com.example.backend.model.entity.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -60,7 +61,7 @@ public class TokenProvider {
         // Member 객체 생성
         Member member = new Member();
         member.setStudentId(studentId);
-        member.setRole(authority);
+        member.setUserRole(UserRole.valueOf(authority));
 
         CustomUserDetails customUserDetails = new CustomUserDetails(member);
         return new UsernamePasswordAuthenticationToken(customUserDetails, token, customUserDetails.getAuthorities());

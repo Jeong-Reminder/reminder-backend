@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.model.entity.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,5 +18,6 @@ public class JoinRequest {
     @NotBlank(message = "비밀번호가 비어있습니다.")
     private String password;
 
-    private boolean isAdmin; // 관리자 여부 추가
+    private UserRole userRole;
+    //private boolean isAdmin; // 관리자 여부 추가
 }

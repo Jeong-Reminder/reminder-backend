@@ -1,5 +1,6 @@
 package com.example.backend.model.entity;
 
+import com.example.backend.model.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,18 +21,19 @@ public class Member {
     private Integer level; //학년
     private String status; //학적상태
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Profile profile;  // 프로필 정보
 
-    public Member(String studentId, String password, String name, Integer level, String status, String role) {
+    public Member(String studentId, String password, String name, Integer level, String status, UserRole userRole) {
         this.studentId = studentId;
         this.password = password;
         this.name = name;
         this.level = level;
         this.status = status;
-        this.role = role;
+        this.userRole = userRole;
     }
 
 }

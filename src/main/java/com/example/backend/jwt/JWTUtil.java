@@ -2,11 +2,13 @@ package com.example.backend.jwt;
 
 import com.example.backend.dto.CustomUserDetails;
 import com.example.backend.model.entity.Member;
+import com.example.backend.model.entity.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,8 +37,9 @@ public class JWTUtil {
         return getClaims(token).getSubject();
     }
 
-    public String getRole(String token) {
-        return getClaims(token).get("role", String.class);
+    public UserRole getRole(String token) {
+        String role = getClaims(token).get("role", String.class);
+        return UserRole.valueOf(role);
     }
 
     public boolean isExpired(String token) {
@@ -59,12 +62,12 @@ public class JWTUtil {
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
         String studentId = claims.getSubject();
-        String role = claims.get("role", String.class);
-        SimpleGrantedAuthority grantedAuthority = new SimpleGrantedAuthority(role);
+        UserRole role = getRole(token);
+        SimpleGrantedAuthority grantedAuthority = new SimpleGrantedAuthority(role.name());
 
         Member member = new Member();
         member.setStudentId(studentId);
-        member.setRole(role);
+        member.setUserRole(role);
 
         CustomUserDetails customUserDetails = new CustomUserDetails(member);
         return new UsernamePasswordAuthenticationToken(customUserDetails, token, Collections.singleton(grantedAuthority));
