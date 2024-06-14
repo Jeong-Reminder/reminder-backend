@@ -8,16 +8,38 @@ spring:
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+  jwt:
+    secret: ${SPRING_JWT_SECRET}
+
   jpa:
     defer-datasource-initialization: true
     hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
       ddl-auto: update
     open-in-view: false
     show-sql: true
     properties:
       hibernate:
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
         format_sql: true
         default_batch_fetch_size: 100
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   thymeleaf3:
     decoupled-logic: true
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+  endpoint:
+    health:
+      show-details: always
+
