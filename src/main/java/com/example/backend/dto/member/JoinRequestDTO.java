@@ -1,6 +1,6 @@
-package com.example.backend.dto;
+package com.example.backend.dto.member;
 
-import com.example.backend.model.entity.UserRole;
+import com.example.backend.model.entity.member.UserRole;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,6 @@
-package com.example.backend.dto;
+package com.example.backend.dto.member;
 
-import com.example.backend.model.entity.Member;
+import com.example.backend.model.entity.member.Member;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

@@ -1,9 +1,9 @@
-package com.example.backend.service;
+package com.example.backend.service.member;
 
-import com.example.backend.dto.JoinRequestDTO;
-import com.example.backend.model.entity.Member;
-import com.example.backend.model.entity.UserRole;
-import com.example.backend.repository.MemberRepository;
+import com.example.backend.dto.member.JoinRequestDTO;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.UserRole;
+import com.example.backend.model.repository.member.MemberRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 

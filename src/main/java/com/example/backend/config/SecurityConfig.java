@@ -4,7 +4,7 @@ import com.example.backend.jwt.JWTFilter;
 import com.example.backend.jwt.JWTUtil;
 import com.example.backend.jwt.LoginFilter;
 import com.example.backend.jwt.TokenProvider;
-import com.example.backend.service.CustomUserDetailsService;
+import com.example.backend.service.member.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
