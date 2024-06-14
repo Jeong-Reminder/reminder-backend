@@ -1,9 +1,10 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.JoinRequest;
+import com.example.backend.dto.JoinRequestDTO;
 import com.example.backend.service.JoinService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -19,9 +20,9 @@ public class JoinController {
 
 
     @PostMapping("/join")
-    public String joinProcess(JoinRequest joinRequest) {
+    public String joinProcess(JoinRequestDTO joinRequestDTO) {
 
-        joinService.joinProcess(joinRequest);
+        joinService.joinProcess(joinRequestDTO);
 
         return "ok";
     }

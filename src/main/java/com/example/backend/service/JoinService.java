@@ -1,6 +1,6 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.JoinRequest;
+import com.example.backend.dto.JoinRequestDTO;
 import com.example.backend.model.entity.Member;
 import com.example.backend.model.entity.UserRole;
 import com.example.backend.repository.MemberRepository;
@@ -19,11 +19,11 @@ public class JoinService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public void joinProcess(JoinRequest joinRequest) {
+    public void joinProcess(JoinRequestDTO joinRequestDTO) {
 
-        String studentId = joinRequest.getStudentId();
-        String password = joinRequest.getPassword();
-        UserRole userRole = joinRequest.getUserRole();
+        String studentId = joinRequestDTO.getStudentId();
+        String password = joinRequestDTO.getPassword();
+        UserRole userRole = joinRequestDTO.getUserRole();
         Boolean isExist = memberRepository.existsByStudentId(studentId);
 
         if (isExist) {
