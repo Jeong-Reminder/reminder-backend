@@ -1,10 +1,9 @@
-package com.example.backend.controller;
+package com.example.backend.controller.member;
 
-import com.example.backend.dto.JoinRequestDTO;
-import com.example.backend.service.JoinService;
+import com.example.backend.dto.member.JoinRequestDTO;
+import com.example.backend.service.member.JoinService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller

@@ -1,4 +1,4 @@
-package com.example.backend.model.entity;
+package com.example.backend.model.entity.member;
 
 public enum UserRole {
     ROLE_USER,

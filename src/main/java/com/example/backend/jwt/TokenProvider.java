@@ -1,8 +1,8 @@
 package com.example.backend.jwt;
 
-import com.example.backend.dto.CustomUserDetails;
-import com.example.backend.model.entity.Member;
-import com.example.backend.model.entity.UserRole;
+import com.example.backend.dto.member.CustomUserDetails;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

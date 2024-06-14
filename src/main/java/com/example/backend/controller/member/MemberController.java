@@ -1,9 +1,9 @@
-package com.example.backend.controller;
+package com.example.backend.controller.member;
 
-import com.example.backend.dto.TechStackDTO;
-import com.example.backend.model.entity.Member;
-import com.example.backend.repository.MemberRepository;
-import com.example.backend.service.MemberService;
+import com.example.backend.dto.member.TechStackDTO;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.repository.member.MemberRepository;
+import com.example.backend.service.member.MemberService;
 import com.example.backend.jwt.JWTUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

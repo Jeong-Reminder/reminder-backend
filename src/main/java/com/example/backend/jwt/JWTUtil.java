@@ -1,14 +1,13 @@
 package com.example.backend.jwt;
 
-import com.example.backend.dto.CustomUserDetails;
-import com.example.backend.model.entity.Member;
-import com.example.backend.model.entity.UserRole;
+import com.example.backend.dto.member.CustomUserDetails;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

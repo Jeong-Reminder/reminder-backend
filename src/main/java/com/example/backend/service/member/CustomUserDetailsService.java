@@ -1,8 +1,8 @@
-package com.example.backend.service;
+package com.example.backend.service.member;
 
-import com.example.backend.model.entity.Member;
-import com.example.backend.repository.MemberRepository;
-import com.example.backend.dto.CustomUserDetails;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.repository.member.MemberRepository;
+import com.example.backend.dto.member.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
