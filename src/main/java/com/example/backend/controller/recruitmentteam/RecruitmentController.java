@@ -4,8 +4,10 @@ import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.service.recruitmentteam.RecruitmentService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,4 +37,10 @@ public class RecruitmentController {
         return new ResponseDTO<>(200, recruitmentResponseDTO);
     }
 
+    @GetMapping("/{recruitmentId}")
+    public ResponseDTO<RecruitmentResponseDTO> getRecruitment(@PathVariable Long recruitmentId) {
+        RecruitmentResponseDTO recruitmentResponseDTO = recruitmentService.getRecruitment(recruitmentId);
+
+        return new ResponseDTO<>(200, recruitmentResponseDTO);
+    }
 }

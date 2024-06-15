@@ -63,4 +63,12 @@ public class RecruitmentImplService implements RecruitmentService{
         Recruitment saveRecruitment = recruitmentRepository.save(recruitment);
         return RecruitmentResponseDTO.toResponseDTO(saveRecruitment);
     }
+
+    @Override
+    public RecruitmentResponseDTO getRecruitment(Long recruitmentId) {
+        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
+
+        return RecruitmentResponseDTO.toResponseDTO(recruitment);
+    }
 }
