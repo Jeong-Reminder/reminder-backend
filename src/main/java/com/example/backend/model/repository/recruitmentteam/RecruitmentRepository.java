@@ -10,4 +10,6 @@ public interface RecruitmentRepository extends JpaRepository<Recruitment, Long> 
     Optional<Recruitment> findByMemberIdAndAnnouncementId(Long memberId, Long announcementId);
 
     List<Recruitment> findByAnnouncementId(Long announcementId);
+
+    List<Recruitment> findByMemberId(Long memberId);
 }

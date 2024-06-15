@@ -52,4 +52,11 @@ public class RecruitmentController {
 
         return new ResponseListDTO<>(200, recruitmentResponseDTOList);
     }
+
+    @GetMapping("/my")
+    public ResponseListDTO<List<RecruitmentResponseDTO>> getMyRecruitment(Authentication authentication) {
+        List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getMyRecruitment(authentication);
+
+        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+    }
 }

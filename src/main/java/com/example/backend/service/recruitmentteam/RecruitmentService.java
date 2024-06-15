@@ -13,4 +13,6 @@ public interface RecruitmentService {
     RecruitmentResponseDTO getRecruitment(Long recruitmentId);
 
     List<RecruitmentResponseDTO> getRecruitmentByAnnouncementId(Long announcementId);
+
+    List<RecruitmentResponseDTO> getMyRecruitment(Authentication authentication);
 }

@@ -79,4 +79,15 @@ public class RecruitmentImplService implements RecruitmentService{
 
         return RecruitmentResponseDTO.toResponseDTOList(recruitmentList);
     }
+
+    @Override
+    public List<RecruitmentResponseDTO> getMyRecruitment(Authentication authentication) {
+        Long memberId = Long.valueOf(authentication.getName());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+
+        List<Recruitment> recruitmentList = recruitmentRepository.findByMemberId(memberId);
+
+        return RecruitmentResponseDTO.toResponseDTOList(recruitmentList);
+    }
 }
