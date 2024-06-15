@@ -1,9 +1,11 @@
 package com.example.backend.controller.recruitmentteam;
 
 import com.example.backend.dto.ResponseDTO;
+import com.example.backend.dto.ResponseListDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.service.recruitmentteam.RecruitmentService;
+import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -42,5 +44,12 @@ public class RecruitmentController {
         RecruitmentResponseDTO recruitmentResponseDTO = recruitmentService.getRecruitment(recruitmentId);
 
         return new ResponseDTO<>(200, recruitmentResponseDTO);
+    }
+
+    @GetMapping("/{announcementId}")
+    public ResponseListDTO<List<RecruitmentResponseDTO>> getRecruitmentByAnnouncementId(@PathVariable Long announcementId) {
+        List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getRecruitmentByAnnouncementId(announcementId);
+
+        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
     }
 }

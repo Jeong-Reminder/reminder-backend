@@ -2,6 +2,7 @@ package com.example.backend.dto.recruitmentteam;
 
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,5 +39,11 @@ public class RecruitmentResponseDTO {
                 .endTime(recruitment.getEndTime())
                 .announcementId(recruitment.getAnnouncement().getId())
                 .build();
+    }
+
+    public static List<RecruitmentResponseDTO> toResponseDTOList(List<Recruitment> recruitmentList) {
+        return recruitmentList.stream()
+                .map(RecruitmentResponseDTO::toResponseDTO)
+                .toList();
     }
 }

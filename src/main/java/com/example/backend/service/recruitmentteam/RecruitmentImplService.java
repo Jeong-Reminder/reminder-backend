@@ -8,6 +8,7 @@ import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -70,5 +71,12 @@ public class RecruitmentImplService implements RecruitmentService{
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
 
         return RecruitmentResponseDTO.toResponseDTO(recruitment);
+    }
+
+    @Override
+    public List<RecruitmentResponseDTO> getRecruitmentByAnnouncementId(Long announcementId) {
+        List<Recruitment> recruitmentList = recruitmentRepository.findByAnnouncementId(announcementId);
+
+        return RecruitmentResponseDTO.toResponseDTOList(recruitmentList);
     }
 }
