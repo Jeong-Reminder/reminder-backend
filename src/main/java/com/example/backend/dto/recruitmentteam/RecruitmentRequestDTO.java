@@ -22,7 +22,6 @@ public class RecruitmentRequestDTO {
     private String kakaoUrl;
     private boolean recruitmentStatus;
     private LocalDateTime endTime;
-    private Long memberId;
     private Long announcementId;
 
     public Recruitment toEntity(Member member, Announcement announcement) {

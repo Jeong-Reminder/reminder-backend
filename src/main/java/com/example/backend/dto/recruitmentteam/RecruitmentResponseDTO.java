@@ -22,7 +22,6 @@ public class RecruitmentResponseDTO {
     private boolean recruitmentStatus;
     private LocalDateTime createdTime;
     private LocalDateTime endTime;
-    private Long memberId;
     private Long announcementId;
 
     public static RecruitmentResponseDTO toResponseDTO(Recruitment recruitment) {
@@ -37,7 +36,6 @@ public class RecruitmentResponseDTO {
                 .recruitmentStatus(recruitment.isRecruitmentStatus())
                 .createdTime(recruitment.getCreatedTime())
                 .endTime(recruitment.getEndTime())
-                .memberId(recruitment.getMember().getId())
                 .announcementId(recruitment.getAnnouncement().getId())
                 .build();
     }
