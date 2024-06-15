@@ -6,4 +6,6 @@ import org.springframework.security.core.Authentication;
 
 public interface RecruitmentService {
     RecruitmentResponseDTO createRecruitment(Authentication authentication, RecruitmentRequestDTO recruitmentRequestDTO);
+
+    RecruitmentResponseDTO updateRecruitment(Authentication authentication, RecruitmentRequestDTO recruitmentRequestDTO, Long recruitmentId);
 }

@@ -6,7 +6,9 @@ import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.service.recruitmentteam.RecruitmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +23,14 @@ public class RecruitmentController {
     @PostMapping
     public ResponseDTO<RecruitmentResponseDTO> createRecruitment(Authentication authentication, @RequestBody RecruitmentRequestDTO recruitmentRequestDTO) {
         RecruitmentResponseDTO recruitmentResponseDTO = recruitmentService.createRecruitment(authentication, recruitmentRequestDTO);
+
+        return new ResponseDTO<>(200, recruitmentResponseDTO);
+    }
+
+    @PutMapping("/{recruitmentId}")
+    public ResponseDTO<RecruitmentResponseDTO> updateRecruitment(Authentication authentication, @RequestBody RecruitmentRequestDTO recruitmentRequestDTO,
+                                                                 @PathVariable Long recruitmentId) {
+        RecruitmentResponseDTO recruitmentResponseDTO = recruitmentService.updateRecruitment(authentication, recruitmentRequestDTO, recruitmentId);
 
         return new ResponseDTO<>(200, recruitmentResponseDTO);
     }

@@ -38,4 +38,29 @@ public class RecruitmentImplService implements RecruitmentService{
         Recruitment saveRecruitment = recruitmentRepository.save(recruitmentRequestDTO.toEntity(member, announcement));
         return RecruitmentResponseDTO.toResponseDTO(saveRecruitment);
     }
+
+    @Override
+    public RecruitmentResponseDTO updateRecruitment(Authentication authentication,
+                                                    RecruitmentRequestDTO recruitmentRequestDTO, Long recruitmentId) {
+        Long memberId = Long.valueOf(authentication.getName());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+
+        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
+
+        if (!recruitment.getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("해당 모집글에 대한 권한이 없습니다.");
+        }
+
+        recruitment.setRecruitmentCategory(recruitmentRequestDTO.getRecruitmentCategory());
+        recruitment.setRecruitmentContent(recruitmentRequestDTO.getRecruitmentContent());
+        recruitment.setRecruitmentTitle(recruitmentRequestDTO.getRecruitmentTitle());
+        recruitment.setStudentCount(recruitmentRequestDTO.getStudentCount());
+        recruitment.setHopeField(recruitmentRequestDTO.getHopeField());
+        recruitment.setKakaoUrl(recruitmentRequestDTO.getKakaoUrl());
+
+        Recruitment saveRecruitment = recruitmentRepository.save(recruitment);
+        return RecruitmentResponseDTO.toResponseDTO(saveRecruitment);
+    }
 }
