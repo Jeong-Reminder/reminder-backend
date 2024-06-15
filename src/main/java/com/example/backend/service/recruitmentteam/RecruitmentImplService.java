@@ -23,11 +23,17 @@ public class RecruitmentImplService implements RecruitmentService{
     @Override
     public RecruitmentResponseDTO createRecruitment(Authentication authentication,
                                                     RecruitmentRequestDTO recruitmentRequestDTO) {
-        Member member = memberRepository.findById(Long.valueOf(authentication.getName()))
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+        Long memberId = Long.valueOf(authentication.getName());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
 
         Announcement announcement = announcementRepository.findById(recruitmentRequestDTO.getAnnouncementId())
-                .orElseThrow(() -> new IllegalArgumentException("Announcement not found"));
+                .orElseThrow(() -> new IllegalArgumentException("해당 경진대회가 없습니다."));
+
+        recruitmentRepository.findByMemberIdAndAnnouncementId(memberId, recruitmentRequestDTO.getAnnouncementId())
+                .ifPresent(existingRecruitment -> {
+                    throw new IllegalStateException("이미 지원한 경진대회입니다.");
+                });
 
         Recruitment saveRecruitment = recruitmentRepository.save(recruitmentRequestDTO.toEntity(member, announcement));
         return RecruitmentResponseDTO.toResponseDTO(saveRecruitment);
