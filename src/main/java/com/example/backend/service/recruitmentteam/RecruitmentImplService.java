@@ -4,6 +4,7 @@ import com.example.backend.dto.recruitmentteam.RecruitmentRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
@@ -89,5 +90,23 @@ public class RecruitmentImplService implements RecruitmentService{
         List<Recruitment> recruitmentList = recruitmentRepository.findByMemberId(memberId);
 
         return RecruitmentResponseDTO.toResponseDTOList(recruitmentList);
+    }
+
+    @Override
+    public void deleteRecruitment(Authentication authentication, Long recruitmentId) {
+        Long memberId = Long.valueOf(authentication.getName());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+
+        Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
+
+        if(!member.getUserRole().equals(UserRole.ROLE_ADMIN)) {
+            if (!recruitment.getMember().getId().equals(member.getId())) {
+                throw new IllegalArgumentException("해당 모집글에 대한 권한이 없습니다.");
+            }
+        }
+
+        recruitmentRepository.delete(recruitment);
     }
 }

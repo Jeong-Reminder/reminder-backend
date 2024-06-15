@@ -9,6 +9,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,5 +59,12 @@ public class RecruitmentController {
         List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getMyRecruitment(authentication);
 
         return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+    }
+
+    @DeleteMapping("/{recruitmentId}")
+    public ResponseDTO<String> deleteRecruitment(Authentication authentication, @PathVariable Long recruitmentId) {
+        recruitmentService.deleteRecruitment(authentication, recruitmentId);
+
+        return new ResponseDTO<>(200, "삭제되었습니다.");
     }
 }
