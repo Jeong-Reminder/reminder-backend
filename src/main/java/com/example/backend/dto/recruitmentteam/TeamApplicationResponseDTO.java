@@ -3,6 +3,8 @@ package com.example.backend.dto.recruitmentteam;
 import com.example.backend.model.entity.member.Profile;
 import com.example.backend.model.entity.recruitmentteam.TeamApplication;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,5 +35,11 @@ public class TeamApplicationResponseDTO {
                 .createdTime(teamApplication.getCreatedTime())
                 .updatedTime(teamApplication.getUpdatedTime())
                 .build();
+    }
+
+    public static Set<TeamApplicationResponseDTO> toResponseDTOSet(Set<TeamApplication> teamApplications) {
+        return teamApplications.stream()
+                .map(TeamApplicationResponseDTO::toResponseDTO)
+                .collect(Collectors.toSet());
     }
 }
