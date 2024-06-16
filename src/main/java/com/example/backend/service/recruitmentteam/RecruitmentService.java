@@ -16,5 +16,7 @@ public interface RecruitmentService {
 
     List<RecruitmentResponseDTO> getMyRecruitment(Authentication authentication);
 
+    List<RecruitmentResponseDTO> getAllRecruitment();
+
     void deleteRecruitment(Authentication authentication, Long recruitmentId);
 }

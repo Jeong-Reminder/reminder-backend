@@ -93,6 +93,13 @@ public class RecruitmentImplService implements RecruitmentService{
     }
 
     @Override
+    public List<RecruitmentResponseDTO> getAllRecruitment() {
+        List<Recruitment> recruitmentList = recruitmentRepository.findAll();
+
+        return RecruitmentResponseDTO.toResponseDTOList(recruitmentList);
+    }
+
+    @Override
     public void deleteRecruitment(Authentication authentication, Long recruitmentId) {
         Long memberId = Long.valueOf(authentication.getName());
         Member member = memberRepository.findById(memberId)

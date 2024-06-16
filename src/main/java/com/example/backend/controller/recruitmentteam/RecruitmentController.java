@@ -61,6 +61,13 @@ public class RecruitmentController {
         return new ResponseListDTO<>(200, recruitmentResponseDTOList);
     }
 
+    @GetMapping
+    public ResponseListDTO<List<RecruitmentResponseDTO>> getAllRecruitment() {
+        List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getAllRecruitment();
+
+        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+    }
+
     @DeleteMapping("/{recruitmentId}")
     public ResponseDTO<String> deleteRecruitment(Authentication authentication, @PathVariable Long recruitmentId) {
         recruitmentService.deleteRecruitment(authentication, recruitmentId);
