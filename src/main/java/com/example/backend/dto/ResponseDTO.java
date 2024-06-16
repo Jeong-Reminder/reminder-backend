@@ -14,10 +14,4 @@ public class ResponseDTO<T> {
     private String error;
     private int status;
     private T data;
-
-    public ResponseDTO(int status, RecruitmentResponseDTO recruitmentResponseDTO) {
-    }
-
-    public ResponseDTO(int status, String s) {
-    }
 }

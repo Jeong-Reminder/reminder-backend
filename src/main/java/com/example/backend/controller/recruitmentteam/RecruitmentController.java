@@ -5,8 +5,8 @@ import com.example.backend.dto.ResponseListDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.service.recruitmentteam.RecruitmentService;
+import java.util.Collections;
 import java.util.List;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,59 +26,83 @@ public class RecruitmentController {
     private final RecruitmentService recruitmentService;
 
     @PostMapping
-    public ResponseDTO<RecruitmentResponseDTO> createRecruitment(Authentication authentication, @RequestBody RecruitmentRequestDTO recruitmentRequestDTO) {
+    public ResponseDTO<Object> createRecruitment(Authentication authentication, @RequestBody RecruitmentRequestDTO recruitmentRequestDTO) {
         RecruitmentResponseDTO recruitmentResponseDTO = recruitmentService.createRecruitment(authentication, recruitmentRequestDTO);
 
-        return new ResponseDTO<>(200, recruitmentResponseDTO);
+        return ResponseDTO.builder()
+                .status(201)
+                .data(recruitmentResponseDTO)
+                .build();
     }
 
     @PutMapping("/{recruitmentId}")
-    public ResponseDTO<RecruitmentResponseDTO> updateRecruitment(Authentication authentication, @RequestBody RecruitmentRequestDTO recruitmentRequestDTO,
+    public ResponseDTO<Object> updateRecruitment(Authentication authentication, @RequestBody RecruitmentRequestDTO recruitmentRequestDTO,
                                                                  @PathVariable Long recruitmentId) {
         RecruitmentResponseDTO recruitmentResponseDTO = recruitmentService.updateRecruitment(authentication, recruitmentRequestDTO, recruitmentId);
 
-        return new ResponseDTO<>(200, recruitmentResponseDTO);
+        return ResponseDTO.builder()
+                .status(200)
+                .data(recruitmentResponseDTO)
+                .build();
     }
 
     @GetMapping("/{recruitmentId}")
-    public ResponseDTO<RecruitmentResponseDTO> getRecruitment(@PathVariable Long recruitmentId) {
+    public ResponseDTO<Object> getRecruitment(@PathVariable Long recruitmentId) {
         RecruitmentResponseDTO recruitmentResponseDTO = recruitmentService.getRecruitment(recruitmentId);
 
-        return new ResponseDTO<>(200, recruitmentResponseDTO);
+        return ResponseDTO.builder()
+                .status(200)
+                .data(recruitmentResponseDTO)
+                .build();
     }
 
     @GetMapping("/{announcementId}")
-    public ResponseListDTO<List<RecruitmentResponseDTO>> getRecruitmentByAnnouncementId(@PathVariable Long announcementId) {
+    public ResponseListDTO<Object> getRecruitmentByAnnouncementId(@PathVariable Long announcementId) {
         List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getRecruitmentByAnnouncementId(announcementId);
 
-        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+        return ResponseListDTO.builder()
+                .status(200)
+                .data(Collections.singletonList(recruitmentResponseDTOList))
+                .build();
     }
 
     @GetMapping("/my")
-    public ResponseListDTO<List<RecruitmentResponseDTO>> getMyRecruitment(Authentication authentication) {
+    public ResponseListDTO<Object> getMyRecruitment(Authentication authentication) {
         List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getMyRecruitment(authentication);
 
-        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+        return ResponseListDTO.builder()
+                .status(200)
+                .data(Collections.singletonList(recruitmentResponseDTOList))
+                .build();
     }
 
     @GetMapping("/active")
-    public ResponseListDTO<List<RecruitmentResponseDTO>> getActiveRecruitment() {
+    public ResponseListDTO<Object> getActiveRecruitment() {
         List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getActiveRecruitment();
 
-        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+        return ResponseListDTO.builder()
+                .status(200)
+                .data(Collections.singletonList(recruitmentResponseDTOList))
+                .build();
     }
 
     @GetMapping
-    public ResponseListDTO<List<RecruitmentResponseDTO>> getAllRecruitment() {
+    public ResponseListDTO<Object> getAllRecruitment() {
         List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getAllRecruitment();
 
-        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+        return ResponseListDTO.builder()
+                .status(200)
+                .data(Collections.singletonList(recruitmentResponseDTOList))
+                .build();
     }
 
     @DeleteMapping("/{recruitmentId}")
-    public ResponseDTO<String> deleteRecruitment(Authentication authentication, @PathVariable Long recruitmentId) {
+    public ResponseDTO<Object> deleteRecruitment(Authentication authentication, @PathVariable Long recruitmentId) {
         recruitmentService.deleteRecruitment(authentication, recruitmentId);
 
-        return new ResponseDTO<>(200, "삭제되었습니다.");
+        return ResponseDTO.builder()
+                .status(200)
+                .data(null)
+                .build();
     }
 }
