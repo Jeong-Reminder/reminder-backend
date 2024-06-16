@@ -3,14 +3,18 @@ package com.example.backend.model.entity.recruitmentteam;
 import com.example.backend.model.entity.TimeZone;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.member.Member;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +26,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Table(name = "recruitment")
 @Builder
+@Entity
 @EqualsAndHashCode(callSuper = true)
 public class Recruitment extends TimeZone {
     @Id
@@ -60,4 +65,7 @@ public class Recruitment extends TimeZone {
     @ManyToOne
     @JoinColumn(name = "announcement_id")
     private Announcement announcement;
+
+    @OneToMany(mappedBy = "recruitment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TeamApplication> teamApplications;
 }

@@ -4,8 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.backend.model.entity.member.Member;
 
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
-
+@Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
     //멤버가 존재하는지 확인

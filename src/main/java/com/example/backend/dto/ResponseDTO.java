@@ -1,5 +1,6 @@
 package com.example.backend.dto;
 
+import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,5 +14,4 @@ public class ResponseDTO<T> {
     private String error;
     private int status;
     private T data;
-
 }

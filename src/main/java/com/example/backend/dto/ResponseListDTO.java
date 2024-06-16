@@ -15,7 +15,4 @@ public class ResponseListDTO<T> {
     private String error;
     private int status;
     private List<T> data;
-
-    public ResponseListDTO(int status, List<RecruitmentResponseDTO> recruitmentResponseDTOList) {
-    }
 }
