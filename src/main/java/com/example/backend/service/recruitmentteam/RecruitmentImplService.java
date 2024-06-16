@@ -9,6 +9,7 @@ import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -88,6 +89,13 @@ public class RecruitmentImplService implements RecruitmentService{
                 .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
 
         List<Recruitment> recruitmentList = recruitmentRepository.findByMemberId(memberId);
+
+        return RecruitmentResponseDTO.toResponseDTOList(recruitmentList);
+    }
+
+    @Override
+    public List<RecruitmentResponseDTO> getActiveRecruitment() {
+        List<Recruitment> recruitmentList = recruitmentRepository.findByEndTimeAfter(LocalDateTime.now());
 
         return RecruitmentResponseDTO.toResponseDTOList(recruitmentList);
     }

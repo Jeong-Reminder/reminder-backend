@@ -61,6 +61,13 @@ public class RecruitmentController {
         return new ResponseListDTO<>(200, recruitmentResponseDTOList);
     }
 
+    @GetMapping("/active")
+    public ResponseListDTO<List<RecruitmentResponseDTO>> getActiveRecruitment() {
+        List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getActiveRecruitment();
+
+        return new ResponseListDTO<>(200, recruitmentResponseDTOList);
+    }
+
     @GetMapping
     public ResponseListDTO<List<RecruitmentResponseDTO>> getAllRecruitment() {
         List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getAllRecruitment();

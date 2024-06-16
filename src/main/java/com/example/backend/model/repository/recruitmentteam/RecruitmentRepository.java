@@ -2,6 +2,7 @@ package com.example.backend.model.repository.recruitmentteam;
 
 import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,6 @@ public interface RecruitmentRepository extends JpaRepository<Recruitment, Long> 
     List<Recruitment> findByAnnouncementId(Long announcementId);
 
     List<Recruitment> findByMemberId(Long memberId);
+
+    List<Recruitment> findByEndTimeAfter(LocalDateTime now);
 }
