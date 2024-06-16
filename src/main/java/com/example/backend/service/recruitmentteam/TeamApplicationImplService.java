@@ -35,4 +35,25 @@ public class TeamApplicationImplService implements TeamApplicationService {
         return TeamApplicationResponseDTO.toResponseDTO(saveTeamApplication);
 
     }
+
+    @Override
+    public TeamApplicationResponseDTO updateTeamApplication(Authentication authentication,
+                                                            TeamApplicationRequestDTO teamApplicationRequestDTO,
+                                                            Long teamApplicationId) {
+        Long memberId = Long.valueOf(authentication.getName());
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+
+        TeamApplication teamApplication = teamApplicationRepository.findById(teamApplicationId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 지원서가 없습니다."));
+
+        if (!teamApplication.getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("해당 지원서에 대한 권한이 없습니다.");
+        }
+
+        teamApplication.setApplicationContent(teamApplicationRequestDTO.getApplicationContent());
+        TeamApplication saveTeamApplication = teamApplicationRepository.save(teamApplication);
+
+        return TeamApplicationResponseDTO.toResponseDTO(saveTeamApplication);
+    }
 }

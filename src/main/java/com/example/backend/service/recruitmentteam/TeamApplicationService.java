@@ -6,4 +6,6 @@ import org.springframework.security.core.Authentication;
 
 public interface TeamApplicationService {
     TeamApplicationResponseDTO createTeamApplication(Authentication authentication, TeamApplicationRequestDTO teamApplicationRequestDTO, Long recruitmentId);
+
+    TeamApplicationResponseDTO updateTeamApplication(Authentication authentication, TeamApplicationRequestDTO teamApplicationRequestDTO, Long teamApplicationId);
 }

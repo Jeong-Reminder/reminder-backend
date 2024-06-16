@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class TeamApplicationRequestDTO {
     private String applicationContent;
-    private Long recruitmentId;
 
     public TeamApplication toEntity(Member member, Recruitment recruitment) {
         return TeamApplication.builder()
