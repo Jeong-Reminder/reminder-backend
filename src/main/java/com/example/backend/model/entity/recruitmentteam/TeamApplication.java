@@ -33,7 +33,7 @@ public class TeamApplication extends TimeZone {
     private String applicationContent;
 
     @Column(nullable = false)
-    private boolean applicationStatus;
+    private ApplicationStatus applicationStatus;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
