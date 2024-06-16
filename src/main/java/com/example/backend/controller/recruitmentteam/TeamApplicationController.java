@@ -6,6 +6,7 @@ import com.example.backend.dto.recruitmentteam.TeamApplicationResponseDTO;
 import com.example.backend.service.recruitmentteam.TeamApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,4 +45,13 @@ public class TeamApplicationController {
                 .build();
     }
 
+    @DeleteMapping("/{teamApplicationId}")
+    public ResponseDTO<Object> deleteTeamApplication(Authentication authentication, @PathVariable Long teamApplicationId) {
+        teamApplicationService.deleteTeamApplication(authentication, teamApplicationId);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(null)
+                .build();
+    }
 }
