@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class RecruitmentResponseDTO {
     private Long id;
+    private Long memberId;
     private String memberName;
     private Profile memberProfile;
     private String recruitmentCategory;
@@ -28,11 +29,13 @@ public class RecruitmentResponseDTO {
     private LocalDateTime createdTime;
     private LocalDateTime endTime;
     private Long announcementId;
-    private Set<TeamApplicationResponseDTO> teamApplicationIdList;
+    private Set<TeamApplicationResponseDTO> teamApplicationList;
+    private Set<AcceptMemberResponseDTO> acceptMemberList;
 
     public static RecruitmentResponseDTO toResponseDTO(Recruitment recruitment) {
         return RecruitmentResponseDTO.builder()
                 .id(recruitment.getId())
+                .memberId(recruitment.getMember().getId())
                 .memberName(recruitment.getMember().getName())
                 .memberProfile(recruitment.getMember().getProfile())
                 .recruitmentCategory(recruitment.getRecruitmentCategory())
@@ -45,7 +48,8 @@ public class RecruitmentResponseDTO {
                 .createdTime(recruitment.getCreatedTime())
                 .endTime(recruitment.getEndTime())
                 .announcementId(recruitment.getAnnouncement().getId())
-                .teamApplicationIdList(TeamApplicationResponseDTO.toResponseDTOSet(recruitment.getTeamApplications()))
+                .teamApplicationList(TeamApplicationResponseDTO.toResponseDTOSet(recruitment.getTeamApplications()))
+                .acceptMemberList(AcceptMemberResponseDTO.toResponseDTOSet(recruitment.getAcceptMembers()))
                 .build();
     }
 
