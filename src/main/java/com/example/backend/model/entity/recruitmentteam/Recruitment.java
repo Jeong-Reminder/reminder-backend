@@ -68,4 +68,7 @@ public class Recruitment extends TimeZone {
 
     @OneToMany(mappedBy = "recruitment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TeamApplication> teamApplications;
+
+    @OneToMany(mappedBy = "recruitment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AcceptMember> acceptMembers;
 }
