@@ -1,8 +1,8 @@
 package com.example.backend.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,22 +16,32 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 로그인 시도 시 실행되는 메서드
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String studentId = request.getParameter("studentId");
-        String password = request.getParameter("password");
+        try {
+            // JSON 형식의 본문을 Map으로 읽어들임
+            Map<String, String> loginData = objectMapper.readValue(request.getInputStream(), Map.class);
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(studentId, password);
-        return authenticationManager.authenticate(authToken);
+            String studentId = loginData.get("studentId");
+            String password = loginData.get("password");
+
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(studentId, password);
+            return authenticationManager.authenticate(authToken);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException, ServletException {
@@ -43,18 +53,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        // Access 및 Refresh 토큰 생성
-        String access = jwtUtil.createJwt("access", studentId, role, 600000L);
-        String refresh = jwtUtil.createJwt("refresh", studentId, role, 86400000L);
-
-//        // Refresh 토큰을 Redis에 저장
-//        refreshTokenService.saveRefreshToken(studentId, refresh, 86400000L);
+        // Access 토큰 생성
+        String access = jwtUtil.createJwt(studentId, role);
 
         // Access 토큰을 응답 헤더에 설정
         response.setHeader("access", access);
 
-        // Refresh 토큰을 쿠키에 설정
-        response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
@@ -63,12 +67,4 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().write("HTTP Status 401 - " + failed.getMessage());
     }
-
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24 * 60 * 60);
-        cookie.setHttpOnly(true);
-        return cookie;
-    }
-
 }

@@ -33,21 +33,28 @@ public class JWTUtil {
         return getClaims(token).getSubject();
     }
 
-    public String getStudentId(String token) {
-        return getClaims(token).getSubject();
-    }
-
     public UserRole getRole(String token) {
         String role = getClaims(token).get("role", String.class);
         return UserRole.valueOf(role);
     }
 
-    public boolean isExpired(String token) {
-        try {
-            return getClaims(token).getExpiration().before(new Date());
-        } catch (ExpiredJwtException e) {
-            return true;
-        }
+
+    public String createJwt(String studentId, String role) {
+        return Jwts.builder()
+                .setSubject(studentId)
+                .claim("role", role)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
+                .signWith(secretKey, SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    private Claims getClaims(String token) {
+        return Jwts.parser()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 
     public boolean validateToken(String token) {
@@ -58,7 +65,6 @@ public class JWTUtil {
             return false;
         }
     }
-
     public Authentication getAuthentication(String token) {
         Claims claims = getClaims(token);
         String studentId = claims.getSubject();
@@ -71,24 +77,5 @@ public class JWTUtil {
 
         CustomUserDetails customUserDetails = new CustomUserDetails(member);
         return new UsernamePasswordAuthenticationToken(customUserDetails, token, Collections.singleton(grantedAuthority));
-    }
-
-    private Claims getClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
-    public String createJwt(String category, String studentId, String role, Long expiredMs) {
-        return Jwts.builder()
-                .setSubject(studentId)
-                .claim("category", category)
-                .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
-                .signWith(secretKey, SignatureAlgorithm.HS512)
-                .compact();
     }
 }

@@ -1,52 +1,42 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.JoinRequestDTO;
+import com.example.backend.jwt.JWTUtil;
 import com.example.backend.model.entity.Member;
-import com.example.backend.model.entity.UserRole;
 import com.example.backend.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class JoinService {
 
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    public JoinService(MemberRepository memberRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
-
-        this.memberRepository = memberRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-    }
+    private final JWTUtil jwtUtil;
 
     public void joinProcess(JoinRequestDTO joinRequestDTO) {
 
         String studentId = joinRequestDTO.getStudentId();
-        String password = joinRequestDTO.getPassword();
-        UserRole userRole = joinRequestDTO.getUserRole();
         Boolean isExist = memberRepository.existsByStudentId(studentId);
 
         if (isExist) {
-            return;
+            throw new IllegalArgumentException("이미 존재하는 사용자입니다.");
         }
 
+        Member member = joinRequestDTO.toMember(bCryptPasswordEncoder);
+        memberRepository.save(member);
+    }
+    public String login(JoinRequestDTO requestDto) {
+        Member member = memberRepository.findByStudentId(requestDto.getStudentId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid studentId or password"));
 
-        Member data = new Member();
-        data.setStudentId(studentId);
-        data.setPassword(bCryptPasswordEncoder.encode(password));
-        data.setName("Default Name"); // 기본 값 설정 또는 입력 받도록 변경
-        data.setLevel(1);             // 기본 값 설정 또는 입력 받도록 변경
-        data.setStatus("Enrolled");   // 기본 값 설정 또는 입력 받도록 변경
-        data.setUserRole(userRole);    // 기본 사용자 역할 설정
+        if (!bCryptPasswordEncoder.matches(requestDto.getPassword(), member.getPassword())) {
+            throw new IllegalArgumentException("Invalid studentId or password");
+        }
 
-        memberRepository.save(data);
-
-//        // 미리 저장된 회원 정보를 조회
-//        Member preSavedMember = memberRepository.findByStudentId(studentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Pre-saved member not found"));
-//
-//        preSavedMember.setPassword(bCryptPasswordEncoder.encode(password));
-//        preSavedMember.setRole(joinRequest.isAdmin() ? "ROLE_ADMIN" : "ROLE_USER"); // 역할 설정
-//        memberRepository.save(preSavedMember);
+        // JWT 토큰 생성
+        return jwtUtil.createJwt(member.getStudentId(), member.getUserRole().name());
     }
 }
