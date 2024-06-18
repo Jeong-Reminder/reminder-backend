@@ -4,11 +4,14 @@ import com.example.backend.dto.recruitmentteam.TeamApplicationRequestDTO;
 import com.example.backend.dto.recruitmentteam.TeamApplicationResponseDTO;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
+import com.example.backend.model.entity.recruitmentteam.ApplicationStatus;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import com.example.backend.model.entity.recruitmentteam.TeamApplication;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamApplicationRepository;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -32,9 +35,23 @@ public class TeamApplicationImplService implements TeamApplicationService {
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
 
+        Optional<Recruitment> recruitmentFind = recruitmentRepository.findByMemberIdAndAnnouncementId(memberId, recruitment.getAnnouncement().getId());
+        if (recruitmentFind.isPresent()) {
+            throw new IllegalStateException("이미 팀장으로 지원한 경진대회입니다.");
+        }
+
+        TeamApplication teamApplicationRecruitment = teamApplicationRepository.findByMemberIdAndRecruitmentId(memberId, recruitmentId);
+        if (teamApplicationRecruitment != null) {
+            throw new IllegalStateException("이미 지원한 모집글입니다.");
+        }
+
+        TeamApplication teamApplicationAnnouncement = teamApplicationRepository.findByMemberIdAndAnnouncementIdAndApplicationStatus(memberId, recruitment.getAnnouncement().getId() , ApplicationStatus.ACCEPTED);
+        if (teamApplicationAnnouncement != null) {
+            throw new IllegalStateException("이미 팀이 있는 경진대회입니다.");
+        }
+
         TeamApplication saveTeamApplication = teamApplicationRepository.save(teamApplicationRequestDTO.toEntity(member, recruitment));
         return TeamApplicationResponseDTO.toResponseDTO(saveTeamApplication);
-
     }
 
     @Override

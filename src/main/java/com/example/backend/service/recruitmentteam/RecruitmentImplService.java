@@ -63,7 +63,7 @@ public class RecruitmentImplService implements RecruitmentService{
         acceptMember.setMemberRole(TeamMemberRole.LEADER);
 
         acceptMemberRepository.save(acceptMember);
-        
+
         return RecruitmentResponseDTO.toResponseDTO(saveRecruitment);
     }
 
