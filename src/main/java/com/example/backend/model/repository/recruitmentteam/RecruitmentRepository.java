@@ -16,4 +16,6 @@ public interface RecruitmentRepository extends JpaRepository<Recruitment, Long> 
     List<Recruitment> findByMemberId(Long memberId);
 
     List<Recruitment> findByEndTimeAfter(LocalDateTime now);
+
+    List<Recruitment> findByRecruitmentCategory(String category);
 }
