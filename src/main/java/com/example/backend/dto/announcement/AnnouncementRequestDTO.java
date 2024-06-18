@@ -1,10 +1,15 @@
 package com.example.backend.dto.announcement;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.member.Member;
+import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
-@Getter
+import java.util.List;
+
+@Builder
+@AllArgsConstructor
+@Data
 @NoArgsConstructor
 public class AnnouncementRequestDTO {
     private String announcementTitle;
@@ -12,23 +17,26 @@ public class AnnouncementRequestDTO {
     private AnnouncementCategory announcementCategory;
     private Boolean announcementImportant;
     private int announcementLevel;
-    private String img;
-    private String file;
+    private List<MultipartFile> img;
+    private List<MultipartFile> file;
     private boolean visible;
     private Long managerId;
     private int good;
 
-    @Builder
-    public AnnouncementRequestDTO(String announcementTitle, String announcementContent, AnnouncementCategory announcementCategory, Boolean announcementImportant, int announcementLevel, String img, String file, boolean visible, Long managerId, int good) {
-        this.announcementTitle = announcementTitle;
-        this.announcementContent = announcementContent;
-        this.announcementCategory = announcementCategory;
-        this.announcementImportant = announcementImportant;
-        this.announcementLevel = announcementLevel;
-        this.img = img;
-        this.file = file;
-        this.visible = visible;
-        this.managerId = managerId;
-        this.good = good;
+    public Announcement toEntity(Member managerId, List<String> imgPaths, List<String> filePaths) {
+        return Announcement.builder()
+                .announcementTitle(announcementTitle)
+                .announcementContent(announcementContent)
+                .announcementCategory(announcementCategory)
+                .announcementImportant(announcementImportant)
+                .announcementLevel(announcementLevel)
+                .img(String.join(",", imgPaths))
+                .file(String.join(",", filePaths))
+                .visible(visible)
+                .managerId(managerId)
+                .good(good)
+                .build();
     }
+
+
 }

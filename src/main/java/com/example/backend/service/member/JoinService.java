@@ -6,6 +6,7 @@ import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.repository.member.MemberRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class JoinService {
@@ -14,22 +15,20 @@ public class JoinService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public JoinService(MemberRepository memberRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
-
         this.memberRepository = memberRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
+    @Transactional
     public void joinProcess(JoinRequestDTO joinRequestDTO) {
-
         String studentId = joinRequestDTO.getStudentId();
         String password = joinRequestDTO.getPassword();
         UserRole userRole = joinRequestDTO.getUserRole();
-        Boolean isExist = memberRepository.existsByStudentId(studentId);
 
-        if (isExist) {
-            return;
+        // 이미 존재하는 회원인지 확인
+        if (memberRepository.existsByStudentId(studentId)) {
+            throw new IllegalArgumentException("이미 가입된 학생 ID입니다: " + studentId);
         }
-
 
         Member data = new Member();
         data.setStudentId(studentId);
@@ -37,16 +36,8 @@ public class JoinService {
         data.setName("Default Name"); // 기본 값 설정 또는 입력 받도록 변경
         data.setLevel(1);             // 기본 값 설정 또는 입력 받도록 변경
         data.setStatus("Enrolled");   // 기본 값 설정 또는 입력 받도록 변경
-        data.setUserRole(userRole);    // 기본 사용자 역할 설정
+        data.setUserRole(userRole);   // 사용자 역할 설정
 
         memberRepository.save(data);
-
-//        // 미리 저장된 회원 정보를 조회
-//        Member preSavedMember = memberRepository.findByStudentId(studentId)
-//                .orElseThrow(() -> new IllegalArgumentException("Pre-saved member not found"));
-//
-//        preSavedMember.setPassword(bCryptPasswordEncoder.encode(password));
-//        preSavedMember.setRole(joinRequest.isAdmin() ? "ROLE_ADMIN" : "ROLE_USER"); // 역할 설정
-//        memberRepository.save(preSavedMember);
     }
 }

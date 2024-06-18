@@ -1,10 +1,15 @@
 package com.example.backend.dto.announcement;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.example.backend.model.entity.announcement.Announcement;
+import lombok.*;
 
-@Getter
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Builder
+@AllArgsConstructor
+@Data
 @NoArgsConstructor
 public class AnnouncementResponseDTO {
     private Long id;
@@ -13,24 +18,29 @@ public class AnnouncementResponseDTO {
     private AnnouncementCategory announcementCategory;
     private Boolean announcementImportant;
     private int announcementLevel;
-    private String img;
-    private String file;
+    private List<String> imgUrls;
+    private List<String> fileUrls;
     private boolean visible;
     private Long managerId;
     private int good;
 
-    @Builder
-    public AnnouncementResponseDTO(Long id, String announcementTitle, String announcementContent, AnnouncementCategory announcementCategory, Boolean announcementImportant, int announcementLevel, String img, String file, boolean visible, Long managerId, int good) {
-        this.id = id;
-        this.announcementTitle = announcementTitle;
-        this.announcementContent = announcementContent;
-        this.announcementCategory = announcementCategory;
-        this.announcementImportant = announcementImportant;
-        this.announcementLevel = announcementLevel;
-        this.img = img;
-        this.file = file;
-        this.visible = visible;
-        this.managerId = managerId;
-        this.good = good;
+    public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
+        return AnnouncementResponseDTO.builder()
+                .id(announcement.getId())
+                .announcementTitle(announcement.getAnnouncementTitle())
+                .announcementContent(announcement.getAnnouncementContent())
+                .announcementCategory(announcement.getAnnouncementCategory())
+                .announcementImportant(announcement.getAnnouncementImportant())
+                .announcementLevel(announcement.getAnnouncementLevel())
+                .imgUrls(Arrays.stream(announcement.getImg().split(","))
+                        .map(path -> "/files/" + path.substring(path.lastIndexOf("/") + 1))
+                        .collect(Collectors.toList()))
+                .fileUrls(Arrays.stream(announcement.getFile().split(","))
+                        .map(path -> "/files/" + path.substring(path.lastIndexOf("/") + 1))
+                        .collect(Collectors.toList()))
+                .visible(announcement.isVisible())
+                .managerId(announcement.getManagerId().getId())
+                .good(announcement.getGood())
+                .build();
     }
 }
