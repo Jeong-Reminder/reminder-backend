@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 public class AcceptMemberResponseDTO {
     private Long id;
     private String memberName;
+    private int memberLevel;
     private String memberRole;
     private String githubLink;
     private String developmentField;
@@ -26,6 +27,7 @@ public class AcceptMemberResponseDTO {
         return AcceptMemberResponseDTO.builder()
                 .id(acceptMember.getId())
                 .memberName(acceptMember.getMember().getName())
+                .memberLevel(acceptMember.getMember().getLevel())
                 .memberRole(acceptMember.getMemberRole().toString())
                 .githubLink(profile.getGithubLink())
                 .developmentField(profile.getDevelopmentField())

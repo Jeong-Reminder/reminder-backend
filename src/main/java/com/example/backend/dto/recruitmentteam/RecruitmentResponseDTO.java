@@ -18,6 +18,7 @@ public class RecruitmentResponseDTO {
     private Long id;
     private Long memberId;
     private String memberName;
+    private int memberLevel;
     private Profile memberProfile;
     private String recruitmentCategory;
     private String recruitmentTitle;
@@ -37,6 +38,7 @@ public class RecruitmentResponseDTO {
                 .id(recruitment.getId())
                 .memberId(recruitment.getMember().getId())
                 .memberName(recruitment.getMember().getName())
+                .memberLevel(recruitment.getMember().getLevel())
                 .memberProfile(recruitment.getMember().getProfile())
                 .recruitmentCategory(recruitment.getRecruitmentCategory())
                 .recruitmentTitle(recruitment.getRecruitmentTitle())

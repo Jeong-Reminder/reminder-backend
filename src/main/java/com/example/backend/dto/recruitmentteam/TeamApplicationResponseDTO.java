@@ -22,6 +22,7 @@ public class TeamApplicationResponseDTO {
     private ApplicationStatus applicationStatus;
     private Long recruitmentId;
     private String memberName;
+    private int memberLevel;
     private String githubLink;
     private String developmentField;
     private String developmentTool;
@@ -36,6 +37,7 @@ public class TeamApplicationResponseDTO {
                 .applicationStatus(teamApplication.getApplicationStatus())
                 .recruitmentId(teamApplication.getRecruitment().getId())
                 .memberName(teamApplication.getMember().getName())
+                .memberLevel(teamApplication.getMember().getLevel())
                 .githubLink(teamApplication.getMember().getProfile().getGithubLink())
                 .developmentField(teamApplication.getMember().getProfile().getDevelopmentField())
                 .developmentTool(teamApplication.getMember().getProfile().getDevelopmentTool())
