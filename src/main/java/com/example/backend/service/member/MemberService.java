@@ -1,6 +1,6 @@
 package com.example.backend.service.member;
 
-import com.example.backend.dto.member.TechStackDTO;
+import com.example.backend.dto.member.TechStackRequestDTO;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.Profile;
 import com.example.backend.model.repository.member.MemberRepository;
@@ -15,7 +15,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
 
-    public void techStack(String studentId, TechStackDTO techStackDTO) {
+    public void techStack(String studentId, TechStackRequestDTO techStackRequestDTO) {
         Member member = memberRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
@@ -24,9 +24,9 @@ public class MemberService {
             profile = new Profile();
             profile.setMember(member);
         }
-        profile.setGithubLink(techStackDTO.getGithubLink());
-        profile.setDevelopmentField(techStackDTO.getDevelopmentField());
-        profile.setDevelopmentTool(techStackDTO.getDevelopmentTool());
+        profile.setGithubLink(techStackRequestDTO.getGithubLink());
+        profile.setDevelopmentField(techStackRequestDTO.getDevelopmentField());
+        profile.setDevelopmentTool(techStackRequestDTO.getDevelopmentTool());
 
         profileRepository.save(profile);
     }

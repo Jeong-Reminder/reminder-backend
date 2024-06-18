@@ -1,6 +1,6 @@
 package com.example.backend.controller.member;
 
-import com.example.backend.dto.member.TechStackDTO;
+import com.example.backend.dto.member.TechStackRequestDTO;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.service.member.MemberService;
@@ -23,11 +23,11 @@ public class MemberController {
     private final JWTUtil jwtUtil;
 
     @PutMapping("/update-tech-stack")
-    public ResponseEntity<String> techStack(HttpServletRequest request, @RequestBody TechStackDTO techStackDTO) {
+    public ResponseEntity<String> techStack(HttpServletRequest request, @RequestBody TechStackRequestDTO techStackRequestDTO) {
         try {
             String token = resolveToken(request);
             String studentId = jwtUtil.getStudentIdFromToken(token);
-            memberService.techStack(studentId, techStackDTO);
+            memberService.techStack(studentId, techStackRequestDTO);
             return ResponseEntity.ok("Tech stack updated successfully");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

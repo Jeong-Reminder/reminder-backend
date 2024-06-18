@@ -1,9 +1,7 @@
 package com.example.backend.dto.recruitmentteam;
 
-import com.example.backend.dto.member.TechStackDTO;
 import com.example.backend.model.entity.member.Profile;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
-import java.time.LocalDateTime;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
