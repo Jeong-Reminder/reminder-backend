@@ -45,7 +45,7 @@ public class TeamApplicationImplService implements TeamApplicationService {
             throw new IllegalStateException("이미 지원한 모집글입니다.");
         }
 
-        TeamApplication teamApplicationAnnouncement = teamApplicationRepository.findByMemberIdAndAnnouncementIdAndApplicationStatus(memberId, recruitment.getAnnouncement().getId() , ApplicationStatus.ACCEPTED);
+        TeamApplication teamApplicationAnnouncement = teamApplicationRepository.findByRecruitment_Announcement_IdAndMemberIdAndApplicationStatus(recruitment.getAnnouncement().getId(), memberId, ApplicationStatus.ACCEPTED);
         if (teamApplicationAnnouncement != null) {
             throw new IllegalStateException("이미 팀이 있는 경진대회입니다.");
         }

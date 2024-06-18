@@ -46,7 +46,7 @@ public class RecruitmentImplService implements RecruitmentService{
                     throw new IllegalStateException("이미 지원한 경진대회입니다.");
                 });
 
-        TeamApplication teamApplication = teamApplicationRepository.findByMemberIdAndAnnouncementId(memberId, recruitmentRequestDTO.getAnnouncementId());
+        TeamApplication teamApplication = teamApplicationRepository.findByRecruitment_Announcement_IdAndMemberId(recruitmentRequestDTO.getAnnouncementId(), memberId);
 
         if (teamApplication != null) {
             throw new IllegalStateException("팀원으로 신청한 경진대회입니다.");

@@ -10,11 +10,11 @@ import org.springframework.stereotype.Repository;
 public interface TeamApplicationRepository extends JpaRepository<TeamApplication, Long> {
     TeamApplication findByMemberIdAndRecruitmentId(Long memberId, Long recruitmentId);
 
-    List<TeamApplication> findByRecruitmentIdAndMemberIdAndApplicationStatus(Long id, Long memberId, ApplicationStatus applicationStatus);
+    List<TeamApplication> findByRecruitmentIdAndMemberIdAndApplicationStatus(Long recruitmentId, Long memberId, ApplicationStatus applicationStatus);
 
-    List<TeamApplication> findByRecruitmentIdAndMemberId(Long id, Long memberId);
+    List<TeamApplication> findByRecruitmentIdAndMemberId(Long recruitmentId, Long memberId);
 
-    TeamApplication findByMemberIdAndAnnouncementId(Long memberId, Long announcementId);
+    TeamApplication findByRecruitment_Announcement_IdAndMemberId(Long announcementId, Long memberId);
 
-    TeamApplication findByMemberIdAndAnnouncementIdAndApplicationStatus(Long memberId, Long announcementId, ApplicationStatus applicationStatus);
+    TeamApplication findByRecruitment_Announcement_IdAndMemberIdAndApplicationStatus(Long announcementId, Long memberId, ApplicationStatus applicationStatus);
 }
