@@ -13,4 +13,6 @@ public interface TeamApplicationRepository extends JpaRepository<TeamApplication
     List<TeamApplication> findByRecruitmentIdAndMemberIdAndApplicationStatus(Long id, Long memberId, ApplicationStatus applicationStatus);
 
     List<TeamApplication> findByRecruitmentIdAndMemberId(Long id, Long memberId);
+
+    TeamApplication findByMemberIdAndAnnouncementId(Long memberId, Long announcementId);
 }

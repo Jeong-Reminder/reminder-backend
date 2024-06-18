@@ -1,14 +1,20 @@
 package com.example.backend.service.recruitmentteam;
 
+import com.example.backend.dto.recruitmentteam.AcceptMemberRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
+import com.example.backend.model.entity.recruitmentteam.AcceptMember;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
+import com.example.backend.model.entity.recruitmentteam.TeamApplication;
+import com.example.backend.model.entity.recruitmentteam.TeamMemberRole;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
+import com.example.backend.model.repository.recruitmentteam.AcceptMemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
+import com.example.backend.model.repository.recruitmentteam.TeamApplicationRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +28,8 @@ public class RecruitmentImplService implements RecruitmentService{
     private final MemberRepository memberRepository;
     private final AnnouncementRepository announcementRepository;
     private final RecruitmentRepository recruitmentRepository;
+    private final TeamApplicationRepository teamApplicationRepository;
+    private final AcceptMemberRepository acceptMemberRepository;
 
     @Override
     public RecruitmentResponseDTO createRecruitment(Authentication authentication,
@@ -38,7 +46,24 @@ public class RecruitmentImplService implements RecruitmentService{
                     throw new IllegalStateException("이미 지원한 경진대회입니다.");
                 });
 
+        TeamApplication teamApplication = teamApplicationRepository.findByMemberIdAndAnnouncementId(memberId, recruitmentRequestDTO.getAnnouncementId());
+
+        if (teamApplication != null) {
+            throw new IllegalStateException("팀원으로 신청한 경진대회입니다.");
+        }
+
         Recruitment saveRecruitment = recruitmentRepository.save(recruitmentRequestDTO.toEntity(member, announcement));
+
+        AcceptMemberRequestDTO acceptMemberRequestDTO = AcceptMemberRequestDTO.builder()
+                .memberId(memberId)
+                .recruitmentId(recruitmentRequestDTO.getAnnouncementId())
+                .build();
+
+        AcceptMember acceptMember = acceptMemberRequestDTO.toEntity(member, saveRecruitment);
+        acceptMember.setMemberRole(TeamMemberRole.LEADER);
+
+        acceptMemberRepository.save(acceptMember);
+        
         return RecruitmentResponseDTO.toResponseDTO(saveRecruitment);
     }
 
