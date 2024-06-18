@@ -14,7 +14,6 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
 
     @Query("SELECT a FROM Announcement a WHERE a.announcementTitle LIKE %:keyword%")
     List<Announcement> findByAnnouncementTitleContaining(@Param("keyword") String keyword);
-
     @Query("SELECT a FROM Announcement a WHERE a.announcementCategory = :category")
     List<Announcement> findByAnnouncementCategory(@Param("category") AnnouncementCategory category);
 

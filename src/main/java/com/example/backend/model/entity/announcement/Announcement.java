@@ -2,9 +2,12 @@ package com.example.backend.model.entity.announcement;
 
 import com.example.backend.dto.announcement.AnnouncementCategory;
 import com.example.backend.model.entity.TimeZone;
+import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Data
 @Entity
@@ -52,4 +55,7 @@ public class Announcement extends TimeZone {
 
     @Column(name = "good")
     private int good;
+
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
 }
