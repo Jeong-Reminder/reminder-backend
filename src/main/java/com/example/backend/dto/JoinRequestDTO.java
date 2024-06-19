@@ -29,7 +29,7 @@ public class JoinRequestDTO {
     private String status;
     private UserRole userRole;
 
-    public Member toMember(PasswordEncoder passwordEncoder) {
+    public Member toEntity(PasswordEncoder passwordEncoder) {
         return Member.builder()
                 .studentId(studentId)
                 .password(passwordEncoder.encode(password))
@@ -37,6 +37,16 @@ public class JoinRequestDTO {
                 .level(level)
                 .status(status)
                 .userRole(userRole != null ? userRole : UserRole.ROLE_USER)
+                .build();
+    }
+
+    public static JoinRequestDTO fromEntity(Member member) {
+        return JoinRequestDTO.builder()
+                .studentId(member.getStudentId())
+                .name(member.getName())
+                .level(member.getLevel())
+                .status(member.getStatus())
+                .userRole(member.getUserRole())
                 .build();
     }
 

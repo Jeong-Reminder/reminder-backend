@@ -9,13 +9,6 @@ public class TokenDTO {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class TokenRequest {
-        private String refreshToken;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class TokenResponse {
         private String accessToken;
         private String refreshToken;

@@ -1,5 +1,6 @@
 package com.example.backend.model.entity;
 
+import com.example.backend.dto.JoinRequestDTO;
 import com.example.backend.model.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,5 +30,13 @@ public class Member {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private Profile profile;  // 프로필 정보
 
-
+    public JoinRequestDTO toDTO() {
+        return JoinRequestDTO.builder()
+                .studentId(this.studentId)
+                .name(this.name)
+                .level(this.level)
+                .status(this.status)
+                .userRole(this.userRole)
+                .build();
+    }
 }

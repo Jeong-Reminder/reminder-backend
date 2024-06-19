@@ -66,7 +66,7 @@ public class SecurityConfig {
         http.httpBasic(basic -> basic.disable());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/login", "/join", "/api/v1/reissue", "/").permitAll()
+                .requestMatchers("/api/v1/login", "/api/v1/join", "/").permitAll()
                 .anyRequest().authenticated());
         http.addFilterBefore(new JWTFilter(jwtUtil, customUserDetailsService), UsernamePasswordAuthenticationFilter.class);
         http.addFilterAt(new LoginFilter(authenticationManager(), jwtUtil), UsernamePasswordAuthenticationFilter.class);

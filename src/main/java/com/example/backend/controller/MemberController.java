@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.TechStackDTO;
+import com.example.backend.dto.ProfileDTO;
 import com.example.backend.model.entity.Member;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.MemberService;
@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
 
 @RestController
 @RequestMapping("/api/v1/member")
@@ -23,11 +21,11 @@ public class MemberController {
     private final JWTUtil jwtUtil;
 
     @PutMapping("/update-tech-stack")
-    public ResponseEntity<String> techStack(HttpServletRequest request, @RequestBody TechStackDTO techStackDTO) {
+    public ResponseEntity<String> techStack(HttpServletRequest request, @RequestBody ProfileDTO profileDTO) {
         try {
             String token = resolveToken(request);
             String studentId = jwtUtil.getStudentIdFromToken(token);
-            memberService.techStack(studentId, techStackDTO);
+            memberService.techStack(studentId, profileDTO);
             return ResponseEntity.ok("Tech stack updated successfully");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

@@ -25,7 +25,7 @@ public class JoinService {
             throw new IllegalArgumentException("이미 존재하는 사용자입니다.");
         }
 
-        Member member = joinRequestDTO.toMember(bCryptPasswordEncoder);
+        Member member = joinRequestDTO.toEntity(bCryptPasswordEncoder);
         memberRepository.save(member);
     }
     public String login(JoinRequestDTO requestDto) {
