@@ -2,7 +2,7 @@ package com.example.backend.dto.recruitmentteam;
 
 import com.example.backend.model.entity.member.Profile;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
-import java.util.Set;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,9 +33,9 @@ public class AcceptMemberResponseDTO {
                 .build();
     }
 
-    public static Set<AcceptMemberResponseDTO> toResponseDTOSet(Set<AcceptMember> acceptMembers) {
+    public static List<AcceptMemberResponseDTO> toResponseDTOSet(List<AcceptMember> acceptMembers) {
         return acceptMembers.stream()
                 .map(acceptMember -> toResponseDTO(acceptMember, acceptMember.getMember().getProfile()))
-                .collect(java.util.stream.Collectors.toSet());
+                .toList();
     }
 }

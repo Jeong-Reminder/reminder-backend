@@ -31,7 +31,7 @@ public class RecruitmentResponseDTO {
     private LocalDateTime endTime;
     private Long announcementId;
     private Set<TeamApplicationResponseDTO> teamApplicationList;
-    private Set<AcceptMemberResponseDTO> acceptMemberList;
+    private List<AcceptMemberResponseDTO> acceptMemberList;
 
     public static RecruitmentResponseDTO toResponseDTO(Recruitment recruitment) {
         return RecruitmentResponseDTO.builder()
