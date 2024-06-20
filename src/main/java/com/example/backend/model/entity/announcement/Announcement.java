@@ -1,15 +1,18 @@
 package com.example.backend.model.entity.announcement;
 
 import com.example.backend.dto.announcement.AnnouncementCategory;
+import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.model.entity.TimeZone;
 import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.vote.Vote;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
 
-@Data
+@Setter
+@Getter
 @Entity
 @Builder
 @AllArgsConstructor
@@ -51,11 +54,28 @@ public class Announcement extends TimeZone {
 
     @ManyToOne
     @JoinColumn(name = "manager_id")
-    private Member managerId;
+    private Member manager;
 
     @Column(name = "good")
     private int good;
 
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
+
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vote> votes;
+
+    public void update(AnnouncementRequestDTO dto, List<String> imgPaths, List<String> filePaths, Vote vote) {
+        this.announcementTitle = dto.getAnnouncementTitle();
+        this.announcementContent = dto.getAnnouncementContent();
+        this.announcementCategory = dto.getAnnouncementCategory();
+        this.announcementImportant = dto.getAnnouncementImportant();
+        this.announcementLevel = dto.getAnnouncementLevel();
+        this.img = String.join(",", imgPaths);
+        this.file = String.join(",", filePaths);
+        this.visible = dto.isVisible();
+        this.good = dto.getGood();
+        this.votes = vote != null ? List.of(vote) : this.votes;
+    }
+
 }

@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/announcement")
+@RequestMapping("api/v1/announcement")
 @RequiredArgsConstructor
 public class AnnouncementController {
 

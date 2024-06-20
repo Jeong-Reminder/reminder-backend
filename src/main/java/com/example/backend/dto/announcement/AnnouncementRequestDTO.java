@@ -1,7 +1,9 @@
 package com.example.backend.dto.announcement;
 
+import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.vote.Vote;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,8 +24,9 @@ public class AnnouncementRequestDTO {
     private boolean visible;
     private Long managerId;
     private int good;
+    private VoteRequestDTO voteRequest;
 
-    public Announcement toEntity(Member managerId, List<String> imgPaths, List<String> filePaths) {
+    public Announcement toEntity(Member manager, List<String> imgPaths, List<String> filePaths, Vote vote) {
         return Announcement.builder()
                 .announcementTitle(announcementTitle)
                 .announcementContent(announcementContent)
@@ -33,10 +36,9 @@ public class AnnouncementRequestDTO {
                 .img(String.join(",", imgPaths))
                 .file(String.join(",", filePaths))
                 .visible(visible)
-                .managerId(managerId)
+                .manager(manager)
                 .good(good)
+                .votes(vote != null ? List.of(vote) : null)
                 .build();
     }
-
-
 }
