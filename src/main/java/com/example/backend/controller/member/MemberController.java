@@ -1,62 +1,42 @@
 package com.example.backend.controller.member;
 
-import com.example.backend.dto.member.TechStackRequestDTO;
-import com.example.backend.model.entity.member.Member;
-import com.example.backend.model.repository.member.MemberRepository;
+import com.example.backend.dto.ResponseDTO;
+import com.example.backend.dto.member.ChangePasswordRequestDTO;
+import com.example.backend.dto.member.MemberRequestDTO;
+import com.example.backend.dto.member.MemberResponseDTO;
 import com.example.backend.service.member.MemberService;
-import com.example.backend.jwt.JWTUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/member")
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/member")
 public class MemberController {
 
-    private final MemberRepository memberRepository;
     private final MemberService memberService;
-    private final JWTUtil jwtUtil;
 
-    @PutMapping("/update-tech-stack")
-    public ResponseEntity<String> techStack(HttpServletRequest request, @RequestBody TechStackRequestDTO techStackRequestDTO) {
-        try {
-            String token = resolveToken(request);
-            String studentId = jwtUtil.getStudentIdFromToken(token);
-            memberService.techStack(studentId, techStackRequestDTO);
-            return ResponseEntity.ok("Tech stack updated successfully");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
-        }
+    @PostMapping("/signup")
+    public ResponseDTO<Object> signup(@RequestBody MemberRequestDTO requestDTO) {
+        MemberResponseDTO memberResponseDTO = memberService.signup(requestDTO);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberResponseDTO)
+                .build();
     }
 
-    @GetMapping
-    public ResponseEntity<Member> getMember(HttpServletRequest request) {
-        try {
-            String token = resolveToken(request);
-            String studentId = jwtUtil.getStudentIdFromToken(token);
-            Member member = memberRepository.findByStudentId(studentId)
-                    .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-            return ResponseEntity.ok(member);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
+    @PutMapping("/changePassword")
+    public ResponseDTO<Object> changePassword(Authentication authentication, @RequestBody ChangePasswordRequestDTO changePasswordRequestDTO) {
+        MemberResponseDTO memberResponseDTO = memberService.changePassword(authentication, changePasswordRequestDTO);
 
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberResponseDTO)
+                .build();
     }
-
 }

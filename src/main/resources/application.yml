@@ -8,8 +8,8 @@ spring:
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-  jwt:
-    secret: ${SPRING_JWT_SECRET}
+
+
 
   jpa:
     defer-datasource-initialization: true
@@ -29,6 +29,8 @@ spring:
   thymeleaf3:
     decoupled-logic: true
 
+
+
 logging:
   level:
     org.springframework.security: DEBUG
@@ -42,4 +44,5 @@ management:
   endpoint:
     health:
       show-details: always
-
+jwt:
+  secret: ${JWT_SECRET}
