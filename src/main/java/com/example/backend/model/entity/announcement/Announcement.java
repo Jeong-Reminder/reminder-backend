@@ -5,6 +5,7 @@ import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.model.entity.TimeZone;
 import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.recommend.Recommend;
 import com.example.backend.model.entity.vote.Vote;
 import jakarta.persistence.*;
 import lombok.*;
@@ -56,14 +57,14 @@ public class Announcement extends TimeZone {
     @JoinColumn(name = "manager_id")
     private Member manager;
 
-    @Column(name = "good")
-    private int good;
-
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vote> votes;
+
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Recommend> recommends;
 
     public void update(AnnouncementRequestDTO dto, List<String> imgPaths, List<String> filePaths, Vote vote) {
         this.announcementTitle = dto.getAnnouncementTitle();
@@ -74,8 +75,6 @@ public class Announcement extends TimeZone {
         this.img = String.join(",", imgPaths);
         this.file = String.join(",", filePaths);
         this.visible = dto.isVisible();
-        this.good = dto.getGood();
         this.votes = vote != null ? List.of(vote) : this.votes;
     }
-
 }

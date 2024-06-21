@@ -21,17 +21,17 @@ public class JoinService {
 
     @Transactional
     public void joinProcess(JoinRequestDTO joinRequestDTO) {
-        String studentId = joinRequestDTO.getStudentId();
+        String memberId = joinRequestDTO.getStudentId();
         String password = joinRequestDTO.getPassword();
         UserRole userRole = joinRequestDTO.getUserRole();
 
         // 이미 존재하는 회원인지 확인
-        if (memberRepository.existsByStudentId(studentId)) {
-            throw new IllegalArgumentException("이미 가입된 학생 ID입니다: " + studentId);
+        if (memberRepository.existsByStudentId(memberId)) {
+            throw new IllegalArgumentException("이미 가입된 학생 ID입니다: " + memberId);
         }
 
         Member data = new Member();
-        data.setStudentId(studentId);
+        data.setMemberId(memberId);
         data.setPassword(bCryptPasswordEncoder.encode(password));
         data.setName("Default Name"); // 기본 값 설정 또는 입력 받도록 변경
         data.setLevel(1);             // 기본 값 설정 또는 입력 받도록 변경

@@ -60,7 +60,7 @@ public class TokenProvider {
 
         // Member 객체 생성
         Member member = new Member();
-        member.setStudentId(studentId);
+        member.setMemberId(studentId);
         member.setUserRole(UserRole.valueOf(authority));
 
         CustomUserDetails customUserDetails = new CustomUserDetails(member);

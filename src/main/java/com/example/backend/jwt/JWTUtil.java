@@ -65,7 +65,7 @@ public class JWTUtil {
         SimpleGrantedAuthority grantedAuthority = new SimpleGrantedAuthority(role.name());
 
         Member member = new Member();
-        member.setStudentId(studentId);
+        member.setMemberId(studentId);
         member.setUserRole(role);
 
         CustomUserDetails customUserDetails = new CustomUserDetails(member);
