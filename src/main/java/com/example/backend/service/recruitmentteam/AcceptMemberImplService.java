@@ -28,9 +28,8 @@ public class AcceptMemberImplService implements AcceptMemberService{
     @Override
     public AcceptMemberResponseDTO acceptMember(Authentication authentication, boolean accept,
                                                 AcceptMemberRequestDTO acceptMemberRequestDTO) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
 
         Recruitment recruitment = recruitmentRepository.findById(acceptMemberRequestDTO.getRecruitmentId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));

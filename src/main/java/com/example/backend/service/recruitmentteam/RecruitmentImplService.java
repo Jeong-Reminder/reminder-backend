@@ -34,9 +34,9 @@ public class RecruitmentImplService implements RecruitmentService{
     @Override
     public RecruitmentResponseDTO createRecruitment(Authentication authentication,
                                                     RecruitmentRequestDTO recruitmentRequestDTO) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long memberId = member.getId();
 
         Announcement announcement = announcementRepository.findById(recruitmentRequestDTO.getAnnouncementId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 경진대회가 없습니다."));
@@ -70,9 +70,8 @@ public class RecruitmentImplService implements RecruitmentService{
     @Override
     public RecruitmentResponseDTO updateRecruitment(Authentication authentication,
                                                     RecruitmentRequestDTO recruitmentRequestDTO, Long recruitmentId) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
 
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
@@ -109,9 +108,9 @@ public class RecruitmentImplService implements RecruitmentService{
 
     @Override
     public List<RecruitmentResponseDTO> getMyRecruitment(Authentication authentication) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long memberId = member.getId();
 
         List<Recruitment> recruitmentList = recruitmentRepository.findByMemberId(memberId);
 
@@ -134,9 +133,8 @@ public class RecruitmentImplService implements RecruitmentService{
 
     @Override
     public void deleteRecruitment(Authentication authentication, Long recruitmentId) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
 
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));

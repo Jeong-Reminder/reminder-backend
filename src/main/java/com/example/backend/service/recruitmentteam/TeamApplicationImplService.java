@@ -28,9 +28,9 @@ public class TeamApplicationImplService implements TeamApplicationService {
     public TeamApplicationResponseDTO createTeamApplication(Authentication authentication,
                                                             TeamApplicationRequestDTO teamApplicationRequestDTO,
                                                             Long recruitmentId) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long memberId = member.getId();
 
         Recruitment recruitment = recruitmentRepository.findById(recruitmentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 모집글이 없습니다."));
@@ -58,9 +58,8 @@ public class TeamApplicationImplService implements TeamApplicationService {
     public TeamApplicationResponseDTO updateTeamApplication(Authentication authentication,
                                                             TeamApplicationRequestDTO teamApplicationRequestDTO,
                                                             Long teamApplicationId) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
 
         TeamApplication teamApplication = teamApplicationRepository.findById(teamApplicationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 지원서가 없습니다."));
@@ -77,9 +76,8 @@ public class TeamApplicationImplService implements TeamApplicationService {
 
     @Override
     public void deleteTeamApplication(Authentication authentication, Long teamApplicationId) {
-        Long memberId = Long.valueOf(authentication.getName());
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("유저정보가 없습니다."));
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
 
         TeamApplication teamApplication = teamApplicationRepository.findById(teamApplicationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 지원서가 없습니다."));
