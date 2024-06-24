@@ -1,13 +1,19 @@
 package com.example.backend.model.entity.member;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "profile")
+@Builder
 @Entity
-@Setter
-@Getter@NoArgsConstructor
 public class Profile {
 
     @Id
