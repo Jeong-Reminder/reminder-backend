@@ -3,6 +3,7 @@ package com.example.backend.service.recommend.impl;
 import com.example.backend.dto.recommend.RecommendRequestDTO;
 import com.example.backend.dto.recommend.RecommendResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.recommend.Recommend;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;

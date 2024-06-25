@@ -1,6 +1,7 @@
 package com.example.backend.model.repository.vote;
 
 
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.vote.Vote;
 import com.example.backend.model.entity.vote.VoteStatus;
 import org.springframework.data.jpa.repository.JpaRepository;

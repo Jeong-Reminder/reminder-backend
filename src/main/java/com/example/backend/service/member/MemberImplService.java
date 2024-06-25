@@ -3,6 +3,7 @@ package com.example.backend.service.member;
 import com.example.backend.dto.member.ChangePasswordRequestDTO;
 import com.example.backend.dto.member.MemberRequestDTO;
 import com.example.backend.dto.member.MemberResponseDTO;
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;

@@ -1,5 +1,7 @@
 package com.example.backend.dto.member;
 
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.member.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

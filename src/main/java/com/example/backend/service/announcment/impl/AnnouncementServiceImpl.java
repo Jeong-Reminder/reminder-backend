@@ -5,6 +5,7 @@ import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.announcement.AnnouncementCategory;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.vote.Vote;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;

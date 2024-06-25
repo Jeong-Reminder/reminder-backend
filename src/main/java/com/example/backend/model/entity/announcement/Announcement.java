@@ -4,6 +4,7 @@ import com.example.backend.dto.announcement.AnnouncementCategory;
 import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.model.entity.TimeZone;
 import com.example.backend.model.entity.comment.Comment;
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.recommend.Recommend;
 import com.example.backend.model.entity.vote.Vote;
 import jakarta.persistence.*;

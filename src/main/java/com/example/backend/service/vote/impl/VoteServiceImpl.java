@@ -2,6 +2,7 @@ package com.example.backend.service.vote.impl;
 
 import com.example.backend.dto.vote.*;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.vote.*;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;

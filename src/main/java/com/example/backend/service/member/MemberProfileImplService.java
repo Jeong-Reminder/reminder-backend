@@ -2,6 +2,8 @@ package com.example.backend.service.member;
 
 import com.example.backend.dto.member.MemberProfileRequestDTO;
 import com.example.backend.dto.member.MemberProfileResponseDTO;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.repository.member.MemberProfileRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;

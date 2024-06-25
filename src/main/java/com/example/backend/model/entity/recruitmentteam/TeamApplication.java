@@ -1,6 +1,7 @@
 package com.example.backend.model.entity.recruitmentteam;
 
 import com.example.backend.model.entity.TimeZone;
+import com.example.backend.model.entity.member.Member;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

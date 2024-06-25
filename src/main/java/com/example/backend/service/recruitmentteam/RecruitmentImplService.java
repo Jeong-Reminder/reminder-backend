@@ -4,6 +4,7 @@ import com.example.backend.dto.recruitmentteam.AcceptMemberRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentRequestDTO;
 import com.example.backend.dto.recruitmentteam.RecruitmentResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;

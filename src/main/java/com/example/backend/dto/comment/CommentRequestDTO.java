@@ -2,6 +2,7 @@ package com.example.backend.dto.comment;
 
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.comment.Comment;
+import com.example.backend.model.entity.member.Member;
 import lombok.*;
 
 @Data

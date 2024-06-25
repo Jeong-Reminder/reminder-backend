@@ -1,5 +1,6 @@
 package com.example.backend.dto.recruitmentteam;
 
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
 import java.util.List;
 import lombok.AllArgsConstructor;

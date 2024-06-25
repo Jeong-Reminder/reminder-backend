@@ -1,5 +1,6 @@
 package com.example.backend.model.entity.vote;
 
+import com.example.backend.model.entity.member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

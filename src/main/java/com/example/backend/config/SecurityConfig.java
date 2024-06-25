@@ -3,6 +3,7 @@ package com.example.backend.config;
 import com.example.backend.jwt.CustomLogoutFilter;
 import com.example.backend.jwt.JWTFilter;
 import com.example.backend.jwt.JWTUtil;
+import com.example.backend.jwt.LoginFilter;
 import com.example.backend.model.repository.member.RefreshRepository;
 
 import java.util.Arrays;

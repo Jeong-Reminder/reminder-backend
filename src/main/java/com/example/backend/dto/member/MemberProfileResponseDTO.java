@@ -1,6 +1,8 @@
 package com.example.backend.dto.member;
 
 import java.util.List;
+
+import com.example.backend.model.entity.member.MemberProfile;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -2,6 +2,8 @@ package com.example.backend.service.recruitmentteam;
 
 import com.example.backend.dto.recruitmentteam.TeamRequestDTO;
 import com.example.backend.dto.recruitmentteam.TeamResponseDTO;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import com.example.backend.model.entity.recruitmentteam.Team;
