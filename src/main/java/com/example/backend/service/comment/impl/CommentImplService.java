@@ -32,6 +32,11 @@ public class CommentImplService implements CommentService {
         Announcement announcement = announcementRepository.findById(commentRequestDTO.getAnnouncementId())
                 .orElseThrow(() -> new IllegalArgumentException("게시글 아이디를 찾지못했습니다"));
 
+        // Check if the announcement has a vote
+        if (announcement.getVotes() == null || announcement.getVotes().isEmpty()) {
+            throw new IllegalArgumentException("댓글을 달 수 없습니다. 투표가 없는 공지사항입니다.");
+        }
+
         Comment comment = Comment.builder()
                 .content(commentRequestDTO.getContent())
                 .announcement(announcement)

@@ -2,24 +2,21 @@ package com.example.backend.controller.comment;
 
 import com.example.backend.dto.comment.CommentRequestDTO;
 import com.example.backend.dto.comment.CommentResponseDTO;
-import com.example.backend.dto.ResponseDTO; // Import ResponseDTO
+import com.example.backend.dto.ResponseDTO;
 import com.example.backend.service.comment.CommentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/comments")
 public class CommentController {
 
     private final CommentService commentService;
 
-    @Autowired
-    public CommentController(CommentService commentService) {
-        this.commentService = commentService;
-    }
 
     @PostMapping("/create")
     public ResponseEntity<ResponseDTO<CommentResponseDTO>> createComment(Authentication authentication,

@@ -1,6 +1,7 @@
 package com.example.backend.dto.announcement;
 
 import com.example.backend.dto.comment.CommentResponseDTO;
+import com.example.backend.dto.vote.VoteResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import lombok.*;
 
@@ -25,6 +26,7 @@ public class AnnouncementResponseDTO {
     private Long managerId;
     private int good;
     private List<CommentResponseDTO> comments;
+    private List<VoteResponseDTO> votes; // Include votes
 
     public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
         return AnnouncementResponseDTO.builder()
@@ -41,10 +43,13 @@ public class AnnouncementResponseDTO {
                         .map(path -> "/files/" + path.substring(path.lastIndexOf("/") + 1))
                         .collect(Collectors.toList()))
                 .visible(announcement.isVisible())
-                .managerId(announcement.getManagerId().getId())
+                .managerId(announcement.getManager().getId())
                 .good(announcement.getGood())
                 .comments(announcement.getComments().stream()
                         .map(CommentResponseDTO::toResponseDTO)
+                        .collect(Collectors.toList()))
+                .votes(announcement.getVotes().stream()
+                        .map(VoteResponseDTO::toResponseDTO)
                         .collect(Collectors.toList()))
                 .build();
     }
