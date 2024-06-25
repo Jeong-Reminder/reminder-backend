@@ -1,7 +1,6 @@
 package com.example.backend.dto.recruitmentteam;
 
 import com.example.backend.dto.member.MemberProfileResponseDTO;
-import com.example.backend.model.entity.member.Profile;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import java.time.LocalDateTime;
 import java.util.List;

@@ -16,6 +16,7 @@ public class MemberProfileImplService implements MemberProfileService {
 
     private final MemberProfileRepository memberProfileRepository;
     private final MemberRepository memberRepository;
+
     @Override
     public MemberProfileResponseDTO createProfile(Authentication authentication,
                                                   MemberProfileRequestDTO memberProfileRequestDTO) {
@@ -23,6 +24,24 @@ public class MemberProfileImplService implements MemberProfileService {
         Member member = memberRepository.findByStudentId(studentId);
 
         MemberProfile memberProfile = memberProfileRequestDTO.toEntity(member);
+
+        MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.save(memberProfile));
+
+        return memberProfileResponseDTO;
+    }
+
+    @Override
+    public MemberProfileResponseDTO updateProfile(Authentication authentication,
+                                                  MemberProfileRequestDTO memberProfileRequestDTO) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+
+        MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId());
+
+        memberProfile.setDevelopmentField(memberProfileRequestDTO.getDevelopmentField());
+        memberProfile.setDevelopmentTool(memberProfileRequestDTO.getDevelopmentTool());
+        memberProfile.setGithubLink(memberProfileRequestDTO.getGithubLink());
+        memberProfile.setHopeJob(memberProfileRequestDTO.getHopeJob());
 
         MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.save(memberProfile));
 
