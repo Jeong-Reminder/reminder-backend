@@ -2,7 +2,6 @@ package com.example.backend.model.entity.comment;
 
 import com.example.backend.model.entity.TimeZone;
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 

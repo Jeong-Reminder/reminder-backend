@@ -2,7 +2,6 @@ package com.example.backend.dto.announcement;
 
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.vote.Vote;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;

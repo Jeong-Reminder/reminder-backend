@@ -1,7 +1,6 @@
 package com.example.backend.dto.recruitmentteam;
 
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;

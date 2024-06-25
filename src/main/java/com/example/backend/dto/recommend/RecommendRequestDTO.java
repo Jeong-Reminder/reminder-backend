@@ -1,7 +1,6 @@
 package com.example.backend.dto.recommend;
 
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.recommend.Recommend;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

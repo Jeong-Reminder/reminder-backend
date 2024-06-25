@@ -2,7 +2,6 @@ package com.example.backend.model.entity.recruitmentteam;
 
 import com.example.backend.model.entity.TimeZone;
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.member.Member;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -68,4 +68,7 @@ public class Recruitment extends TimeZone {
 
     @OneToMany(mappedBy = "recruitment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<TeamApplication> teamApplications;
+
+    @OneToMany(mappedBy = "recruitment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AcceptMember> acceptMembers;
 }

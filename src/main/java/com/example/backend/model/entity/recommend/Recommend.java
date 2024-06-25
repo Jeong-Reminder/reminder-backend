@@ -1,7 +1,6 @@
 package com.example.backend.model.entity.recommend;
 
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.member.Member;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,6 @@
 package com.example.backend.dto.recruitmentteam;
 
-import com.example.backend.model.entity.member.Profile;
+import com.example.backend.dto.member.MemberProfileResponseDTO;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,8 +16,10 @@ import lombok.NoArgsConstructor;
 @Data
 public class RecruitmentResponseDTO {
     private Long id;
+    private Long memberId;
     private String memberName;
-    private Profile memberProfile;
+    private int memberLevel;
+    private MemberProfileResponseDTO memberProfile;
     private String recruitmentCategory;
     private String recruitmentTitle;
     private String recruitmentContent;
@@ -28,13 +30,16 @@ public class RecruitmentResponseDTO {
     private LocalDateTime createdTime;
     private LocalDateTime endTime;
     private Long announcementId;
-    private Set<TeamApplicationResponseDTO> teamApplicationIdList;
+    private Set<TeamApplicationResponseDTO> teamApplicationList;
+    private List<AcceptMemberResponseDTO> acceptMemberList;
 
     public static RecruitmentResponseDTO toResponseDTO(Recruitment recruitment) {
         return RecruitmentResponseDTO.builder()
                 .id(recruitment.getId())
+                .memberId(recruitment.getMember().getId())
                 .memberName(recruitment.getMember().getName())
-                .memberProfile(recruitment.getMember().getProfile())
+                .memberLevel(recruitment.getMember().getLevel())
+                .memberProfile(MemberProfileResponseDTO.toResponseDTO(recruitment.getMember().getMemberProfile()))
                 .recruitmentCategory(recruitment.getRecruitmentCategory())
                 .recruitmentTitle(recruitment.getRecruitmentTitle())
                 .recruitmentContent(recruitment.getRecruitmentContent())
@@ -45,7 +50,8 @@ public class RecruitmentResponseDTO {
                 .createdTime(recruitment.getCreatedTime())
                 .endTime(recruitment.getEndTime())
                 .announcementId(recruitment.getAnnouncement().getId())
-                .teamApplicationIdList(TeamApplicationResponseDTO.toResponseDTOSet(recruitment.getTeamApplications()))
+                .teamApplicationList(TeamApplicationResponseDTO.toResponseDTOSet(recruitment.getTeamApplications()))
+                .acceptMemberList(AcceptMemberResponseDTO.toResponseDTOSet(recruitment.getAcceptMembers()))
                 .build();
     }
 

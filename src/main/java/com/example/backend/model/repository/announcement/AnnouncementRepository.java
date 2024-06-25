@@ -2,7 +2,6 @@ package com.example.backend.model.repository.announcement;
 
 import com.example.backend.dto.announcement.AnnouncementCategory;
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.member.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
