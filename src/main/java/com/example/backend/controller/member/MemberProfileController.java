@@ -6,6 +6,8 @@ import com.example.backend.dto.member.MemberProfileResponseDTO;
 import com.example.backend.service.member.MemberProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +36,28 @@ public class MemberProfileController {
     public ResponseDTO<Object> updateProfile(Authentication authentication, @RequestBody MemberProfileRequestDTO memberProfileRequestDTO) {
 
         MemberProfileResponseDTO memberProfileResponseDTO = memberProfileService.updateProfile(authentication, memberProfileRequestDTO);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberProfileResponseDTO)
+                .build();
+    }
+
+    @GetMapping
+    public ResponseDTO<Object> getMemberProfile(Authentication authentication) {
+
+        MemberProfileResponseDTO memberProfileResponseDTO = memberProfileService.getMemberProfile(authentication);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberProfileResponseDTO)
+                .build();
+    }
+
+    @GetMapping("/{memberId}")
+    public ResponseDTO<Object> getMemberProfileByMemberId(@PathVariable Long memberId) {
+
+        MemberProfileResponseDTO memberProfileResponseDTO = memberProfileService.getMemberProfileByMemberId(memberId);
 
         return ResponseDTO.builder()
                 .status(200)

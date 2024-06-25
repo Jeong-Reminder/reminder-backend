@@ -47,4 +47,21 @@ public class MemberProfileImplService implements MemberProfileService {
 
         return memberProfileResponseDTO;
     }
+
+    @Override
+    public MemberProfileResponseDTO getMemberProfile(Authentication authentication) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+
+        MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.findByMemberId(member.getId()));
+
+        return memberProfileResponseDTO;
+    }
+
+    @Override
+    public MemberProfileResponseDTO getMemberProfileByMemberId(Long memberId) {
+        MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.findByMemberId(memberId));
+
+        return memberProfileResponseDTO;
+    }
 }
