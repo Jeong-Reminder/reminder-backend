@@ -17,4 +17,5 @@ public interface AnnouncementService {
     void deleteAnnouncement(Authentication authentication, Long id);
     void hideAnnouncement(Authentication authentication, Long id);
     void showAnnouncement(Authentication authentication, Long id);
+    AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId);
 }

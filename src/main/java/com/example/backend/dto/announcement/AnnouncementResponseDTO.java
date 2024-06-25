@@ -1,5 +1,6 @@
 package com.example.backend.dto.announcement;
 
+import com.example.backend.dto.comment.CommentResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class AnnouncementResponseDTO {
     private boolean visible;
     private Long managerId;
     private int good;
+    private List<CommentResponseDTO> comments;
 
     public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
         return AnnouncementResponseDTO.builder()
@@ -41,6 +43,9 @@ public class AnnouncementResponseDTO {
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManagerId().getId())
                 .good(announcement.getGood())
+                .comments(announcement.getComments().stream()
+                        .map(CommentResponseDTO::toResponseDTO)
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

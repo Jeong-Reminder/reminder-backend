@@ -125,4 +125,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         announcement.setVisible(true);
         announcementRepository.save(announcement);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId) {
+        Announcement announcement = announcementRepository.findById(announcementId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid announcement ID"));
+
+        return AnnouncementResponseDTO.toResponseDTO(announcement);
+    }
 }
