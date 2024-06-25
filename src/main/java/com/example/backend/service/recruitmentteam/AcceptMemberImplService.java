@@ -67,7 +67,7 @@ public class AcceptMemberImplService implements AcceptMemberService{
             throw new IllegalArgumentException("모집글이 마감되었습니다.");
         }
 
-        return AcceptMemberResponseDTO.toResponseDTO(saveAcceptMember, acceptMember.getProfile());
+        return AcceptMemberResponseDTO.toResponseDTO(saveAcceptMember, acceptMember.getMemberProfile());
     }
 
     private void deleteAcceptedApplicationsFromOtherRecruitments(String category, Long memberId) {

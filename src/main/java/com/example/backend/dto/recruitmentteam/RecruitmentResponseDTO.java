@@ -1,5 +1,6 @@
 package com.example.backend.dto.recruitmentteam;
 
+import com.example.backend.dto.member.MemberProfileResponseDTO;
 import com.example.backend.model.entity.member.Profile;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import java.time.LocalDateTime;
@@ -19,7 +20,7 @@ public class RecruitmentResponseDTO {
     private Long memberId;
     private String memberName;
     private int memberLevel;
-    private Profile memberProfile;
+    private MemberProfileResponseDTO memberProfile;
     private String recruitmentCategory;
     private String recruitmentTitle;
     private String recruitmentContent;
@@ -39,7 +40,7 @@ public class RecruitmentResponseDTO {
                 .memberId(recruitment.getMember().getId())
                 .memberName(recruitment.getMember().getName())
                 .memberLevel(recruitment.getMember().getLevel())
-                .memberProfile(recruitment.getMember().getProfile())
+                .memberProfile(MemberProfileResponseDTO.toResponseDTO(recruitment.getMember().getMemberProfile()))
                 .recruitmentCategory(recruitment.getRecruitmentCategory())
                 .recruitmentTitle(recruitment.getRecruitmentTitle())
                 .recruitmentContent(recruitment.getRecruitmentContent())

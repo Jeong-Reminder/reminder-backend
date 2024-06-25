@@ -38,9 +38,9 @@ public class TeamApplicationResponseDTO {
                 .recruitmentId(teamApplication.getRecruitment().getId())
                 .memberName(teamApplication.getMember().getName())
                 .memberLevel(teamApplication.getMember().getLevel())
-                .githubLink(teamApplication.getMember().getProfile().getGithubLink())
-                .developmentField(teamApplication.getMember().getProfile().getDevelopmentField())
-                .developmentTool(teamApplication.getMember().getProfile().getDevelopmentTool())
+                .githubLink(teamApplication.getMember().getMemberProfile().getGithubLink())
+                .developmentField(teamApplication.getMember().getMemberProfile().getDevelopmentField())
+                .developmentTool(teamApplication.getMember().getMemberProfile().getDevelopmentTool())
                 .createdTime(teamApplication.getCreatedTime())
                 .updatedTime(teamApplication.getUpdatedTime())
                 .build();

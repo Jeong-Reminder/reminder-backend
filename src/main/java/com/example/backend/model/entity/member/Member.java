@@ -30,6 +30,6 @@ public class Member {
     private UserRole userRole;
 
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
-    private Profile profile;  // 프로필 정보
+    private MemberProfile memberProfile;  // 프로필 정보
 
 }
