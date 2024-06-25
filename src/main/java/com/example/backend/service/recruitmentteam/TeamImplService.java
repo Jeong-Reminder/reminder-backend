@@ -3,21 +3,20 @@ package com.example.backend.service.recruitmentteam;
 import com.example.backend.dto.recruitmentteam.TeamRequestDTO;
 import com.example.backend.dto.recruitmentteam.TeamResponseDTO;
 import com.example.backend.model.entity.member.Member;
-import com.example.backend.model.entity.member.Profile;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import com.example.backend.model.entity.recruitmentteam.Team;
 import com.example.backend.model.entity.recruitmentteam.TeamMember;
+import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamMemberRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamRepository;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import com.example.backend.model.repository.member.MemberRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -48,9 +47,9 @@ public class TeamImplService implements TeamService{
         List<TeamMember> teamMembers = teamRequestDTO.toTeamMemberEntity(saveTeam, acceptMembers);
         teamMemberRepository.saveAll(teamMembers);
 
-        List<Profile> profiles = new ArrayList<>();
+        List<MemberProfile> profiles = new ArrayList<>();
         for(TeamMember teamMember : teamMembers) {
-            profiles.add(teamMember.getMember().getProfile());
+            profiles.add(teamMember.getMember().getMemberProfile());
         }
 
         return TeamResponseDTO.toResponseDTO(profiles, saveTeam);

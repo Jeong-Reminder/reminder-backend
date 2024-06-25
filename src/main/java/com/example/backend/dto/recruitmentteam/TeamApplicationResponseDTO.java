@@ -1,6 +1,5 @@
 package com.example.backend.dto.recruitmentteam;
 
-import com.example.backend.model.entity.member.Profile;
 import com.example.backend.model.entity.recruitmentteam.ApplicationStatus;
 import com.example.backend.model.entity.recruitmentteam.TeamApplication;
 import java.time.LocalDateTime;
@@ -38,9 +37,9 @@ public class TeamApplicationResponseDTO {
                 .recruitmentId(teamApplication.getRecruitment().getId())
                 .memberName(teamApplication.getMember().getName())
                 .memberLevel(teamApplication.getMember().getLevel())
-                .githubLink(teamApplication.getMember().getProfile().getGithubLink())
-                .developmentField(teamApplication.getMember().getProfile().getDevelopmentField())
-                .developmentTool(teamApplication.getMember().getProfile().getDevelopmentTool())
+                .githubLink(teamApplication.getMember().getMemberProfile().getGithubLink())
+                .developmentField(teamApplication.getMember().getMemberProfile().getDevelopmentField())
+                .developmentTool(teamApplication.getMember().getMemberProfile().getDevelopmentTool())
                 .createdTime(teamApplication.getCreatedTime())
                 .updatedTime(teamApplication.getUpdatedTime())
                 .build();

@@ -1,7 +1,7 @@
 package com.example.backend.dto.member;
 
 import com.example.backend.model.entity.member.Member;
-import com.example.backend.model.entity.member.Profile;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.member.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,16 +17,16 @@ public class MemberResponseDTO {
     private int level;
     private String status;
     private UserRole userRole;
-    private TechStackResponseDTO techStack;
+    private MemberProfileResponseDTO techStack;
 
 
-    public static MemberResponseDTO toResponseDTO(Member Member, Profile profile){
+    public static MemberResponseDTO toResponseDTO(Member Member, MemberProfile memberProfile){
         return MemberResponseDTO.builder()
                 .name(Member.getName())
                 .level(Member.getLevel())
                 .status(Member.getStatus())
                 .userRole(Member.getUserRole())
-                .techStack(TechStackResponseDTO.toResponseDTO(profile))
+                .techStack(MemberProfileResponseDTO.toResponseDTO(memberProfile))
                 .build();
     }
 }

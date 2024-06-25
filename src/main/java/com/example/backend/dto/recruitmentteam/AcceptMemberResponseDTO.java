@@ -1,6 +1,6 @@
 package com.example.backend.dto.recruitmentteam;
 
-import com.example.backend.model.entity.member.Profile;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -21,21 +21,21 @@ public class AcceptMemberResponseDTO {
     private String developmentField;
     private String developmentTool;
 
-    public static AcceptMemberResponseDTO toResponseDTO(AcceptMember acceptMember, Profile profile) {
+    public static AcceptMemberResponseDTO toResponseDTO(AcceptMember acceptMember, MemberProfile memberProfile) {
         return AcceptMemberResponseDTO.builder()
                 .id(acceptMember.getId())
                 .memberName(acceptMember.getMember().getName())
                 .memberLevel(acceptMember.getMember().getLevel())
                 .memberRole(acceptMember.getMemberRole().toString())
-                .githubLink(profile.getGithubLink())
-                .developmentField(profile.getDevelopmentField())
-                .developmentTool(profile.getDevelopmentTool())
+                .githubLink(memberProfile.getGithubLink())
+                .developmentField(memberProfile.getDevelopmentField())
+                .developmentTool(memberProfile.getDevelopmentTool())
                 .build();
     }
 
     public static List<AcceptMemberResponseDTO> toResponseDTOSet(List<AcceptMember> acceptMembers) {
         return acceptMembers.stream()
-                .map(acceptMember -> toResponseDTO(acceptMember, acceptMember.getMember().getProfile()))
+                .map(acceptMember -> toResponseDTO(acceptMember, acceptMember.getMember().getMemberProfile()))
                 .toList();
     }
 }
