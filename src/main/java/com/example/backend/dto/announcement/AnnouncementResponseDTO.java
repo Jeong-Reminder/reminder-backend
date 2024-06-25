@@ -24,7 +24,6 @@ public class AnnouncementResponseDTO {
     private List<String> fileUrls;
     private boolean visible;
     private Long managerId;
-    private int good;
     private List<CommentResponseDTO> comments;
     private List<VoteResponseDTO> votes; // Include votes
 
@@ -44,7 +43,6 @@ public class AnnouncementResponseDTO {
                         .collect(Collectors.toList()))
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManager().getId())
-                .good(announcement.getGood())
                 .comments(announcement.getComments().stream()
                         .map(CommentResponseDTO::toResponseDTO)
                         .collect(Collectors.toList()))

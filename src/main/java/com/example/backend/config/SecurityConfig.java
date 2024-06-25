@@ -5,9 +5,8 @@ import com.example.backend.jwt.JWTFilter;
 import com.example.backend.jwt.JWTUtil;
 import com.example.backend.jwt.LoginFilter;
 import com.example.backend.model.repository.member.RefreshRepository;
-import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

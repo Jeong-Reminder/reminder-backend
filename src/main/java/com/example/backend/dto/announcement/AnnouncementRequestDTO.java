@@ -23,7 +23,6 @@ public class AnnouncementRequestDTO {
     private List<MultipartFile> file;
     private boolean visible;
     private Long managerId;
-    private int good;
     private VoteRequestDTO voteRequest;
 
     public Announcement toEntity(Member manager, List<String> imgPaths, List<String> filePaths, Vote vote) {
@@ -37,7 +36,6 @@ public class AnnouncementRequestDTO {
                 .file(String.join(",", filePaths))
                 .visible(visible)
                 .manager(manager)
-                .good(good)
                 .votes(vote != null ? List.of(vote) : null)
                 .build();
     }
