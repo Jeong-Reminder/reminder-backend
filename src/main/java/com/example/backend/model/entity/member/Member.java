@@ -1,6 +1,7 @@
 package com.example.backend.model.entity.member;
 
 import jakarta.persistence.*;
+import java.util.List;
 import lombok.*;
 
 @Data
@@ -32,4 +33,6 @@ public class Member {
     @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
     private MemberProfile memberProfile;  // 프로필 정보
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<MemberExperience> memberExperiences; // 경험 리스트
 }
