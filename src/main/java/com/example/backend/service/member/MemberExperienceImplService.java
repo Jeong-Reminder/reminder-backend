@@ -106,4 +106,26 @@ public class MemberExperienceImplService implements MemberExperienceService {
         }
         return memberExperienceResponseDTOList;
     }
+
+    @Override
+    public List<MemberExperienceResponseDTO> deleteMemberExperience(Authentication authentication,
+                                                                    Long memberExperienceId) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+
+        MemberExperience memberExperience = memberExperienceRepository.findById(memberExperienceId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 경험을 찾을 수 없습니다."));
+
+        if (!memberExperience.getMember().equals(member)) {
+            throw new IllegalArgumentException("해당 경험을 삭제할 수 없습니다.");
+        }
+
+        memberExperienceRepository.delete(memberExperience);
+
+        List<MemberExperience> memberExperienceList = memberExperienceRepository.findAllByMember(member);
+
+        List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = MemberExperienceResponseDTO.toResponseDTOList(memberExperienceList);
+
+        return memberExperienceResponseDTOList;
+    }
 }

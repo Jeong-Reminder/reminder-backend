@@ -15,4 +15,6 @@ public interface MemberExperienceService {
     List<MemberExperienceResponseDTO> getMemberExperience(Authentication authentication);
 
     List<MemberExperienceResponseDTO> getMemberExperienceByMemberId(Long memberId);
+
+    List<MemberExperienceResponseDTO> deleteMemberExperience(Authentication authentication, Long memberExperienceId);
 }

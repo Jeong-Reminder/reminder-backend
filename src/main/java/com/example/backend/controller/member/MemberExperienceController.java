@@ -7,6 +7,7 @@ import com.example.backend.service.member.MemberExperienceService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,6 +70,17 @@ public class MemberExperienceController {
     @GetMapping("/{memberId}")
     public ResponseDTO<Object> getMemberExperienceByMemberId(@PathVariable Long memberId) {
         List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = memberExperienceService.getMemberExperienceByMemberId(memberId);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberExperienceResponseDTOList)
+                .build();
+    }
+
+    @DeleteMapping("/{memberExperienceId}")
+    public ResponseDTO<Object> deleteMemberExperience(Authentication authentication,
+                                                      @PathVariable Long memberExperienceId) {
+        List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = memberExperienceService.deleteMemberExperience(authentication, memberExperienceId);
 
         return ResponseDTO.builder()
                 .status(200)
