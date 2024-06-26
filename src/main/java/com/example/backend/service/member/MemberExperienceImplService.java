@@ -79,4 +79,31 @@ public class MemberExperienceImplService implements MemberExperienceService {
 
         return memberExperienceResponseDTOList;
     }
+
+    @Override
+    public List<MemberExperienceResponseDTO> getMemberExperience(Authentication authentication) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+
+        List<MemberExperience> memberExperienceList = memberExperienceRepository.findAllByMember(member);
+
+        List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = MemberExperienceResponseDTO.toResponseDTOList(memberExperienceList);
+
+        return memberExperienceResponseDTOList;
+    }
+
+    @Override
+    public List<MemberExperienceResponseDTO> getMemberExperienceByMemberId(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 회원을 찾을 수 없습니다."));
+
+        List<MemberExperience> memberExperienceList = memberExperienceRepository.findAllByMember(member);
+
+        List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = MemberExperienceResponseDTO.toResponseDTOList(memberExperienceList);
+
+        if(memberExperienceResponseDTOList.isEmpty()) {
+            return null;
+        }
+        return memberExperienceResponseDTOList;
+    }
 }

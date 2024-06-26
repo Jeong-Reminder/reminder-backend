@@ -7,6 +7,7 @@ import com.example.backend.service.member.MemberExperienceService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -48,6 +49,26 @@ public class MemberExperienceController {
                                                       @RequestBody MemberExperienceRequestDTO memberExperienceRequestDTO,
                                                       @PathVariable Long memberExperienceId) {
         List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = memberExperienceService.updateMemberExperience(authentication, memberExperienceRequestDTO, memberExperienceId);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberExperienceResponseDTOList)
+                .build();
+    }
+
+    @GetMapping
+    public ResponseDTO<Object> getMemberExperience(Authentication authentication) {
+        List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = memberExperienceService.getMemberExperience(authentication);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberExperienceResponseDTOList)
+                .build();
+    }
+
+    @GetMapping("/{memberId}")
+    public ResponseDTO<Object> getMemberExperienceByMemberId(@PathVariable Long memberId) {
+        List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = memberExperienceService.getMemberExperienceByMemberId(memberId);
 
         return ResponseDTO.builder()
                 .status(200)
