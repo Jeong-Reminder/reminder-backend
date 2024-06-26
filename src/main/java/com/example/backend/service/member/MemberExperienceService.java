@@ -9,4 +9,6 @@ public interface MemberExperienceService {
     List<MemberExperienceResponseDTO> createMemberExperience(Authentication authentication, MemberExperienceRequestDTO memberExperienceRequestDTO);
 
     List<MemberExperienceResponseDTO> createMemberExperienceList(Authentication authentication, List<MemberExperienceRequestDTO> memberExperienceRequestDTOList);
+
+    List<MemberExperienceResponseDTO> updateMemberExperience(Authentication authentication, MemberExperienceRequestDTO memberExperienceRequestDTO, Long memberExperienceId);
 }

@@ -49,4 +49,34 @@ public class MemberExperienceImplService implements MemberExperienceService {
 
         return memberExperienceResponseDTOList;
     }
+
+    @Override
+    public List<MemberExperienceResponseDTO> updateMemberExperience(Authentication authentication,
+                                                                    MemberExperienceRequestDTO memberExperienceRequestDTO,
+                                                                    Long memberExperienceId) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+
+        MemberExperience memberExperience = memberExperienceRepository.findById(memberExperienceId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 경험을 찾을 수 없습니다."));
+
+        if (!memberExperience.getMember().equals(member)) {
+            throw new IllegalArgumentException("해당 경험을 수정할 수 없습니다.");
+        }
+
+        memberExperience.setExperienceContent(memberExperienceRequestDTO.getExperienceContent());
+        memberExperience.setExperienceDate(memberExperienceRequestDTO.getExperienceDate());
+        memberExperience.setExperienceGithub(memberExperienceRequestDTO.getExperienceGithub());
+        memberExperience.setExperienceJob(memberExperienceRequestDTO.getExperienceJob());
+        memberExperience.setExperienceName(memberExperienceRequestDTO.getExperienceName());
+        memberExperience.setExperienceRole(memberExperienceRequestDTO.getExperienceRole());
+
+        memberExperienceRepository.save(memberExperience);
+
+        List<MemberExperience> memberExperienceList = memberExperienceRepository.findAllByMember(member);
+
+        List<MemberExperienceResponseDTO> memberExperienceResponseDTOList = MemberExperienceResponseDTO.toResponseDTOList(memberExperienceList);
+
+        return memberExperienceResponseDTOList;
+    }
 }
