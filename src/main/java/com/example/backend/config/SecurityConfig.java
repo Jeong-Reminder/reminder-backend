@@ -4,6 +4,7 @@ import com.example.backend.jwt.CustomLogoutFilter;
 import com.example.backend.jwt.JWTFilter;
 import com.example.backend.jwt.JWTUtil;
 import com.example.backend.jwt.LoginFilter;
+import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.member.RefreshRepository;
 
 import java.util.Arrays;
@@ -34,6 +35,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final MemberRepository memberRepository;
 
     //AuthenticationManager Bean 등록
     @Bean
@@ -75,7 +77,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
 
         //세션 설정

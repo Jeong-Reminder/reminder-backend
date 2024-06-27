@@ -1,15 +1,23 @@
 package com.example.backend.jwt;
 
 import com.example.backend.dto.member.CustomMemberDetails;
+import com.example.backend.dto.member.MemberResponseDTO;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.MemberExperience;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.member.Refresh;
+import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.member.RefreshRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,6 +33,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MemberRepository memberRepository;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
@@ -38,7 +48,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication)
+            throws IOException {
 
         CustomMemberDetails customMemberDetails = (CustomMemberDetails) authentication.getPrincipal();
 
@@ -52,11 +63,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         Long memberId = customMemberDetails.getMemberId();
 
+        Member member = memberRepository.findByStudentId(studentId);
+        MemberProfile memberProfile = member.getMemberProfile();
+        List<MemberExperience> memberExperiences = member.getMemberExperiences();
+
+        MemberResponseDTO memberResponseDTO = MemberResponseDTO.toResponseDTO(member, memberProfile , memberExperiences);
+
         String access = jwtUtil.createJwt("access",studentId, userRole, 60*60*24*7L, memberId);
         String refresh = jwtUtil.createJwt("refresh",studentId, userRole, 60*60*24*30L, memberId);
 
         addRefresh(studentId, refresh, 60*60*24*30L);
 
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(memberResponseDTO));
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
         response.setStatus(HttpStatus.OK.value());

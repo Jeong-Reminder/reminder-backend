@@ -34,6 +34,6 @@ public class Team {
     @Column
     private String kakaoUrl;
 
-    @OneToMany(mappedBy = "team", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "team", fetch = FetchType.EAGER)
     private List<TeamMember> teamMembers;
 }
