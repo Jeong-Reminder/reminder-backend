@@ -18,12 +18,14 @@ import lombok.NoArgsConstructor;
 public class TeamRequestDTO {
     private Long recruitmentId;
     private String teamName;
+    private String kakaoUrl;
 
     public Team toEntity(Recruitment recruitment) {
         return Team.builder()
                 .id(null)
                 .teamName(teamName)
                 .teamCategory(recruitment.getRecruitmentCategory())
+                .kakaoUrl(kakaoUrl)
                 .build();
     }
 
