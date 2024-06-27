@@ -69,7 +69,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/login","/","/api/v1/member/signup").permitAll()
                         .requestMatchers("/api/v1/reissue").permitAll()
                         .anyRequest().authenticated());
         //JWTFilter 등록
