@@ -30,7 +30,7 @@ public class TeamController {
                 .build();
     }
 
-    @GetMapping("{teamId}")
+    @GetMapping("/{teamId}")
     public ResponseDTO<Object> getTeam(Authentication authentication, @PathVariable Long teamId) {
         TeamResponseDTO teamResponseDTO = teamService.getTeam(authentication, teamId);
 
