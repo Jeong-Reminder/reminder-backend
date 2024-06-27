@@ -6,4 +6,6 @@ import org.springframework.security.core.Authentication;
 
 public interface TeamService {
     TeamResponseDTO createTeam(Authentication authentication, TeamRequestDTO teamRequestDTO);
+
+    TeamResponseDTO getTeam(Authentication authentication, Long teamId);
 }
