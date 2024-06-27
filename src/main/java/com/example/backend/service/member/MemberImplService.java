@@ -1,10 +1,18 @@
 package com.example.backend.service.member;
 
 import com.example.backend.dto.member.ChangePasswordRequestDTO;
+import com.example.backend.dto.member.MemberMyPageResponseDTO;
 import com.example.backend.dto.member.MemberRequestDTO;
 import com.example.backend.dto.member.MemberResponseDTO;
+import com.example.backend.dto.recruitmentteam.TeamResponseDTO;
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.recruitmentteam.Team;
+import com.example.backend.model.entity.recruitmentteam.TeamMember;
 import com.example.backend.model.repository.member.MemberRepository;
+import com.example.backend.model.repository.recruitmentteam.TeamMemberRepository;
+import com.example.backend.model.repository.recruitmentteam.TeamRepository;
+import java.util.Collections;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +23,8 @@ import org.springframework.stereotype.Service;
 public class MemberImplService implements MemberService{
 
     private final MemberRepository memberRepository;
+    private final TeamRepository teamRepository;
+    private final TeamMemberRepository teamMemberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
@@ -56,5 +66,19 @@ public class MemberImplService implements MemberService{
                 .userRole(saveMember.getUserRole())
                 .techStack(null)
                 .build();
+    }
+
+    @Override
+    public MemberMyPageResponseDTO getMemberInfo(Authentication authentication) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+
+        List<TeamMember> teamMembers = teamMemberRepository.findByMember(member);
+
+        List<Team> teams = teamRepository.findByTeamMembersIn(Collections.singleton(teamMembers));
+
+        MemberMyPageResponseDTO memberMyPageResponseDTO = MemberMyPageResponseDTO.toResponseDTO(member,member.getMemberProfile(), teams, teamMembers);
+
+        return memberMyPageResponseDTO;
     }
 }
