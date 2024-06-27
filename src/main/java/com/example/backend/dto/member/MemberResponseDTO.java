@@ -29,7 +29,7 @@ public class MemberResponseDTO {
                 .level(Member.getLevel())
                 .status(Member.getStatus())
                 .userRole(Member.getUserRole())
-                .techStack(MemberProfileResponseDTO.toResponseDTO(memberProfile))
+                .techStack(memberProfile != null ? MemberProfileResponseDTO.toResponseDTO(memberProfile) : null)
                 .memberExperiences(memberExperiences)
                 .build();
     }

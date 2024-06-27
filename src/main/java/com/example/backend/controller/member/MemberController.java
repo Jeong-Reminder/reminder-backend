@@ -2,11 +2,13 @@ package com.example.backend.controller.member;
 
 import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.member.ChangePasswordRequestDTO;
+import com.example.backend.dto.member.MemberMyPageResponseDTO;
 import com.example.backend.dto.member.MemberRequestDTO;
 import com.example.backend.dto.member.MemberResponseDTO;
 import com.example.backend.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +39,16 @@ public class MemberController {
         return ResponseDTO.builder()
                 .status(200)
                 .data(memberResponseDTO)
+                .build();
+    }
+
+    @GetMapping("/info")
+    public ResponseDTO<Object> getMemberInfo(Authentication authentication) {
+        MemberMyPageResponseDTO memberMyPageResponseDTO = memberService.getMemberInfo(authentication);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberMyPageResponseDTO)
                 .build();
     }
 }

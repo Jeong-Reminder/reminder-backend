@@ -54,4 +54,26 @@ public class TeamImplService implements TeamService{
 
         return TeamResponseDTO.toResponseDTO(profiles, saveTeam);
     }
+
+    @Override
+    public TeamResponseDTO getTeam(Authentication authentication, Long teamId) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+
+        Team team = teamRepository.findById(teamId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 팀이 없습니다."));
+
+        List<TeamMember> teamMembers = teamMemberRepository.findByTeam(team);
+
+        if(teamMembers.stream().noneMatch(teamMember -> teamMember.getMember().getId().equals(member.getId()))) {
+            throw new IllegalStateException("팀 조회 권한이 없습니다.");
+        }
+
+        List<MemberProfile> profiles = new ArrayList<>();
+        for(TeamMember teamMember : teamMembers) {
+            profiles.add(teamMember.getMember().getMemberProfile());
+        }
+
+        return TeamResponseDTO.toResponseDTO(profiles, team);
+    }
 }

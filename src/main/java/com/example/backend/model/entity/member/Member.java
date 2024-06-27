@@ -30,9 +30,9 @@ public class Member {
     @Column
     private UserRole userRole;
 
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "member", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private MemberProfile memberProfile;  // 프로필 정보
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "member", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<MemberExperience> memberExperiences; // 경험 리스트
 }
