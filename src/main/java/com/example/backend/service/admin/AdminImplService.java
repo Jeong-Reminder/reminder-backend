@@ -2,6 +2,7 @@ package com.example.backend.service.admin;
 
 import com.example.backend.config.ExcelUtil;
 import com.example.backend.dto.admin.MemberAdminResponseDTO;
+import com.example.backend.dto.member.MemberRequestDTO;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.repository.member.MemberRepository;
@@ -64,6 +65,28 @@ public class AdminImplService implements AdminService {
         List<MemberAdminResponseDTO> memberAdminResponseDTOList = MemberAdminResponseDTO.toResponseDTOList(members);
 
         return memberAdminResponseDTOList ;
+    }
+
+    @Override
+    public MemberAdminResponseDTO updateMemberInfo(Authentication authentication, MemberRequestDTO memberRequestDTO) {
+        String studentId = authentication.getName();
+
+        Member adminMember = memberRepository.findByStudentId(studentId);
+
+        if (adminMember.getUserRole().equals(UserRole.ROLE_USER)) {
+            throw new IllegalArgumentException("관리자 권한이 없습니다.");
+        }
+
+        Member member = memberRepository.findByStudentId(memberRequestDTO.getStudentId());
+        member.setName(memberRequestDTO.getName());
+        member.setLevel(memberRequestDTO.getLevel());
+        member.setStatus(memberRequestDTO.getStatus());
+        member.setUserRole(memberRequestDTO.getUserRole());
+
+        Member saveMember = memberRepository.save(member);
+        MemberAdminResponseDTO memberAdminResponseDTO = MemberAdminResponseDTO.toResponseDTO(saveMember);
+
+        return memberAdminResponseDTO;
     }
 
     @Override

@@ -2,13 +2,12 @@ package com.example.backend.controller.admin;
 
 import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.admin.MemberAdminResponseDTO;
-import com.example.backend.dto.member.MemberResponseDTO;
+import com.example.backend.dto.member.MemberRequestDTO;
 import com.example.backend.service.admin.AdminService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +31,16 @@ public class AdminController {
         return ResponseDTO.builder()
                 .status(200)
                 .data(memberAdminResponseDTOList)
+                .build();
+    }
+
+    @PutMapping("/member-update")
+    public ResponseDTO<Object> updateMemberInfo(Authentication authentication, @RequestBody MemberRequestDTO memberRequestDTO) {
+        MemberAdminResponseDTO memberAdminResponseDTO = adminService.updateMemberInfo(authentication, memberRequestDTO);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberAdminResponseDTO)
                 .build();
     }
 
