@@ -18,4 +18,8 @@ public interface AdminService {
     void deleteRecruitment(Authentication authentication);
 
     void deleteCategoryRecruitment(Authentication authentication, String category);
+
+    void deleteTeam(Authentication authentication);
+
+    void deleteCategoryTeam(Authentication authentication, String category);
 }

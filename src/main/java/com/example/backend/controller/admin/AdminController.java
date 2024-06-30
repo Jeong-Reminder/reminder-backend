@@ -84,4 +84,25 @@ public class AdminController {
                 .data(category+"모집글 삭제 완료")
                 .build();
     }
+
+    @DeleteMapping("/team-delete-all")
+    public ResponseDTO<Object> deleteTeam(Authentication authentication) {
+        adminService.deleteTeam(authentication);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data("팀 전체 삭제 완료")
+                .build();
+    }
+
+    @DeleteMapping("/team-delete")
+    public ResponseDTO<Object> deleteTeamByTeamId(Authentication authentication, @RequestParam String category) {
+        adminService.deleteCategoryTeam(authentication, category);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(category+"팀 삭제 완료")
+                .build();
+
+    }
 }

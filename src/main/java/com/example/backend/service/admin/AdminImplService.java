@@ -7,6 +7,7 @@ import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
+import com.example.backend.model.repository.recruitmentteam.TeamRepository;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class AdminImplService implements AdminService {
 
+    private final TeamRepository teamRepository;
     private final RecruitmentRepository recruitmentRepository;
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -161,5 +163,31 @@ public class AdminImplService implements AdminService {
         }
 
         recruitmentRepository.deleteByRecruitmentCategory(category);
+    }
+
+    @Override
+    public void deleteTeam(Authentication authentication) {
+        String studentId = authentication.getName();
+
+        Member adminMember = memberRepository.findByStudentId(studentId);
+
+        if (adminMember.getUserRole().equals(UserRole.ROLE_USER)) {
+            throw new IllegalArgumentException("관리자 권한이 없습니다.");
+        }
+
+        teamRepository.deleteAll();
+    }
+
+    @Override
+    public void deleteCategoryTeam(Authentication authentication, String category) {
+        String studentId = authentication.getName();
+
+        Member adminMember = memberRepository.findByStudentId(studentId);
+
+        if (adminMember.getUserRole().equals(UserRole.ROLE_USER)) {
+            throw new IllegalArgumentException("관리자 권한이 없습니다.");
+        }
+
+        teamRepository.deleteByTeamCategory(category);
     }
 }

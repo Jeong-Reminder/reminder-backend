@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
     List<Team> findByTeamMembersIn(Collection<List<TeamMember>> teamMembers);
+
+    void deleteByTeamCategory(String category);
 }
