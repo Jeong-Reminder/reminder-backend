@@ -1,6 +1,8 @@
 package com.example.backend.model.repository.member;
 
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.UserRole;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.stereotype.Repository;
@@ -15,4 +17,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     Member findByStudentId(String studentId);
 
 
+    List<Member> findByUserRole(UserRole userRole);
 }
