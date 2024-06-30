@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -61,6 +62,26 @@ public class AdminController {
         return ResponseDTO.builder()
                 .status(200)
                 .data(memberAdminResponseDTOList)
+                .build();
+    }
+
+    @DeleteMapping("/recruitment-delete-all")
+    public ResponseDTO<Object> deleteRecruitment(Authentication authentication) {
+        adminService.deleteRecruitment(authentication);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data("모집글 전체 삭제 완료")
+                .build();
+    }
+
+    @DeleteMapping("/recruitment-delete")
+    public ResponseDTO<Object> deleteCategoryRecruitment(Authentication authentication, @RequestParam String category) {
+        adminService.deleteCategoryRecruitment(authentication, category);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(category+"모집글 삭제 완료")
                 .build();
     }
 }
