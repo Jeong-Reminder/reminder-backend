@@ -7,4 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface AdminService {
     List<MemberAdminResponseDTO> updateMember(Authentication authentication, MultipartFile file) throws Exception;
+
+    List<MemberAdminResponseDTO> deleteMember(Authentication authentication, List<String> studentIds);
 }
