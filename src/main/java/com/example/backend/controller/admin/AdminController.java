@@ -44,6 +44,16 @@ public class AdminController {
                 .build();
     }
 
+    @PostMapping("/admin-insert")
+    public ResponseDTO<Object> insertAdmin(Authentication authentication, @RequestBody MemberRequestDTO memberRequestDTO) {
+        MemberAdminResponseDTO memberAdminResponseDTO = adminService.insertAdmin(authentication, memberRequestDTO);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(memberAdminResponseDTO)
+                .build();
+    }
+
     @DeleteMapping("/member-delete")
     public ResponseDTO<Object> deleteMember(Authentication authentication, @RequestBody List<String> studentIds) {
         List<MemberAdminResponseDTO> memberAdminResponseDTOList = adminService.deleteMember(authentication, studentIds);

@@ -12,4 +12,6 @@ public interface AdminService {
     List<MemberAdminResponseDTO> deleteMember(Authentication authentication, List<String> studentIds);
 
     MemberAdminResponseDTO updateMemberInfo(Authentication authentication, MemberRequestDTO memberRequestDTO);
+
+    MemberAdminResponseDTO insertAdmin(Authentication authentication, MemberRequestDTO memberRequestDTO);
 }
