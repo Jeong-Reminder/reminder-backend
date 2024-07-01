@@ -25,14 +25,16 @@ public class CommentImplService implements CommentService {
 
     @Override
     @Transactional
-    public CommentResponseDTO createComment(Authentication authentication, CommentRequestDTO commentRequestDTO) {
-        Member member = memberRepository.findById(Long.valueOf(authentication.getName()))
-                .orElseThrow(() -> new IllegalArgumentException("ID을 찾지 못했습니다."));
+    public CommentResponseDTO createComment(Authentication authentication, Long announcementId, CommentRequestDTO commentRequestDTO) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
 
-        Announcement announcement = announcementRepository.findById(commentRequestDTO.getAnnouncementId())
-                .orElseThrow(() -> new IllegalArgumentException("게시글 아이디를 찾지못했습니다"));
+        Announcement announcement = announcementRepository.findById(announcementId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 아이디를 찾지 못했습니다"));
 
-        // Check if the announcement has a vote
         if (announcement.getVotes() == null || announcement.getVotes().isEmpty()) {
             throw new IllegalArgumentException("댓글을 달 수 없습니다. 투표가 없는 공지사항입니다.");
         }
@@ -49,14 +51,17 @@ public class CommentImplService implements CommentService {
 
     @Override
     @Transactional
-    public CommentResponseDTO updateComment(Authentication authentication, Long commentId, CommentRequestDTO commentRequestDTO) {
-        Member member = memberRepository.findById(Long.valueOf(authentication.getName()))
-                .orElseThrow(() -> new IllegalArgumentException("ID을 찾지 못했습니다."));
+    public CommentResponseDTO updateComment(Authentication authentication, Long announcementId, Long commentId, CommentRequestDTO commentRequestDTO) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글 아이디를 찾지못했습니다"));
 
-        if (!comment.getMember().getId().equals(member.getId())) {
+        if (!comment.getMember().getId().equals(managerId)) {
             throw new IllegalArgumentException("댓글을 수정할 권한이 없습니다.");
         }
 
@@ -67,14 +72,16 @@ public class CommentImplService implements CommentService {
 
     @Override
     @Transactional
-    public void deleteComment(Authentication authentication, Long commentId) {
-        Member member = memberRepository.findById(Long.valueOf(authentication.getName()))
-                .orElseThrow(() -> new IllegalArgumentException("ID을 찾지 못했습니다."));
-
+    public void deleteComment(Authentication authentication, Long announcementId, Long commentId) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new IllegalArgumentException("댓글 아이디를 찾지 못 했습니다."));
 
-        if (!comment.getMember().getId().equals(member.getId()) && member.getUserRole() != UserRole.ROLE_ADMIN) {
+        if (!comment.getMember().getId().equals(managerId) && member.getUserRole() != UserRole.ROLE_ADMIN) {
             throw new IllegalArgumentException("댓글을 삭제할 권한이 없습니다.");
         }
         commentRepository.delete(comment);

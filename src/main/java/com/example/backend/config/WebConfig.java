@@ -12,5 +12,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**") // 모든 엔드포인트에 대해 CORS 정책 적용
                 .allowedOrigins("*") // 모든 도메인에서의 요청 허용
                 .allowedMethods("GET", "POST", "PUT", "DELETE"); // 허용할 HTTP 메서드 지정
+
     }
 }

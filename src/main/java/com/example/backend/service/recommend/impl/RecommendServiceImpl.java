@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class RecommendServiceImpl implements RecommendService {
@@ -21,12 +24,15 @@ public class RecommendServiceImpl implements RecommendService {
     private final MemberRepository memberRepository;
 
     @Override
-    public RecommendResponseDTO recommend(Authentication authentication, RecommendRequestDTO requestDTO) {
-        Announcement announcement = announcementRepository.findById(requestDTO.getAnnouncementId())
-                .orElseThrow(() -> new IllegalArgumentException("Announcement not found"));
+    public RecommendResponseDTO recommend(Authentication authentication, Long announcementId, RecommendRequestDTO requestDTO) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        if (member == null) {
+            throw new IllegalArgumentException("해당 학생 ID의 회원을 찾을 수 없습니다: " + studentId);
+        }
 
-        Member member = memberRepository.findById(requestDTO.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+        Announcement announcement = announcementRepository.findById(announcementId)
+                .orElseThrow(() -> new IllegalArgumentException("Announcement not found"));
 
         Recommend recommend = recommendRepository.findByAnnouncementAndMember(announcement, member);
         if (recommend == null) {
@@ -41,6 +47,26 @@ public class RecommendServiceImpl implements RecommendService {
 
     @Override
     public void cancelRecommend(Authentication authentication, Long recommendId) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        if (member == null) {
+            throw new IllegalArgumentException("해당 학생 ID의 회원을 찾을 수 없습니다: " + studentId);
+        }
+
         recommendRepository.deleteById(recommendId);
+    }
+
+    @Override
+    public List<RecommendResponseDTO> getMyRecommends(Authentication authentication) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        if (member == null) {
+            throw new IllegalArgumentException("해당 학생 ID의 회원을 찾을 수 없습니다: " + studentId);
+        }
+
+        List<Recommend> recommends = recommendRepository.findAllByMember(member);
+        return recommends.stream()
+                .map(RecommendResponseDTO::toResponseDTO)
+                .collect(Collectors.toList());
     }
 }

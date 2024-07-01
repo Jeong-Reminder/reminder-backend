@@ -5,10 +5,10 @@ import com.example.backend.dto.vote.VoteResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import lombok.*;
 
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Builder
 @AllArgsConstructor
 @Data
@@ -25,7 +25,7 @@ public class AnnouncementResponseDTO {
     private boolean visible;
     private Long managerId;
     private List<CommentResponseDTO> comments;
-    private List<VoteResponseDTO> votes; // Include votes
+    private List<VoteResponseDTO> votes;
 
     public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
         return AnnouncementResponseDTO.builder()
@@ -36,10 +36,10 @@ public class AnnouncementResponseDTO {
                 .announcementImportant(announcement.getAnnouncementImportant())
                 .announcementLevel(announcement.getAnnouncementLevel())
                 .imgUrls(Arrays.stream(announcement.getImg().split(","))
-                        .map(path -> "/files/" + path.substring(path.lastIndexOf("/") + 1))
+                        .map(path -> "/files/" + Paths.get(path).getFileName().toString())
                         .collect(Collectors.toList()))
                 .fileUrls(Arrays.stream(announcement.getFile().split(","))
-                        .map(path -> "/files/" + path.substring(path.lastIndexOf("/") + 1))
+                        .map(path -> "/files/" + Paths.get(path).getFileName().toString())
                         .collect(Collectors.toList()))
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManager().getId())

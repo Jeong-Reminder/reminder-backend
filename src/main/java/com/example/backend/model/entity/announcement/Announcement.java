@@ -10,6 +10,7 @@ import com.example.backend.model.entity.vote.Vote;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -58,11 +59,18 @@ public class Announcement extends TimeZone {
     private Member manager;
 
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;
+    private List<Comment> comments = new ArrayList<>();
+
+    public List<Comment> getComments() {
+        return comments != null ? comments : new ArrayList<>();
+    }
 
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Vote> votes;
+    private List<Vote> votes = new ArrayList<>();
 
+    public List<Vote> getVotes() {
+        return votes != null ? votes : new ArrayList<>();
+    }
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recommend> recommends;
 
