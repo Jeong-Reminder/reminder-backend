@@ -74,11 +74,11 @@ public class ReissueController {
         Long memberId = jwtUtil.getMemberId(refresh);
 
         //make new JWT
-        String newAccess = jwtUtil.createJwt("access", studentId, userRole, 60 * 60 * 24 * 7L, memberId);
-        String newRefresh = jwtUtil.createJwt("refresh", studentId, userRole, 60 * 60 * 24 * 30L, memberId);
+        String newAccess = jwtUtil.createJwt("access", studentId, userRole,  600000L, memberId);
+        String newRefresh = jwtUtil.createJwt("refresh", studentId, userRole, 86400000L, memberId);
 
         refreshRepository.deleteByRefresh(refresh);
-        addRefreshEntity(studentId, newRefresh, 60 * 60 * 24 * 30L);
+        addRefreshEntity(studentId, newRefresh, 86400000L);
 
         //response
         response.setHeader("access", newAccess);

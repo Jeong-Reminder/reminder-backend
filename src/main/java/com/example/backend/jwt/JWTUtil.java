@@ -41,14 +41,13 @@ public class JWTUtil {
 
     public String createJwt(String category, String studentId, String userRole, Long expiredMs, Long memberId) {
 
-        long now = (new Date()).getTime();
         return Jwts.builder()
                 .claim("category", category)
                 .claim("memberId", memberId)
                 .claim("studentId", studentId)
                 .claim("userRole", userRole)
-                .issuedAt(new Date(now))
-                .expiration(new Date(now + expiredMs))
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
                 .compact();
     }

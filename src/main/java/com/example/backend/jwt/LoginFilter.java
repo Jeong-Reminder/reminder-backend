@@ -69,10 +69,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         MemberResponseDTO memberResponseDTO = MemberResponseDTO.toResponseDTO(member, memberProfile , memberExperiences);
 
-        String access = jwtUtil.createJwt("access",studentId, userRole, 60*60*24*7L, memberId);
-        String refresh = jwtUtil.createJwt("refresh",studentId, userRole, 60*60*24*30L, memberId);
+        String access = jwtUtil.createJwt("access",studentId, userRole, 600000L, memberId);
+        String refresh = jwtUtil.createJwt("refresh",studentId, userRole, 86400000L, memberId);
 
-        addRefresh(studentId, refresh, 60*60*24*30L);
+        addRefresh(studentId, refresh, 86400000L);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
