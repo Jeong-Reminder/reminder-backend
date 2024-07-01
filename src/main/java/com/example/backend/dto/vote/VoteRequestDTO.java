@@ -10,7 +10,6 @@ import org.thymeleaf.util.StringUtils;
 
 import java.time.LocalTime;
 import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -32,6 +31,8 @@ public class VoteRequestDTO {
         vote.setEndTime(this.endTime);
         if (this.voteItemIds != null && !this.voteItemIds.isEmpty()) {
             vote.setVoteItemIds(StringUtils.join(this.voteItemIds, ","));
+        } else {
+            vote.setVoteItemIds("");
         }
         return vote;
     }

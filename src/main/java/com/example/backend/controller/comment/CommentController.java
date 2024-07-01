@@ -17,12 +17,12 @@ public class CommentController {
 
     private final CommentService commentService;
 
-
-    @PostMapping("/create")
+    @PostMapping("/{announcementId}/")
     public ResponseEntity<ResponseDTO<CommentResponseDTO>> createComment(Authentication authentication,
+                                                                         @PathVariable Long announcementId,
                                                                          @RequestBody CommentRequestDTO commentRequestDTO) {
         try {
-            CommentResponseDTO responseDTO = commentService.createComment(authentication, commentRequestDTO);
+            CommentResponseDTO responseDTO = commentService.createComment(authentication, announcementId, commentRequestDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(ResponseDTO.<CommentResponseDTO>builder()
                     .status(HttpStatus.CREATED.value())
                     .data(responseDTO)
@@ -35,12 +35,13 @@ public class CommentController {
         }
     }
 
-    @PutMapping("/update/{commentId}")
+    @PutMapping("/{announcementId}/update/{commentId}")
     public ResponseEntity<ResponseDTO<CommentResponseDTO>> updateComment(Authentication authentication,
+                                                                         @PathVariable Long announcementId,
                                                                          @PathVariable Long commentId,
                                                                          @RequestBody CommentRequestDTO commentRequestDTO) {
         try {
-            CommentResponseDTO responseDTO = commentService.updateComment(authentication, commentId, commentRequestDTO);
+            CommentResponseDTO responseDTO = commentService.updateComment(authentication, announcementId, commentId, commentRequestDTO);
             return ResponseEntity.ok(ResponseDTO.<CommentResponseDTO>builder()
                     .status(HttpStatus.OK.value())
                     .data(responseDTO)
@@ -53,11 +54,12 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/delete/{commentId}")
+    @DeleteMapping("/{announcementId}/delete/{commentId}")
     public ResponseEntity<ResponseDTO<Void>> deleteComment(Authentication authentication,
+                                                           @PathVariable Long announcementId,
                                                            @PathVariable Long commentId) {
         try {
-            commentService.deleteComment(authentication, commentId);
+            commentService.deleteComment(authentication, announcementId, commentId);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseDTO.<Void>builder()

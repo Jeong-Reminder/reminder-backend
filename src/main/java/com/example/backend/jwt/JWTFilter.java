@@ -28,7 +28,7 @@ public class JWTFilter extends OncePerRequestFilter {
         // 헤더에서 access키에 담긴 토큰을 꺼냄
         String accessToken = request.getHeader("access");
 
-// 토큰이 없다면 다음 필터로 넘김
+        // 토큰이 없다면 다음 필터로 넘김
         if (accessToken == null) {
 
             filterChain.doFilter(request, response);

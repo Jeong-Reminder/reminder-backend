@@ -33,33 +33,47 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public Vote createVote(Authentication authentication, VoteRequestDTO voteRequestDTO) {
-        Long managerId = Long.valueOf(authentication.getName());
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
+            throw new IllegalArgumentException("관리자만 공지사항을 업데이트 할 수 있습니다.");
         }
         Announcement announcement = announcementRepository.findById(voteRequestDTO.getAnnouncementId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
-        List<VoteItem> voteItems = voteRequestDTO.getVoteItemIds().stream()
-                .map(voteItemId -> voteItemRepository.findById(voteItemId)
-                        .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다.")))
-                .toList();
-        Vote vote = voteRequestDTO.toEntity(announcement);
-        vote.setVoteItemIds(String.valueOf(new HashSet<>(voteItems)));
-        Vote savedVote = voteRepository.save(vote);
 
+        List<VoteItem> voteItems = (voteRequestDTO.getVoteItemIds() != null ? voteRequestDTO.getVoteItemIds() : List.of())
+                .stream()
+                .map(voteItemId -> voteItemRepository.findById((Long) voteItemId)
+                        .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다.")))
+                .collect(Collectors.toList());
+
+        Vote vote = voteRequestDTO.toEntity(announcement);
+
+        // voteItemIds 설정
+        if (!voteItems.isEmpty()) {
+            vote.setVoteItemIds(voteItems.stream().map(VoteItem::getId).map(String::valueOf).collect(Collectors.joining(",")));
+        } else {
+            vote.setVoteItemIds("");
+        }
+
+        Vote savedVote = voteRepository.save(vote);
         return savedVote;
     }
+
 
     @Override
     @Transactional
     public VoteResponseDTO updateVote(Authentication authentication, Long voteId, VoteRequestDTO voteRequestDTO) {
-        Long managerId = Long.valueOf(authentication.getName());
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
+            throw new IllegalArgumentException("관리자만 공지사항을 업데이트 할 수 있습니다.");
         }
 
         Vote vote = voteRepository.findById(voteId)
@@ -91,11 +105,13 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public void deleteVote(Authentication authentication, Long voteId) {
-        Long managerId = Long.valueOf(authentication.getName());
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
+            throw new IllegalArgumentException("관리자만 공지사항을 업데이트 할 수 있습니다.");
         }
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
@@ -119,9 +135,11 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional(readOnly = true)
     public VoteResponseDTO getVoteById(Authentication authentication, Long voteId) {
-        Long managerId = Long.valueOf(authentication.getName());
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         if (manager.getUserRole() != UserRole.ROLE_ADMIN && manager.getUserRole() != UserRole.ROLE_USER) {
             throw new IllegalArgumentException("관리자와 사용자만 공지사항을 생성할 수 있습니다.");
         }
@@ -133,11 +151,13 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public VoteItemResponseDTO addVoteItem(Authentication authentication, Long voteId, VoteItemRequestDTO voteItemRequestDTO) {
-        Long userId = Long.valueOf(authentication.getName());
-        Member user = memberRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다."));
-        if (user.getUserRole() != UserRole.ROLE_USER) {
-            throw new IllegalArgumentException("사용자만 투표 항목을 추가할 수 있습니다.");
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
+        if (manager.getUserRole() != UserRole.ROLE_USER) {
+            throw new IllegalArgumentException("관리자와 사용자만 공지사항을 생성할 수 있습니다.");
         }
 
         Vote vote = voteRepository.findById(voteId)
@@ -156,11 +176,13 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional
     public void endVote(Authentication authentication, Long voteId) {
-        Long managerId = Long.valueOf(authentication.getName());
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
+            throw new IllegalArgumentException("관리자만 공지사항을 지울 수 있습니다.");
         }
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));

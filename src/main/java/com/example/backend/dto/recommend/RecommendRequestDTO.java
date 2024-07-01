@@ -14,12 +14,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RecommendRequestDTO {
     private Long announcementId;
-    private Long memberId;
+
     public Recommend toEntity(Announcement announcement, Member member) {
         Recommend recommend = new Recommend();
         recommend.setAnnouncement(announcement);
         recommend.setMember(member);
-        recommend.setStatus(false);
+        recommend.setStatus(true); // 기본적으로 좋아요 상태로 설정
         return recommend;
     }
 }

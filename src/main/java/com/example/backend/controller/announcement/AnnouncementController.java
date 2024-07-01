@@ -10,12 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1/announcement")
+@RequestMapping("/api/v1/announcement")
 @RequiredArgsConstructor
 public class AnnouncementController {
 
@@ -23,6 +24,9 @@ public class AnnouncementController {
 
     @GetMapping
     public ResponseEntity<ResponseDTO<List<AnnouncementResponseDTO>>> getAllAnnouncements(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         List<AnnouncementResponseDTO> announcements = announcementService.getAllAnnouncements(authentication);
         ResponseDTO<List<AnnouncementResponseDTO>> response = ResponseDTO.<List<AnnouncementResponseDTO>>builder()
                 .status(HttpStatus.OK.value())
@@ -31,9 +35,10 @@ public class AnnouncementController {
         return ResponseEntity.ok(response);
     }
 
+
     @GetMapping("/{announcement_id}")
-    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> getAnnouncementById(Authentication authentication,@PathVariable("announcement_id") Long id) {
-        AnnouncementResponseDTO announcement = announcementService.getAnnouncementById(authentication,id);
+    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> getAnnouncementById(Authentication authentication, @PathVariable("announcement_id") Long id) {
+        AnnouncementResponseDTO announcement = announcementService.getAnnouncementById(authentication, id);
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .data(announcement)
@@ -42,8 +47,8 @@ public class AnnouncementController {
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<ResponseDTO<List<AnnouncementResponseDTO>>> getAnnouncementsByCategory(Authentication authentication,@PathVariable("category") AnnouncementCategory category) {
-        List<AnnouncementResponseDTO> announcements = announcementService.getAnnouncementsByCategory(authentication,category);
+    public ResponseEntity<ResponseDTO<List<AnnouncementResponseDTO>>> getAnnouncementsByCategory(Authentication authentication, @PathVariable("category") AnnouncementCategory category) {
+        List<AnnouncementResponseDTO> announcements = announcementService.getAnnouncementsByCategory(authentication, category);
         ResponseDTO<List<AnnouncementResponseDTO>> response = ResponseDTO.<List<AnnouncementResponseDTO>>builder()
                 .status(HttpStatus.OK.value())
                 .data(announcements)
@@ -52,8 +57,16 @@ public class AnnouncementController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> createAnnouncement(Authentication authentication,@RequestBody AnnouncementRequestDTO announcementRequestDTO) throws IOException {
-        AnnouncementResponseDTO announcement = announcementService.createAnnouncement(authentication,announcementRequestDTO);
+    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> createAnnouncement(
+            Authentication authentication,
+            @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
+            @RequestParam("img") List<MultipartFile> img,
+            @RequestParam("file") List<MultipartFile> file) throws IOException {
+
+        announcementRequestDTO.setImg(img);
+        announcementRequestDTO.setFile(file);
+
+        AnnouncementResponseDTO announcement = announcementService.createAnnouncement(authentication, announcementRequestDTO);
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
                 .status(HttpStatus.CREATED.value())
                 .data(announcement)
@@ -62,8 +75,17 @@ public class AnnouncementController {
     }
 
     @PutMapping("/{announcement_id}")
-    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> updateAnnouncement(Authentication authentication,@PathVariable("announcement_id") Long id, @RequestBody AnnouncementRequestDTO announcementRequestDTO) throws IOException {
-        AnnouncementResponseDTO announcement = announcementService.updateAnnouncement(authentication,id, announcementRequestDTO);
+    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> updateAnnouncement(
+            Authentication authentication,
+            @PathVariable("announcement_id") Long id,
+            @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
+            @RequestParam("img") List<MultipartFile> img,
+            @RequestParam("file") List<MultipartFile> file) throws IOException {
+
+        announcementRequestDTO.setImg(img);
+        announcementRequestDTO.setFile(file);
+
+        AnnouncementResponseDTO announcement = announcementService.updateAnnouncement(authentication, id, announcementRequestDTO);
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .data(announcement)
@@ -73,7 +95,7 @@ public class AnnouncementController {
 
     @DeleteMapping("/{announcement_id}")
     public ResponseEntity<ResponseDTO<Void>> deleteAnnouncement(Authentication authentication, @PathVariable("announcement_id") Long id) {
-        announcementService.deleteAnnouncement(authentication,id);
+        announcementService.deleteAnnouncement(authentication, id);
         ResponseDTO<Void> response = ResponseDTO.<Void>builder()
                 .status(HttpStatus.NO_CONTENT.value())
                 .build();
@@ -81,8 +103,8 @@ public class AnnouncementController {
     }
 
     @PutMapping("/hide/{announcement_id}")
-    public ResponseEntity<ResponseDTO<Void>> hideAnnouncement(Authentication authentication,@PathVariable("announcement_id") Long id) {
-        announcementService.hideAnnouncement(authentication,id);
+    public ResponseEntity<ResponseDTO<Void>> hideAnnouncement(Authentication authentication, @PathVariable("announcement_id") Long id) {
+        announcementService.hideAnnouncement(authentication, id);
         ResponseDTO<Void> response = ResponseDTO.<Void>builder()
                 .status(HttpStatus.OK.value())
                 .build();
@@ -90,8 +112,8 @@ public class AnnouncementController {
     }
 
     @PutMapping("/show/{announcement_id}")
-    public ResponseEntity<ResponseDTO<Void>> showAnnouncement(Authentication authentication,@PathVariable("announcement_id") Long id) {
-        announcementService.showAnnouncement(authentication,id);
+    public ResponseEntity<ResponseDTO<Void>> showAnnouncement(Authentication authentication, @PathVariable("announcement_id") Long id) {
+        announcementService.showAnnouncement(authentication, id);
         ResponseDTO<Void> response = ResponseDTO.<Void>builder()
                 .status(HttpStatus.OK.value())
                 .build();
