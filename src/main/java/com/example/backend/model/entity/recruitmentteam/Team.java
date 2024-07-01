@@ -1,5 +1,6 @@
 package com.example.backend.model.entity.recruitmentteam;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,6 +35,6 @@ public class Team {
     @Column
     private String kakaoUrl;
 
-    @OneToMany(mappedBy = "team", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "team", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TeamMember> teamMembers;
 }
