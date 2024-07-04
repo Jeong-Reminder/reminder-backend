@@ -1,6 +1,7 @@
 package com.example.backend.model.entity.member;
 
 import com.example.backend.model.entity.recruitmentteam.TeamMemberRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -50,5 +51,6 @@ public class MemberExperience {
 
     @ManyToOne
     @JoinColumn(name = "member_id")
+    @JsonIgnore
     private Member member;
 }
