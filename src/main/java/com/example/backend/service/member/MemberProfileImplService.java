@@ -38,6 +38,10 @@ public class MemberProfileImplService implements MemberProfileService {
 
         MemberProfile memberProfile = memberProfileRepository.findByMemberId(member.getId());
 
+        if (!memberProfile.getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("프로필 수정권한이 없습니다.");
+        }
+
         memberProfile.setDevelopmentField(memberProfileRequestDTO.getDevelopmentField());
         memberProfile.setDevelopmentTool(memberProfileRequestDTO.getDevelopmentTool());
         memberProfile.setGithubLink(memberProfileRequestDTO.getGithubLink());
