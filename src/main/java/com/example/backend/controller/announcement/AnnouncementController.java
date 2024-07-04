@@ -79,7 +79,7 @@ public class AnnouncementController {
             Authentication authentication,
             @PathVariable("announcement_id") Long id,
             @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
-            @RequestParam("img") List<MultipartFile> img,
+            @RequestParam(value = "img", required = false) List<MultipartFile> img,
             @RequestParam("file") List<MultipartFile> file) throws IOException {
 
         announcementRequestDTO.setImg(img);

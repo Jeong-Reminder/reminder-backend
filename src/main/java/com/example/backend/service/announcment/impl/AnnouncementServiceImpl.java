@@ -47,6 +47,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementById(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
         Announcement announcement = announcementRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
         return AnnouncementResponseDTO.toResponseDTO(announcement);
@@ -127,7 +130,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
         Vote vote = null;
         if (voteRequestDTO != null) {
-            vote = voteService.createVote((Authentication) existingAnnouncement.getManager(), voteRequestDTO);
+            vote = voteService.createVote(authentication, voteRequestDTO);
         }
 
         existingAnnouncement.update(announcementRequestDTO, imgPaths, filePaths, vote);
@@ -139,6 +142,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void deleteAnnouncement(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
         Long managerId = member.getId();
@@ -156,6 +163,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void hideAnnouncement(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
         Long managerId = member.getId();
@@ -173,6 +184,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void showAnnouncement(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
         Long managerId = member.getId();
@@ -190,6 +205,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId) {
+        if (announcementId == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         Announcement announcement = announcementRepository.findById(announcementId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
 
