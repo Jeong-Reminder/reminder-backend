@@ -56,7 +56,7 @@ public class RecruitmentController {
                 .build();
     }
 
-    @GetMapping("/{announcementId}")
+    @GetMapping("/category/{announcementId}")
     public ResponseListDTO<Object> getRecruitmentByAnnouncementId(@PathVariable Long announcementId) {
         List<RecruitmentResponseDTO> recruitmentResponseDTOList = recruitmentService.getRecruitmentByAnnouncementId(announcementId);
 

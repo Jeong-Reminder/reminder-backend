@@ -15,6 +15,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -69,8 +71,8 @@ public class Recruitment extends TimeZone {
     private Announcement announcement;
 
     @OneToMany(mappedBy = "recruitment", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<TeamApplication> teamApplications;
+    private Set<TeamApplication> teamApplications; // 필드 초기화
 
     @OneToMany(mappedBy = "recruitment", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AcceptMember> acceptMembers;
+    private List<AcceptMember> acceptMembers; // 필드 초기화
 }

@@ -46,6 +46,9 @@ public class TeamApplicationResponseDTO {
     }
 
     public static Set<TeamApplicationResponseDTO> toResponseDTOSet(Set<TeamApplication> teamApplications) {
+        if (teamApplications == null) {
+            return null;
+        }
         return teamApplications.stream()
                 .map(TeamApplicationResponseDTO::toResponseDTO)
                 .collect(Collectors.toSet());
