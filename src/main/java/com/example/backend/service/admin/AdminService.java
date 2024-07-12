@@ -15,6 +15,8 @@ public interface AdminService {
 
     MemberAdminResponseDTO insertAdmin(Authentication authentication, MemberRequestDTO memberRequestDTO);
 
+    List<MemberAdminResponseDTO> getMembers(Authentication authentication);
+
     void deleteRecruitment(Authentication authentication);
 
     void deleteCategoryRecruitment(Authentication authentication, String category);
