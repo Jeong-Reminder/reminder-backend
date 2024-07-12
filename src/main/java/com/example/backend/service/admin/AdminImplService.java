@@ -119,6 +119,22 @@ public class AdminImplService implements AdminService {
     }
 
     @Override
+    public List<MemberAdminResponseDTO> getMembers(Authentication authentication) {
+        String studentId = authentication.getName();
+
+        Member adminMember = memberRepository.findByStudentId(studentId);
+
+        if (adminMember.getUserRole().equals(UserRole.ROLE_USER)) {
+            throw new IllegalArgumentException("관리자 권한이 없습니다.");
+        }
+
+        List<Member> members = memberRepository.findAll();
+        List<MemberAdminResponseDTO> memberAdminResponseDTOList = MemberAdminResponseDTO.toResponseDTOList(members);
+
+        return memberAdminResponseDTOList;
+    }
+
+    @Override
     public List<MemberAdminResponseDTO> deleteMember(Authentication authentication, List<String> studentIds) {
         String studentId = authentication.getName();
 
