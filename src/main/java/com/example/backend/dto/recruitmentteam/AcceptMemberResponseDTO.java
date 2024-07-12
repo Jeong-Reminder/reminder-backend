@@ -34,6 +34,10 @@ public class AcceptMemberResponseDTO {
     }
 
     public static List<AcceptMemberResponseDTO> toResponseDTOSet(List<AcceptMember> acceptMembers) {
+        if(acceptMembers == null) {
+            return null;
+        }
+
         return acceptMembers.stream()
                 .map(acceptMember -> toResponseDTO(acceptMember, acceptMember.getMember().getMemberProfile()))
                 .toList();

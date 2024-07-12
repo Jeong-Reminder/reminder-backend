@@ -15,8 +15,10 @@ import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.AcceptMemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamApplicationRepository;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class RecruitmentImplService implements RecruitmentService{
     private final AcceptMemberRepository acceptMemberRepository;
 
     @Override
+    @Transactional
     public RecruitmentResponseDTO createRecruitment(Authentication authentication,
                                                     RecruitmentRequestDTO recruitmentRequestDTO) {
         String studentId = authentication.getName();
@@ -41,15 +44,26 @@ public class RecruitmentImplService implements RecruitmentService{
         Announcement announcement = announcementRepository.findById(recruitmentRequestDTO.getAnnouncementId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 경진대회가 없습니다."));
 
-        recruitmentRepository.findByMemberIdAndAnnouncementId(memberId, recruitmentRequestDTO.getAnnouncementId())
-                .ifPresent(existingRecruitment -> {
-                    throw new IllegalStateException("이미 지원한 경진대회입니다.");
-                });
+        Optional<Recruitment> recruitment = recruitmentRepository.findByMemberIdAndAnnouncementId(memberId, recruitmentRequestDTO.getAnnouncementId());
+        if(recruitment.isPresent()) {
+            throw new IllegalStateException("이미 모집글을 작성한 경진대회입니다.");
+        }
+
+
 
         TeamApplication teamApplication = teamApplicationRepository.findByRecruitment_Announcement_IdAndMemberId(recruitmentRequestDTO.getAnnouncementId(), memberId);
 
         if (teamApplication != null) {
             throw new IllegalStateException("팀원으로 신청한 경진대회입니다.");
+        }
+
+        List<AcceptMember> acceptMembers = acceptMemberRepository.findByMemberId(memberId);
+        if(acceptMembers != null){
+            for(AcceptMember acceptMember : acceptMembers){
+                if(acceptMember.getRecruitment().getAnnouncement().getId().equals(recruitmentRequestDTO.getAnnouncementId())){
+                    throw new IllegalStateException("이미 팀이 있는 경진대회입니다.");
+                }
+            }
         }
 
         Recruitment saveRecruitment = recruitmentRepository.save(recruitmentRequestDTO.toEntity(member, announcement));

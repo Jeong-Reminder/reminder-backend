@@ -36,7 +36,8 @@ public class AcceptMemberImplService implements AcceptMemberService{
 
         TeamApplication teamApplication = teamApplicationRepository.findByMemberIdAndRecruitmentId(acceptMemberRequestDTO.getMemberId(), acceptMemberRequestDTO.getRecruitmentId());
 
-        Member acceptMember = teamApplication.getMember();
+        Member acceptMember = memberRepository.findById(acceptMemberRequestDTO.getMemberId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 없습니다."));
 
         if (!recruitment.getMember().getId().equals(member.getId())) {
             throw new IllegalArgumentException("해당 모집글에 대한 권한이 없습니다.");
@@ -45,12 +46,12 @@ public class AcceptMemberImplService implements AcceptMemberService{
         AcceptMember saveAcceptMember = new AcceptMember();
         if (accept && recruitment.isRecruitmentStatus()) {
             saveAcceptMember = acceptMemberRepository.save(
-                    acceptMemberRequestDTO.toEntity(member, recruitment));
+                    acceptMemberRequestDTO.toEntity(acceptMember, recruitment));
 
             teamApplication.setApplicationStatus(ApplicationStatus.ACCEPTED);
             teamApplicationRepository.save(teamApplication);
 
-            int count = recruitment.getAcceptMembers().size();
+            int count = recruitment.getAcceptMembers().size()+1;
             if (count == recruitment.getStudentCount()) {
                 recruitment.setRecruitmentStatus(false);
                 recruitmentRepository.save(recruitment);

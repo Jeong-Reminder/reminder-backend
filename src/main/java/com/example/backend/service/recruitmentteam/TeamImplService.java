@@ -38,6 +38,9 @@ public class TeamImplService implements TeamService{
         if (!member.getId().equals(recruitment.getMember().getId())) {
             throw new IllegalStateException("팀생성 권한이 없습니다.");
         }
+        if(recruitment.isRecruitmentStatus()) {
+            throw new IllegalStateException("아직 모집중인 글입니다.");
+        }
 
         List<AcceptMember> acceptMembers = recruitment.getAcceptMembers();
 

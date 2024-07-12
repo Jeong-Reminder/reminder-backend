@@ -56,6 +56,9 @@ public class RecruitmentResponseDTO {
     }
 
     public static List<RecruitmentResponseDTO> toResponseDTOList(List<Recruitment> recruitmentList) {
+        if(recruitmentList == null)
+            return null;
+
         return recruitmentList.stream()
                 .map(RecruitmentResponseDTO::toResponseDTO)
                 .toList();

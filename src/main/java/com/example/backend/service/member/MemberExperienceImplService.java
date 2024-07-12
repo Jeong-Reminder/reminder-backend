@@ -60,7 +60,7 @@ public class MemberExperienceImplService implements MemberExperienceService {
         MemberExperience memberExperience = memberExperienceRepository.findById(memberExperienceId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 경험을 찾을 수 없습니다."));
 
-        if (!memberExperience.getMember().equals(member)) {
+        if (!memberExperience.getMember().getId().equals(member.getId())) {
             throw new IllegalArgumentException("해당 경험을 수정할 수 없습니다.");
         }
 
@@ -116,7 +116,7 @@ public class MemberExperienceImplService implements MemberExperienceService {
         MemberExperience memberExperience = memberExperienceRepository.findById(memberExperienceId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 경험을 찾을 수 없습니다."));
 
-        if (!memberExperience.getMember().equals(member)) {
+        if (!memberExperience.getMember().getId().equals(member.getId())) {
             throw new IllegalArgumentException("해당 경험을 삭제할 수 없습니다.");
         }
 

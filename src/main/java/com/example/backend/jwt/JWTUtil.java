@@ -47,7 +47,7 @@ public class JWTUtil {
                 .claim("studentId", studentId)
                 .claim("userRole", userRole)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs*1000L))
                 .signWith(secretKey)
                 .compact();
     }

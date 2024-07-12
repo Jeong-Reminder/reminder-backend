@@ -50,6 +50,10 @@ public class TeamApplicationImplService implements TeamApplicationService {
             throw new IllegalStateException("이미 팀이 있는 경진대회입니다.");
         }
 
+        if(!recruitment.isRecruitmentStatus()){
+            throw new IllegalStateException("모집이 마감된 모집글입니다.");
+        }
+
         TeamApplication saveTeamApplication = teamApplicationRepository.save(teamApplicationRequestDTO.toEntity(member, recruitment));
         return TeamApplicationResponseDTO.toResponseDTO(saveTeamApplication);
     }
