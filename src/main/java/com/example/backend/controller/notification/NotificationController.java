@@ -1,52 +1,43 @@
-package com.example.backend.controller.notification;
+package com.example.backend.controller;
 
 import com.example.backend.dto.notification.NotificationRequestDTO;
 import com.example.backend.dto.notification.NotificationResponseDTO;
-import com.example.backend.dto.ResponseDTO;
 import com.example.backend.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/v1/notifications")
 @RequiredArgsConstructor
+@Controller
 public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @PostMapping
-    public ResponseEntity<ResponseDTO<NotificationResponseDTO>> createNotification(Authentication authentication,
-                                                                                   @RequestBody NotificationRequestDTO requestDTO) {
-        NotificationResponseDTO responseDTO = notificationService.createNotification(authentication, requestDTO);
-        ResponseDTO<NotificationResponseDTO> response = ResponseDTO.<NotificationResponseDTO>builder()
-                .status(HttpStatus.CREATED.value())
-                .data(responseDTO)
-                .build();
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    // WebSocket을 통해 클라이언트가 "/app/notifications"로 메시지를 전송하면 이 메서드가 호출됨
+    @MessageMapping("/notifications")
+    @SendTo("/topic/notifications")
+    public NotificationResponseDTO sendNotification(NotificationRequestDTO notificationRequestDTO, Authentication authentication) {
+        // 알림 생성 및 발행 로직
+        return notificationService.createNotification(authentication, notificationRequestDTO);
     }
 
-    @GetMapping
-    public ResponseEntity<ResponseDTO<List<NotificationResponseDTO>>> getNotificationsForMember(Authentication authentication) {
-        List<NotificationResponseDTO> responseDTOs = notificationService.getNotificationsForMember(authentication);
-        ResponseDTO<List<NotificationResponseDTO>> response = ResponseDTO.<List<NotificationResponseDTO>>builder()
-                .status(HttpStatus.OK.value())
-                .data(responseDTOs)
-                .build();
-        return ResponseEntity.ok(response);
+    // 특정 회원의 모든 읽지 않은 알림을 가져오는 엔드포인트
+    @GetMapping("/notifications")
+    public List<NotificationResponseDTO> getNotifications(Authentication authentication) {
+        return notificationService.getNotificationsForMember(authentication);
     }
 
-    @PutMapping("/{notificationId}/mark-as-read")
-    public ResponseEntity<ResponseDTO<Void>> markNotificationAsRead(Authentication authentication,
-                                                                    @PathVariable Long notificationId) {
+    // 특정 알림을 읽음 상태로 변경하는 엔드포인트
+    @PutMapping("/notifications/{notificationId}/read")
+    public void markAsRead(@PathVariable Long notificationId, Authentication authentication) {
         notificationService.markAsRead(authentication, notificationId);
-        ResponseDTO<Void> response = ResponseDTO.<Void>builder()
-                .status(HttpStatus.OK.value())
-                .build();
-        return ResponseEntity.ok(response);
     }
+
 }

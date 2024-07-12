@@ -32,13 +32,13 @@ public class RecommendServiceImpl implements RecommendService {
         }
 
         Announcement announcement = announcementRepository.findById(announcementId)
-                .orElseThrow(() -> new IllegalArgumentException("Announcement not found"));
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다"));
 
         Recommend recommend = recommendRepository.findByAnnouncementAndMember(announcement, member);
         if (recommend == null) {
             recommend = requestDTO.toEntity(announcement, member);
         } else {
-            recommend.setStatus(!recommend.isStatus()); // 상태 토글
+            recommend.setStatus(!recommend.isStatus());
         }
 
         Recommend savedRecommend = recommendRepository.save(recommend);

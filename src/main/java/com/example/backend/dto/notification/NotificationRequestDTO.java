@@ -1,6 +1,6 @@
 package com.example.backend.dto.notification;
 
-
+import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.notification.Notification;
 import lombok.AllArgsConstructor;
@@ -18,13 +18,15 @@ public class NotificationRequestDTO {
     private String category;
     private String title;
     private String message;
-    public Notification toEntity(Member member) {
+    private Long announcementId;
+    public Notification toEntity(Member member, Announcement announcement) {
         return Notification.builder()
                 .category(category)
                 .title(title)
                 .message(message)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
+                .announcement(announcement)
                 .member(member)
                 .build();
     }

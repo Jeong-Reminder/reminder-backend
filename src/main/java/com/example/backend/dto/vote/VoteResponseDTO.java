@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,7 @@ public class VoteResponseDTO {
     private boolean repetition;
     private boolean additional;
     private Long announcementId;
-    private LocalTime endTime;
+    private LocalDateTime endTime;
     private List<Long> voteItemIds; // VoteItem의 고유 ID 리스트
 
     public static VoteResponseDTO toResponseDTO(Vote vote) {

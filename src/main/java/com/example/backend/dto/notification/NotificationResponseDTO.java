@@ -18,8 +18,6 @@ public class NotificationResponseDTO {
     private String title;
     private String message;
     private boolean isRead;
-    private LocalDateTime createdAt;
-
 
     public static NotificationResponseDTO toResponseDTO(Notification notification) {
         NotificationResponseDTO responseDTO = new NotificationResponseDTO();
@@ -28,7 +26,6 @@ public class NotificationResponseDTO {
         responseDTO.setTitle(notification.getTitle());
         responseDTO.setMessage(notification.getMessage());
         responseDTO.setRead(notification.isRead());
-        responseDTO.setCreatedAt(notification.getCreatedAt());
-        return responseDTO;
+       return responseDTO;
     }
 }

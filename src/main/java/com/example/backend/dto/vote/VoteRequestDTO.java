@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.thymeleaf.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 @Data
@@ -19,7 +20,7 @@ public class VoteRequestDTO {
     private boolean repetition;
     private boolean additional;
     private Long announcementId;
-    private LocalTime endTime;
+    private LocalDateTime endTime;
     private List<Long> voteItemIds;
 
     public Vote toEntity(Announcement announcement) {

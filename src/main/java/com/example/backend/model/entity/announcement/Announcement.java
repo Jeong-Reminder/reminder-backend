@@ -43,12 +43,12 @@ public class Announcement extends TimeZone {
     private int announcementLevel;
 
     @Builder.Default
-    @Column(name = "img")
-    private String img = "";
+    @ElementCollection
+    private List<String> imgUrls = new ArrayList<>();
 
     @Builder.Default
-    @Column(name = "file")
-    private String file = "";
+    @ElementCollection
+    private List<String> fileUrls = new ArrayList<>();
 
     @Builder.Default
     @Column(name = "visible")
@@ -58,21 +58,17 @@ public class Announcement extends TimeZone {
     @JoinColumn(name = "manager_id")
     private Member manager;
 
+    @Builder.Default
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
-    public List<Comment> getComments() {
-        return comments != null ? comments : new ArrayList<>();
-    }
-
+    @Builder.Default
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vote> votes = new ArrayList<>();
 
-    public List<Vote> getVotes() {
-        return votes != null ? votes : new ArrayList<>();
-    }
+    @Builder.Default
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Recommend> recommends;
+    private List<Recommend> recommends = new ArrayList<>();
 
     public void update(AnnouncementRequestDTO dto, List<String> imgPaths, List<String> filePaths, Vote vote) {
         this.announcementTitle = dto.getAnnouncementTitle();
@@ -80,8 +76,8 @@ public class Announcement extends TimeZone {
         this.announcementCategory = dto.getAnnouncementCategory();
         this.announcementImportant = dto.getAnnouncementImportant();
         this.announcementLevel = dto.getAnnouncementLevel();
-        this.img = String.join(",", imgPaths);
-        this.file = String.join(",", filePaths);
+        this.imgUrls = imgPaths != null ? imgPaths : new ArrayList<>();
+        this.fileUrls = filePaths != null ? filePaths : new ArrayList<>();
         this.visible = dto.isVisible();
         this.votes = vote != null ? List.of(vote) : this.votes;
     }

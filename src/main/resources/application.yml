@@ -1,7 +1,16 @@
 server:
   port: 9000
 
+
 spring:
+  data:
+    redis:
+      host: redis
+      port: ${REDIS_PORT}
+      username: ${REDIS_USERNAME}
+      password: ${REDIS_PASSWORD}
+  cache:
+    type: redis
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}
@@ -26,8 +35,6 @@ spring:
   thymeleaf3:
     decoupled-logic: true
 
-
-
 logging:
   level:
     org.springframework.security: DEBUG
@@ -41,5 +48,13 @@ management:
   endpoint:
     health:
       show-details: always
+
 jwt:
   secret: ${JWT_SECRET}
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+file:
+  upload-dir: uploads/
+  base-url: http://localhost:9000/uploads/
