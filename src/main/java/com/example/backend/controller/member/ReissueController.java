@@ -1,19 +1,27 @@
 package com.example.backend.controller.member;
 
+import com.example.backend.dto.member.MemberResponseDTO;
+import com.example.backend.jwt.JWTUtil;
+import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.MemberExperience;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.member.Refresh;
+import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.member.RefreshRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.backend.jwt.JWTUtil;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,9 +30,11 @@ public class ReissueController {
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MemberRepository memberRepository;
 
     @PostMapping
-    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> reissue(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         //get refresh token
         String refresh = null;
@@ -73,6 +83,13 @@ public class ReissueController {
         String userRole = jwtUtil.getUserRole(refresh);
         Long memberId = jwtUtil.getMemberId(refresh);
 
+        Member member = memberRepository.findByStudentId(studentId);
+        MemberProfile memberProfile = member.getMemberProfile();
+        List<MemberExperience> memberExperiences = member.getMemberExperiences();
+
+        MemberResponseDTO memberResponseDTO = MemberResponseDTO.toResponseDTO(member, memberProfile , memberExperiences);
+
+
         //make new JWT
         String newAccess = jwtUtil.createJwt("access", studentId, userRole,  600000L, memberId);
         String newRefresh = jwtUtil.createJwt("refresh", studentId, userRole, 86400000L, memberId);
@@ -83,6 +100,9 @@ public class ReissueController {
         //response
         response.setHeader("access", newAccess);
         response.addCookie(createCookie("refresh", newRefresh));
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(memberResponseDTO));
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
