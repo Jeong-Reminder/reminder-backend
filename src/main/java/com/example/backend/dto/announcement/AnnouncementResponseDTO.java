@@ -5,10 +5,10 @@ import com.example.backend.dto.vote.VoteResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import lombok.*;
 
-import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Builder
 @AllArgsConstructor
 @Data
@@ -18,7 +18,7 @@ public class AnnouncementResponseDTO {
     private String announcementTitle;
     private String announcementContent;
     private AnnouncementCategory announcementCategory;
-    private Boolean announcementImportant;
+    private boolean announcementImportant;
     private int announcementLevel;
     private List<String> imgUrls;
     private List<String> fileUrls;
@@ -35,12 +35,8 @@ public class AnnouncementResponseDTO {
                 .announcementCategory(announcement.getAnnouncementCategory())
                 .announcementImportant(announcement.getAnnouncementImportant())
                 .announcementLevel(announcement.getAnnouncementLevel())
-                .imgUrls(Arrays.stream(announcement.getImg().split(","))
-                        .map(path -> "/files/" + Paths.get(path).getFileName().toString())
-                        .collect(Collectors.toList()))
-                .fileUrls(Arrays.stream(announcement.getFile().split(","))
-                        .map(path -> "/files/" + Paths.get(path).getFileName().toString())
-                        .collect(Collectors.toList()))
+                .imgUrls(announcement.getImgUrls() != null ? announcement.getImgUrls() : new ArrayList<>()) // 빈 리스트로 반환
+                .fileUrls(announcement.getFileUrls() != null ? announcement.getFileUrls() : new ArrayList<>()) // 빈 리스트로 반환
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManager().getId())
                 .comments(announcement.getComments().stream()

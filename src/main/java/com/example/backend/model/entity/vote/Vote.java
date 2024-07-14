@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class Vote extends TimeZone {
     private Announcement announcement;
 
     @Column(name="endTime")
-    private LocalTime endTime;
+    private LocalDateTime endTime;
     private String voteItemIds;
 
     @OneToMany(mappedBy = "vote")

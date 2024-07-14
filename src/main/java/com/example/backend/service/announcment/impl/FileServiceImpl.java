@@ -2,6 +2,7 @@ package com.example.backend.service.announcment.impl;
 
 import com.example.backend.service.announcment.FileService;
 import io.jsonwebtoken.io.IOException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,11 @@ import java.util.List;
 @Service
 public class FileServiceImpl implements FileService {
 
-    private static final String UPLOAD_DIR = "uploads/";
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    @Value("${file.base-url}")
+    private String baseUrl;
 
     @Override
     public List<String> saveFiles(List<MultipartFile> files) throws IOException, java.io.IOException {
@@ -23,24 +28,31 @@ public class FileServiceImpl implements FileService {
             return Collections.emptyList();
         }
 
-        List<String> paths = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
         for (MultipartFile file : files) {
-            String path = saveFile(file);
-            paths.add(path);
+            String url = saveFile(file);
+            if (url != null) {
+                urls.add(url);
+            }
         }
-        return paths;
+        return urls.isEmpty() ? null : urls;
     }
 
     private String saveFile(MultipartFile file) throws IOException, java.io.IOException {
         if (file.isEmpty()) {
-            throw new IOException("Empty file.");
+            return null;
         }
 
         String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path path = Paths.get(UPLOAD_DIR + filename);
-        Files.createDirectories(path.getParent());
+        Path path = Paths.get(uploadDir + filename);
+
+        // 디렉터리가 존재하지 않으면 생성
+        if (!Files.exists(path.getParent())) {
+            Files.createDirectories(path.getParent());
+        }
+
         file.transferTo(path.toFile());
-        return path.toString();
+
+        return baseUrl + filename;
     }
 }
-

@@ -5,7 +5,6 @@ import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.vote.Vote;
 import lombok.*;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -33,8 +32,8 @@ public class AnnouncementRequestDTO {
                 .announcementCategory(announcementCategory)
                 .announcementImportant(announcementImportant)
                 .announcementLevel(announcementLevel)
-                .img(String.join(",", imgPaths))
-                .file(String.join(",", filePaths))
+                .imgUrls(imgPaths != null ? imgPaths : List.of()) // imgUrls 설정
+                .fileUrls(filePaths != null ? filePaths : List.of()) // fileUrls 설정
                 .visible(visible)
                 .manager(manager)
                 .votes(vote != null ? List.of(vote) : null)

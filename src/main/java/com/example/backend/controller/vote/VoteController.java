@@ -3,6 +3,7 @@ package com.example.backend.controller.vote;
 import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.vote.*;
 import com.example.backend.service.vote.VoteService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +14,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/votes")
+@RequiredArgsConstructor
 public class VoteController {
 
     private final VoteService voteService;
 
-    @Autowired
-    public VoteController(VoteService voteService) {
-        this.voteService = voteService;
-    }
-
-    @PostMapping("/create")
+    @PostMapping("/")
     public ResponseEntity<ResponseDTO<VoteResponseDTO>> createVote(Authentication authentication,@RequestBody VoteRequestDTO voteRequestDTO) {
         try {
             VoteResponseDTO responseDTO = VoteResponseDTO.toResponseDTO(voteService.createVote(authentication,voteRequestDTO));
@@ -42,7 +39,7 @@ public class VoteController {
         }
     }
 
-    @PutMapping("/update/{voteId}")
+    @PutMapping("/{voteId}")
     public ResponseEntity<ResponseDTO<VoteResponseDTO>> updateVote(Authentication authentication,@PathVariable Long voteId,
                                                                    @RequestBody VoteRequestDTO voteRequestDTO) {
         try {
@@ -63,7 +60,7 @@ public class VoteController {
         }
     }
 
-    @DeleteMapping("/delete/{voteId}")
+    @DeleteMapping("/{voteId}")
     public ResponseEntity<ResponseDTO<Void>> deleteVote(Authentication authentication,@PathVariable Long voteId) {
         try {
             voteService.deleteVote(authentication,voteId);
@@ -147,11 +144,11 @@ public class VoteController {
 
 
     @PostMapping("/{voteId}/recast")
-    public ResponseEntity<ResponseDTO<Void>> recastVote(Authentication authentication,@PathVariable Long voteId,
-                                                        @RequestParam Long memberId,
+    public ResponseEntity<ResponseDTO<Void>> recastVote(Authentication authentication,
+                                                        @PathVariable Long voteId,
                                                         @RequestBody List<Long> voteItemIds) {
         try {
-            voteService.recastVote(authentication,voteId, memberId, voteItemIds);
+            voteService.recastVote(authentication,voteId, voteItemIds);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
@@ -161,5 +158,15 @@ public class VoteController {
                             .build()
             );
         }
+    }
+    @PostMapping("/{voteId}/vote/{voteItemId}")
+    public ResponseEntity<Void> vote(Authentication authentication, @PathVariable Long voteId, @PathVariable Long voteItemId) {
+        voteService.vote(authentication, voteId, voteItemId);
+        return ResponseEntity.noContent().build();
+    }
+    @DeleteMapping("/items/{voteItemId}")
+    public ResponseEntity<Void> deleteVoteItem(Authentication authentication, @PathVariable Long voteItemId) {
+        voteService.deleteVoteItem(authentication, voteItemId);
+        return ResponseEntity.noContent().build();
     }
 }

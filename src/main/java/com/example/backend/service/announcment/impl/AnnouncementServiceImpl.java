@@ -3,16 +3,19 @@ package com.example.backend.service.announcment.impl;
 import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.announcement.AnnouncementCategory;
+import com.example.backend.dto.notification.NotificationRequestDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
+import com.example.backend.model.entity.notification.Notification;
 import com.example.backend.model.entity.vote.Vote;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.service.announcment.AnnouncementService;
 import com.example.backend.service.announcment.FileService;
+import com.example.backend.service.notification.NotificationService;
 import com.example.backend.service.vote.VoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -23,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,11 +39,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final MemberRepository memberRepository;
     private final FileService fileService;
     private final VoteService voteService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
     public List<AnnouncementResponseDTO> getAllAnnouncements(Authentication authentication) {
+        int currentYear = LocalDate.now().getYear();
+        int twoYearsAgo = currentYear - 2;
+
         return announcementRepository.findAll().stream()
+                .filter(announcement -> announcement.getCreatedTime().getYear() >= twoYearsAgo)
                 .map(AnnouncementResponseDTO::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -47,6 +56,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementById(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
         Announcement announcement = announcementRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
         return AnnouncementResponseDTO.toResponseDTO(announcement);
@@ -55,7 +67,11 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional(readOnly = true)
     public List<AnnouncementResponseDTO> getAnnouncementsByCategory(Authentication authentication, AnnouncementCategory category) {
+        int currentYear = LocalDate.now().getYear();
+        int twoYearsAgo = currentYear - 2;
+
         return announcementRepository.findByAnnouncementCategory(category).stream()
+                .filter(announcement -> announcement.getCreatedTime().getYear() >= twoYearsAgo)
                 .map(AnnouncementResponseDTO::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -72,17 +88,24 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
         }
 
-        List<String> imgPaths = new ArrayList<>();
-        List<String> filePaths = new ArrayList<>();
+        List<String> imgPaths = null;
+        List<String> filePaths = null;
         try {
             if (announcementRequestDTO.getImg() != null && !announcementRequestDTO.getImg().isEmpty()) {
-                imgPaths = saveFiles(announcementRequestDTO.getImg());
+                imgPaths = fileService.saveFiles(announcementRequestDTO.getImg());
             }
             if (announcementRequestDTO.getFile() != null && !announcementRequestDTO.getFile().isEmpty()) {
-                filePaths = saveFiles(announcementRequestDTO.getFile());
+                filePaths = fileService.saveFiles(announcementRequestDTO.getFile());
             }
         } catch (NoSuchFileException e) {
             throw new IOException("파일 저장에 실패했습니다. 파일을 찾을 수 없습니다: " + e.getMessage(), e);
+        }
+
+        if (imgPaths == null) {
+            imgPaths = new ArrayList<>();
+        }
+        if (filePaths == null) {
+            filePaths = new ArrayList<>();
         }
 
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
@@ -94,8 +117,18 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement announcement = announcementRequestDTO.toEntity(manager, imgPaths, filePaths, vote);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
+        NotificationRequestDTO notificationRequestDTO = new NotificationRequestDTO();
+        notificationRequestDTO.setCategory(announcementRequestDTO.getAnnouncementCategory().name());
+        notificationRequestDTO.setTitle(announcementRequestDTO.getAnnouncementTitle());
+        notificationRequestDTO.setMessage(announcementRequestDTO.getAnnouncementTitle());
+        notificationRequestDTO.setAnnouncementId(savedAnnouncement.getId());
+
+        Notification notification = notificationRequestDTO.toEntity(manager, savedAnnouncement);
+        notificationService.createNotification(authentication, notificationRequestDTO);
+
         return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);
     }
+
 
     @Override
     @Transactional
@@ -111,23 +144,30 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement existingAnnouncement = announcementRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
 
-        List<String> imgPaths = new ArrayList<>();
-        List<String> filePaths = new ArrayList<>();
+        List<String> imgPaths = null;
+        List<String> filePaths = null;
         try {
             if (announcementRequestDTO.getImg() != null && !announcementRequestDTO.getImg().isEmpty()) {
-                imgPaths = saveFiles(announcementRequestDTO.getImg());
+                imgPaths = fileService.saveFiles(announcementRequestDTO.getImg());
             }
             if (announcementRequestDTO.getFile() != null && !announcementRequestDTO.getFile().isEmpty()) {
-                filePaths = saveFiles(announcementRequestDTO.getFile());
+                filePaths = fileService.saveFiles(announcementRequestDTO.getFile());
             }
         } catch (NoSuchFileException e) {
             throw new IOException("파일 저장에 실패했습니다. 파일을 찾을 수 없습니다: " + e.getMessage(), e);
         }
 
+        if (imgPaths == null) {
+            imgPaths = new ArrayList<>();
+        }
+        if (filePaths == null) {
+            filePaths = new ArrayList<>();
+        }
+
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
         Vote vote = null;
         if (voteRequestDTO != null) {
-            vote = voteService.createVote((Authentication) existingAnnouncement.getManager(), voteRequestDTO);
+            vote = voteService.createVote(authentication, voteRequestDTO);
         }
 
         existingAnnouncement.update(announcementRequestDTO, imgPaths, filePaths, vote);
@@ -139,13 +179,17 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void deleteAnnouncement(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
         Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
+            throw new IllegalArgumentException("관리자만 공지사항을 삭제할 수 있습니다.");
         }
 
         Announcement announcement = announcementRepository.findById(id)
@@ -156,6 +200,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void hideAnnouncement(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
         Long managerId = member.getId();
@@ -173,6 +221,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void showAnnouncement(Authentication authentication, Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
         Long managerId = member.getId();
@@ -190,6 +242,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId) {
+        if (announcementId == null) {
+            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        }
+
         Announcement announcement = announcementRepository.findById(announcementId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
 
@@ -199,19 +255,20 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         return AnnouncementResponseDTO.toResponseDTO(announcement);
     }
 
-    // 파일 저장 로직
     private List<String> saveFiles(List<MultipartFile> files) throws IOException {
         List<String> filePaths = new ArrayList<>();
         for (MultipartFile file : files) {
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            String uploadDir = "/tmp/tomcat.9000.5359272715400011388/work/Tomcat/localhost/ROOT/uploads/";
+            if (!file.isEmpty()) {
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                String uploadDir = "/tmp/tomcat.9000.5359272715400011388/work/Tomcat/localhost/ROOT/uploads/";
 
-            File uploadFile = new File(uploadDir, fileName);
-            if (!uploadFile.getParentFile().exists()) {
-                uploadFile.getParentFile().mkdirs();
+                File uploadFile = new File(uploadDir, fileName);
+                if (!uploadFile.getParentFile().exists()) {
+                    uploadFile.getParentFile().mkdirs();
+                }
+                file.transferTo(uploadFile);
+                filePaths.add(uploadFile.getAbsolutePath());
             }
-            file.transferTo(uploadFile);
-            filePaths.add(uploadFile.getAbsolutePath());
         }
         return filePaths;
     }
