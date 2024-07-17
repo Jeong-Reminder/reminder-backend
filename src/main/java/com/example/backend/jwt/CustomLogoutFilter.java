@@ -1,6 +1,8 @@
 package com.example.backend.jwt;
 
+import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.Refresh;
+import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.member.RefreshRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -12,18 +14,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.GenericFilterBean;
 
+@RequiredArgsConstructor
 public class CustomLogoutFilter extends GenericFilterBean {
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
-
-    public CustomLogoutFilter(JWTUtil jwtUtil, RefreshRepository refreshRepository) {
-
-        this.jwtUtil = jwtUtil;
-        this.refreshRepository = refreshRepository;
-    }
+    private final MemberRepository memberRepository;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -92,6 +91,10 @@ public class CustomLogoutFilter extends GenericFilterBean {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+
+        Member member = memberRepository.findByStudentId(jwtUtil.getStudentId(refresh));
+        member.setFcmToken(null);
+        memberRepository.save(member);
 
         //로그아웃 진행
         //Refresh 토큰 DB에서 제거

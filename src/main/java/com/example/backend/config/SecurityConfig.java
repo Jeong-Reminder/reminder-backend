@@ -85,7 +85,7 @@ public class SecurityConfig {
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http
-                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository, memberRepository), LogoutFilter.class);
 
         return http.build();
     }

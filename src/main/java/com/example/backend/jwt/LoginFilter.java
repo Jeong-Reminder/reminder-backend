@@ -43,8 +43,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String studentId = request.getParameter("studentId");
         String password = request.getParameter("password");
+        String fcmToken = request.getParameter("fcmToken");
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(studentId, password, null);
+
+        Member member = memberRepository.findByStudentId(studentId);
+        member.setFcmToken(fcmToken);
+        memberRepository.save(member);
 
         return authenticationManager.authenticate(authenticationToken);
     }
