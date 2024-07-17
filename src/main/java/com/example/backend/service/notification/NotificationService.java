@@ -8,7 +8,5 @@ import org.springframework.security.core.Authentication;
 import java.util.List;
 
 public interface NotificationService {
-    NotificationResponseDTO createNotification(Authentication authentication, NotificationRequestDTO requestDTO);
-    List<NotificationResponseDTO> getNotificationsForMember(Authentication authentication);
-    void markAsRead(Authentication authentication, Long notificationId);
+
 }

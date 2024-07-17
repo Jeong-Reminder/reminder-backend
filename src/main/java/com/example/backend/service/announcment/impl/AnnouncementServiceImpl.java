@@ -117,14 +117,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement announcement = announcementRequestDTO.toEntity(manager, imgPaths, filePaths, vote);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
-        NotificationRequestDTO notificationRequestDTO = new NotificationRequestDTO();
-        notificationRequestDTO.setCategory(announcementRequestDTO.getAnnouncementCategory().name());
-        notificationRequestDTO.setTitle(announcementRequestDTO.getAnnouncementTitle());
-        notificationRequestDTO.setMessage(announcementRequestDTO.getAnnouncementTitle());
-        notificationRequestDTO.setAnnouncementId(savedAnnouncement.getId());
 
-        Notification notification = notificationRequestDTO.toEntity(manager, savedAnnouncement);
-        notificationService.createNotification(authentication, notificationRequestDTO);
 
         return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);
     }

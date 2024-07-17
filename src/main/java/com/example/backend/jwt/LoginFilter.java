@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -72,7 +74,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String access = jwtUtil.createJwt("access",studentId, userRole, 600000L, memberId);
         String refresh = jwtUtil.createJwt("refresh",studentId, userRole, 86400000L, memberId);
 
-        addRefresh(studentId, refresh, 86400000L);
+        addRefresh(refresh);
 
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -99,15 +101,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         return cookie;
     }
 
-    private void addRefresh(String studentId, String refresh, Long expiredMs) {
-
-        long now = (new Date()).getTime();
-        Date date = new Date(now + expiredMs);
+    private void addRefresh(String refresh) {
 
         Refresh refreshEntity = new Refresh();
-        refreshEntity.setStudentId(studentId);
+        refreshEntity.setId(refresh);
         refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date.toString());
 
         refreshRepository.save(refreshEntity);
     }
