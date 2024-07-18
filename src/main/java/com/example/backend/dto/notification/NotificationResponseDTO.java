@@ -1,6 +1,7 @@
 package com.example.backend.dto.notification;
 
 import com.example.backend.model.entity.notification.Notification;
+import com.example.backend.model.entity.notification.NotificationMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,19 +14,23 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class NotificationResponseDTO {
-    private Long id;
-    private String category;
+    private String id;
     private String title;
-    private String message;
+    private String content;
+    private String category;
+    private Long targetId;
+    private LocalDateTime createdAt;
     private boolean isRead;
 
-    public static NotificationResponseDTO toResponseDTO(Notification notification) {
-        NotificationResponseDTO responseDTO = new NotificationResponseDTO();
-        responseDTO.setId(notification.getId());
-        responseDTO.setCategory(notification.getCategory());
-        responseDTO.setTitle(notification.getTitle());
-        responseDTO.setMessage(notification.getMessage());
-        responseDTO.setRead(notification.isRead());
-       return responseDTO;
+    public static NotificationResponseDTO toResponseDTO(NotificationMessage notificationMessage) {
+        return NotificationResponseDTO.builder()
+                .id(notificationMessage.getId())
+                .title(notificationMessage.getTitle())
+                .content(notificationMessage.getContent())
+                .category(notificationMessage.getCategory())
+                .targetId(notificationMessage.getTargetId())
+                .createdAt(notificationMessage.getCreatedAt())
+                .isRead(notificationMessage.isRead())
+                .build();
     }
 }
