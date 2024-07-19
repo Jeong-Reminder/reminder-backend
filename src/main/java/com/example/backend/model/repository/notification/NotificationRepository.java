@@ -1,9 +1,9 @@
 package com.example.backend.model.repository.notification;
 
 import com.example.backend.model.entity.notification.Notification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    List<Notification> findAllByIsReadFalse();
+@Repository
+public interface NotificationRepository extends CrudRepository<Notification, String> {
 }

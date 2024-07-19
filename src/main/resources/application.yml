@@ -17,6 +17,18 @@ spring:
     password: ${DATABASE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: user
+    password: password
+
+
+  main:
+    allow-bean-definition-overriding: true
+  scheduling:
+    enabled: true
+
   servlet:
     multipart:
       enabled: true
@@ -66,3 +78,10 @@ file:
   upload-dir: uploads/
   base-url: http://localhost:9000/uploads/
 
+rabbitmq:
+    queue:
+      name: notification-queue
+    exchange:
+      name: notification-exchange
+    routing:
+      key : key

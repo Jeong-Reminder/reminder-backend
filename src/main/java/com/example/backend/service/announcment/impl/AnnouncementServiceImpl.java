@@ -1,15 +1,13 @@
 package com.example.backend.service.announcment.impl;
 
+import com.example.backend.dto.announcement.AnnouncementCategory;
 import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
-import com.example.backend.dto.announcement.AnnouncementCategory;
-import com.example.backend.dto.notification.NotificationRequestDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
-import com.example.backend.model.entity.notification.Notification;
 import com.example.backend.model.entity.vote.Vote;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
@@ -17,12 +15,6 @@ import com.example.backend.service.announcment.AnnouncementService;
 import com.example.backend.service.announcment.FileService;
 import com.example.backend.service.notification.NotificationService;
 import com.example.backend.service.vote.VoteService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
@@ -30,6 +22,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor

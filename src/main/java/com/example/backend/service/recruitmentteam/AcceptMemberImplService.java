@@ -3,6 +3,8 @@ package com.example.backend.service.recruitmentteam;
 import com.example.backend.dto.recruitmentteam.AcceptMemberRequestDTO;
 import com.example.backend.dto.recruitmentteam.AcceptMemberResponseDTO;
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.notification.Notification;
+import com.example.backend.model.entity.notification.NotificationMessage;
 import com.example.backend.model.entity.recruitmentteam.AcceptMember;
 import com.example.backend.model.entity.recruitmentteam.ApplicationStatus;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
@@ -11,7 +13,9 @@ import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.AcceptMemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamApplicationRepository;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -56,6 +60,16 @@ public class AcceptMemberImplService implements AcceptMemberService{
                 recruitment.setRecruitmentStatus(false);
                 recruitmentRepository.save(recruitment);
             }
+
+            NotificationMessage message = NotificationMessage.builder()
+                    .id(UUID.randomUUID().toString())
+                    .title("모집글 수락")
+                    .content(recruitment.getRecruitmentTitle()+"팀에 가입되었습니다.")
+                    .category("팀원모집")
+                    .targetId(recruitment.getId())
+                    .createdAt(LocalDateTime.now())
+                    .isRead(false)
+                    .build();
 
             // 같은 카테고리에 있는 다른 모집 글의 모든 수락된 멤버의 지원글 삭제
             deleteAcceptedApplicationsFromOtherRecruitments(recruitment.getRecruitmentCategory(), acceptMember.getId());

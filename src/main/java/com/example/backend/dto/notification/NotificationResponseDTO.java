@@ -2,6 +2,7 @@ package com.example.backend.dto.notification;
 
 import com.example.backend.model.entity.notification.Notification;
 import com.example.backend.model.entity.notification.NotificationMessage;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,5 +33,11 @@ public class NotificationResponseDTO {
                 .createdAt(notificationMessage.getCreatedAt())
                 .isRead(notificationMessage.isRead())
                 .build();
+    }
+
+    public static List<NotificationResponseDTO> toResponseDTOList(List<NotificationMessage> notificationMessages) {
+        return notificationMessages.stream()
+                .map(NotificationResponseDTO::toResponseDTO)
+                .toList();
     }
 }

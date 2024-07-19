@@ -21,7 +21,7 @@ public class Notification implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    private String userId;
+    private String studentId;
     private List<String> messageIds;
 
 }

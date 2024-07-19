@@ -41,6 +41,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
+
         String studentId = request.getParameter("studentId");
         String password = request.getParameter("password");
         String fcmToken = request.getParameter("fcmToken");
