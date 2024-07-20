@@ -9,7 +9,6 @@ import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
-import com.example.backend.model.entity.notification.Notification;
 import com.example.backend.model.entity.vote.Vote;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
@@ -23,12 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,6 +62,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         return AnnouncementResponseDTO.toResponseDTO(announcement);
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public List<AnnouncementResponseDTO> getAnnouncementsByCategory(Authentication authentication, AnnouncementCategory category) {
@@ -72,9 +71,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         return announcementRepository.findByAnnouncementCategory(category).stream()
                 .filter(announcement -> announcement.getCreatedTime().getYear() >= twoYearsAgo)
-                .map(AnnouncementResponseDTO::toResponseDTO)
+                .map(announcement -> {
+                    List<Vote> votes = Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new);
+                    return AnnouncementResponseDTO.toResponseDTO(announcement, votes);
+                })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional
@@ -84,28 +87,32 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
+
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
             throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
         }
 
-        List<String> imgPaths = null;
-        List<String> filePaths = null;
-        try {
-            if (announcementRequestDTO.getImg() != null && !announcementRequestDTO.getImg().isEmpty()) {
-                imgPaths = fileService.saveFiles(announcementRequestDTO.getImg());
+        List<Long> imgIds = new ArrayList<>();
+        List<Long> fileIds = new ArrayList<>();
+
+        // 이미지 파일 처리
+        if (announcementRequestDTO.getImg() != null) {
+            for (MultipartFile imgFile : announcementRequestDTO.getImg()) {
+                if (!imgFile.isEmpty()) {
+                    Long imgId = fileService.saveFile(imgFile);
+                    imgIds.add(imgId);
+                }
             }
-            if (announcementRequestDTO.getFile() != null && !announcementRequestDTO.getFile().isEmpty()) {
-                filePaths = fileService.saveFiles(announcementRequestDTO.getFile());
-            }
-        } catch (NoSuchFileException e) {
-            throw new IOException("파일 저장에 실패했습니다. 파일을 찾을 수 없습니다: " + e.getMessage(), e);
         }
 
-        if (imgPaths == null) {
-            imgPaths = new ArrayList<>();
-        }
-        if (filePaths == null) {
-            filePaths = new ArrayList<>();
+        // 일반 파일 처리
+        if (announcementRequestDTO.getFile() != null) {
+            for (MultipartFile file : announcementRequestDTO.getFile()) {
+                if (!file.isEmpty()) {
+                    Long fileId = fileService.saveFile(file);
+                    fileIds.add(fileId);
+                }
+            }
         }
 
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
@@ -114,7 +121,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             vote = voteService.createVote(authentication, voteRequestDTO);
         }
 
-        Announcement announcement = announcementRequestDTO.toEntity(manager, imgPaths, filePaths, vote);
+        Announcement announcement = announcementRequestDTO.toEntity(manager,imgIds,fileIds, vote);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
         NotificationRequestDTO notificationRequestDTO = new NotificationRequestDTO();
@@ -123,12 +130,9 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         notificationRequestDTO.setMessage(announcementRequestDTO.getAnnouncementTitle());
         notificationRequestDTO.setAnnouncementId(savedAnnouncement.getId());
 
-        Notification notification = notificationRequestDTO.toEntity(manager, savedAnnouncement);
         notificationService.createNotification(authentication, notificationRequestDTO);
-
         return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);
     }
-
 
     @Override
     @Transactional
@@ -144,24 +148,27 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement existingAnnouncement = announcementRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
 
-        List<String> imgPaths = null;
-        List<String> filePaths = null;
-        try {
-            if (announcementRequestDTO.getImg() != null && !announcementRequestDTO.getImg().isEmpty()) {
-                imgPaths = fileService.saveFiles(announcementRequestDTO.getImg());
+        List<Long> imgIds = new ArrayList<>();
+        List<Long> fileIds = new ArrayList<>();
+
+        // 이미지 파일 처리
+        if (announcementRequestDTO.getImg() != null) {
+            for (MultipartFile imgFile : announcementRequestDTO.getImg()) {
+                if (!imgFile.isEmpty()) {
+                    Long imgId = fileService.saveFile(imgFile);
+                    imgIds.add(imgId);
+                }
             }
-            if (announcementRequestDTO.getFile() != null && !announcementRequestDTO.getFile().isEmpty()) {
-                filePaths = fileService.saveFiles(announcementRequestDTO.getFile());
-            }
-        } catch (NoSuchFileException e) {
-            throw new IOException("파일 저장에 실패했습니다. 파일을 찾을 수 없습니다: " + e.getMessage(), e);
         }
 
-        if (imgPaths == null) {
-            imgPaths = new ArrayList<>();
-        }
-        if (filePaths == null) {
-            filePaths = new ArrayList<>();
+        // 일반 파일 처리
+        if (announcementRequestDTO.getFile() != null) {
+            for (MultipartFile file : announcementRequestDTO.getFile()) {
+                if (!file.isEmpty()) {
+                    Long fileId = fileService.saveFile(file);
+                    fileIds.add(fileId);
+                }
+            }
         }
 
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
@@ -170,11 +177,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             vote = voteService.createVote(authentication, voteRequestDTO);
         }
 
-        existingAnnouncement.update(announcementRequestDTO, imgPaths, filePaths, vote);
+        existingAnnouncement.update(announcementRequestDTO, imgIds, fileIds, vote);
         Announcement updatedAnnouncement = announcementRepository.save(existingAnnouncement);
 
         return AnnouncementResponseDTO.toResponseDTO(updatedAnnouncement);
     }
+
 
     @Override
     @Transactional
@@ -250,26 +258,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
 
         List<Comment> comments = announcement.getComments() != null ? announcement.getComments() : new ArrayList<>();
-        List<Vote> votes = announcement.getVotes() != null ? announcement.getVotes() : new ArrayList<>();
+        List<Vote> votes = Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new);
 
-        return AnnouncementResponseDTO.toResponseDTO(announcement);
-    }
-
-    private List<String> saveFiles(List<MultipartFile> files) throws IOException {
-        List<String> filePaths = new ArrayList<>();
-        for (MultipartFile file : files) {
-            if (!file.isEmpty()) {
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                String uploadDir = "/tmp/tomcat.9000.5359272715400011388/work/Tomcat/localhost/ROOT/uploads/";
-
-                File uploadFile = new File(uploadDir, fileName);
-                if (!uploadFile.getParentFile().exists()) {
-                    uploadFile.getParentFile().mkdirs();
-                }
-                file.transferTo(uploadFile);
-                filePaths.add(uploadFile.getAbsolutePath());
-            }
-        }
-        return filePaths;
+        return AnnouncementResponseDTO.toResponseDTO(announcement, votes);
     }
 }

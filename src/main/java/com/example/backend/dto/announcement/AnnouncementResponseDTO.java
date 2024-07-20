@@ -3,6 +3,8 @@ package com.example.backend.dto.announcement;
 import com.example.backend.dto.comment.CommentResponseDTO;
 import com.example.backend.dto.vote.VoteResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.announcement.File;
+import com.example.backend.model.entity.vote.Vote;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ public class AnnouncementResponseDTO {
     private boolean announcementImportant;
     private int announcementLevel;
     private List<String> imgUrls;
-    private List<String> fileUrls;
+    private List<FileResponseDTO> files;
     private boolean visible;
     private Long managerId;
     private List<CommentResponseDTO> comments;
@@ -35,16 +37,66 @@ public class AnnouncementResponseDTO {
                 .announcementCategory(announcement.getAnnouncementCategory())
                 .announcementImportant(announcement.getAnnouncementImportant())
                 .announcementLevel(announcement.getAnnouncementLevel())
-                .imgUrls(announcement.getImgUrls() != null ? announcement.getImgUrls() : new ArrayList<>()) // 빈 리스트로 반환
-                .fileUrls(announcement.getFileUrls() != null ? announcement.getFileUrls() : new ArrayList<>()) // 빈 리스트로 반환
+                .imgUrls(convertIdsToUrls(announcement.getImgIds()))
+                .files(convertFilesToDTOs(announcement.getFiles()))
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManager().getId())
-                .comments(announcement.getComments().stream()
+                .comments(announcement.getComments() != null
+                        ? announcement.getComments().stream()
                         .map(CommentResponseDTO::toResponseDTO)
-                        .collect(Collectors.toList()))
-                .votes(announcement.getVotes().stream()
+                        .collect(Collectors.toList())
+                        : new ArrayList<>())
+                .votes(announcement.getVotes() != null
+                        ? announcement.getVotes().stream()
                         .map(VoteResponseDTO::toResponseDTO)
-                        .collect(Collectors.toList()))
+                        .collect(Collectors.toList())
+                        : new ArrayList<>())
                 .build();
+    }
+
+    public static AnnouncementResponseDTO toResponseDTO(Announcement announcement, List<Vote> votes) {
+        return AnnouncementResponseDTO.builder()
+                .id(announcement.getId())
+                .announcementTitle(announcement.getAnnouncementTitle())
+                .announcementContent(announcement.getAnnouncementContent())
+                .announcementCategory(announcement.getAnnouncementCategory())
+                .announcementImportant(announcement.getAnnouncementImportant())
+                .announcementLevel(announcement.getAnnouncementLevel())
+                .imgUrls(convertIdsToUrls(announcement.getImgIds()))
+                .files(convertFilesToDTOs(announcement.getFiles()))
+                .visible(announcement.isVisible())
+                .managerId(announcement.getManager().getId())
+                .comments(announcement.getComments() != null
+                        ? announcement.getComments().stream()
+                        .map(CommentResponseDTO::toResponseDTO)
+                        .collect(Collectors.toList())
+                        : new ArrayList<>())
+                .votes(votes != null
+                        ? votes.stream()
+                        .map(VoteResponseDTO::toResponseDTO)
+                        .collect(Collectors.toList())
+                        : new ArrayList<>())
+                .build();
+    }
+
+    private static List<String> convertIdsToUrls(List<Long> ids) {
+        return ids != null
+                ? ids.stream()
+                .map(id -> "http://localhost:9000/files/" + id)
+                .collect(Collectors.toList())
+                : new ArrayList<>();
+    }
+
+    private static List<FileResponseDTO> convertFilesToDTOs(List<File> files) {
+        return files != null
+                ? files.stream()
+                .map(file -> FileResponseDTO.builder()
+                        .id(file.getId())
+                        .orgNm(file.getOriginalFilename())
+                        .saveNm(file.getFilePath())
+                        .savedPath("http://localhost:9000/files/download/" + file.getId())
+                        .build())
+                .collect(Collectors.toList())
+                : new ArrayList<>();
     }
 }

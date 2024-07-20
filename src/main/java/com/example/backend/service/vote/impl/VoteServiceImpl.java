@@ -39,7 +39,6 @@ public class VoteServiceImpl implements VoteService {
             throw new IllegalArgumentException("관리자만 공지사항을 업데이트 할 수 있습니다.");
         }
 
-        // 게시글에 이미 투표가 있는지 확인
         Announcement announcement = announcementRepository.findById(voteRequestDTO.getAnnouncementId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
         Vote existingVote = voteRepository.findByAnnouncement(announcement);
@@ -186,12 +185,10 @@ public class VoteServiceImpl implements VoteService {
             throw new IllegalArgumentException("이미 동일한 내용의 투표 항목이 존재합니다.");
         }
 
-        // VoteItem을 저장하고 저장된 VoteItem의 ID를 가져옴
         VoteItem voteItem = voteItemRequestDTO.toEntity(vote);
         VoteItem savedVoteItem = voteItemRepository.save(voteItem);
         Long voteItemId = savedVoteItem.getId();
 
-        // Vote 엔티티의 voteItemIds 업데이트
         String currentVoteItemIds = vote.getVoteItemIds();
         String updatedVoteItemIds;
         if (currentVoteItemIds.isEmpty()) {
@@ -240,16 +237,13 @@ public class VoteServiceImpl implements VoteService {
         VoteItem voteItem = voteItemRepository.findById(voteItemId)
                 .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다."));
 
-        // 투표 항목이 속한 투표를 조회
         Vote vote = voteItem.getVote();
 
-        // 투표 상태 엔티티 삭제
         List<VoteStatus> voteStatuses = voteStatusRepository.findByVoteItem(voteItem);
         if (!voteStatuses.isEmpty()) {
             voteStatusRepository.deleteAll(voteStatuses);
         }
 
-        // Vote 엔티티의 voteItemIds 업데이트
         String currentVoteItemIds = vote.getVoteItemIds();
         List<Long> currentVoteItemIdsList = Arrays.stream(currentVoteItemIds.split(","))
                 .map(Long::parseLong)
@@ -278,16 +272,13 @@ public class VoteServiceImpl implements VoteService {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
 
-        // 사용자가 기존에 투표한 항목을 가져옵니다.
         List<VoteStatus> existingVoteStatuses = voteStatusRepository.findByVoteAndMember(vote, member);
 
-        // 새로운 투표 항목들로 투표 정보 업데이트
         List<VoteItem> newVoteItems = voteItemIds.stream()
                 .map(voteItemId -> voteItemRepository.findById(voteItemId)
                         .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다.")))
                 .toList();
 
-        // 새로운 투표 항목으로 새로운 투표 기록 생성
         List<VoteStatus> newVoteStatuses = newVoteItems.stream()
                 .map(voteItem -> {
                     VoteStatus status = new VoteStatus();
