@@ -27,9 +27,9 @@ public class RecommendServiceImpl implements RecommendService {
     public RecommendResponseDTO recommend(Authentication authentication, Long announcementId, RecommendRequestDTO requestDTO) {
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
-        if (member == null) {
-            throw new IllegalArgumentException("해당 학생 ID의 회원을 찾을 수 없습니다: " + studentId);
-        }
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
 
         Announcement announcement = announcementRepository.findById(announcementId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다"));
@@ -49,9 +49,9 @@ public class RecommendServiceImpl implements RecommendService {
     public void cancelRecommend(Authentication authentication, Long recommendId) {
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
-        if (member == null) {
-            throw new IllegalArgumentException("해당 학생 ID의 회원을 찾을 수 없습니다: " + studentId);
-        }
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
 
         recommendRepository.deleteById(recommendId);
     }
@@ -60,9 +60,9 @@ public class RecommendServiceImpl implements RecommendService {
     public List<RecommendResponseDTO> getMyRecommends(Authentication authentication) {
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
-        if (member == null) {
-            throw new IllegalArgumentException("해당 학생 ID의 회원을 찾을 수 없습니다: " + studentId);
-        }
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
 
         List<Recommend> recommends = recommendRepository.findAllByMember(member);
         return recommends.stream()

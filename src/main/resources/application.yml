@@ -1,12 +1,11 @@
 server:
   port: 9000
 
-
 spring:
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: redis
+      port: 6379
       username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
   cache:
@@ -75,8 +74,7 @@ jwt:
     serialization:
       write-dates-as-timestamps: false
 file:
-  upload-dir: uploads/
-  base-url: http://localhost:9000/uploads/
+  dir: ${FILE_DIR}
 
 rabbitmq:
     queue:

@@ -19,7 +19,7 @@ public class RecommendRequestDTO {
         Recommend recommend = new Recommend();
         recommend.setAnnouncement(announcement);
         recommend.setMember(member);
-        recommend.setStatus(true); // 기본적으로 좋아요 상태로 설정
+        recommend.setStatus(true);
         return recommend;
     }
 }

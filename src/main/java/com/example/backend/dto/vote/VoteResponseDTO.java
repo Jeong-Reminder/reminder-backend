@@ -23,7 +23,7 @@ public class VoteResponseDTO {
     private boolean additional;
     private Long announcementId;
     private LocalDateTime endTime;
-    private List<Long> voteItemIds; // VoteItem의 고유 ID 리스트
+    private List<Long> voteItemIds;
 
     public static VoteResponseDTO toResponseDTO(Vote vote) {
         return VoteResponseDTO.builder()

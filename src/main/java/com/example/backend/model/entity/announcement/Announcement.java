@@ -42,13 +42,11 @@ public class Announcement extends TimeZone {
     @Column(name = "announcement_level")
     private int announcementLevel;
 
-    @Builder.Default
     @ElementCollection
-    private List<String> imgUrls = new ArrayList<>();
+    private List<Long> imgIds;
 
-    @Builder.Default
     @ElementCollection
-    private List<String> fileUrls = new ArrayList<>();
+    private List<Long> fileIds;
 
     @Builder.Default
     @Column(name = "visible")
@@ -70,15 +68,20 @@ public class Announcement extends TimeZone {
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recommend> recommends = new ArrayList<>();
 
-    public void update(AnnouncementRequestDTO dto, List<String> imgPaths, List<String> filePaths, Vote vote) {
-        this.announcementTitle = dto.getAnnouncementTitle();
-        this.announcementContent = dto.getAnnouncementContent();
-        this.announcementCategory = dto.getAnnouncementCategory();
-        this.announcementImportant = dto.getAnnouncementImportant();
-        this.announcementLevel = dto.getAnnouncementLevel();
-        this.imgUrls = imgPaths != null ? imgPaths : new ArrayList<>();
-        this.fileUrls = filePaths != null ? filePaths : new ArrayList<>();
-        this.visible = dto.isVisible();
-        this.votes = vote != null ? List.of(vote) : this.votes;
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL)
+    private List<File> files;
+
+    public void update(AnnouncementRequestDTO announcementRequestDTO, List<Long> imgIds, List<Long> fileIds, Vote vote) {
+        this.announcementTitle = announcementRequestDTO.getAnnouncementTitle();
+        this.announcementContent = announcementRequestDTO.getAnnouncementContent();
+        this.announcementCategory = announcementRequestDTO.getAnnouncementCategory();
+        this.announcementImportant = announcementRequestDTO.getAnnouncementImportant();
+        this.announcementLevel = announcementRequestDTO.getAnnouncementLevel();
+        this.imgIds = imgIds;
+        this.fileIds = fileIds;
+        this.visible = announcementRequestDTO.isVisible();
+        if (vote != null) {
+            this.votes = List.of(vote);
+        }
     }
 }

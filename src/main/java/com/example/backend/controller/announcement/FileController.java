@@ -1,40 +1,30 @@
 package com.example.backend.controller.announcement;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.example.backend.model.entity.announcement.File;
+import com.example.backend.service.announcment.FileService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 
-@Controller
-@RequestMapping("/uploads")
+@RestController
+@RequestMapping("/api/v1/files")
+@RequiredArgsConstructor
 public class FileController {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final FileService fileService;
 
-    @GetMapping("/{filename:.+}")
-    public ResponseEntity<Resource> getFile(@PathVariable String filename) {
-        try {
-            Path file = Paths.get(uploadDir).resolve(filename);
-            Resource resource = new UrlResource(file.toUri());
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadFiles(@RequestParam("files") List<MultipartFile> files) {
+        List<File> uploadedFiles = fileService.uploadFiles(files);
+        return ResponseEntity.ok(uploadedFiles);
+    }
 
-            if (resource.exists() || resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                        .body(resource);
-            } else {
-                throw new RuntimeException("Could not read the file!");
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Could not read the file: " + e.getMessage());
-        }
+    @GetMapping("/download/{id}")
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long id) {
+        return fileService.downloadFile(id);
     }
 }

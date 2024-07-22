@@ -25,15 +25,15 @@ public class AnnouncementRequestDTO {
     private Long managerId;
     private VoteRequestDTO voteRequest;
 
-    public Announcement toEntity(Member manager, List<String> imgPaths, List<String> filePaths, Vote vote) {
+    public Announcement toEntity(Member manager, List<Long> imgIds, List<Long> fileIds, Vote vote) {
         return Announcement.builder()
                 .announcementTitle(announcementTitle)
                 .announcementContent(announcementContent)
                 .announcementCategory(announcementCategory)
                 .announcementImportant(announcementImportant)
                 .announcementLevel(announcementLevel)
-                .imgUrls(imgPaths != null ? imgPaths : List.of()) // imgUrls 설정
-                .fileUrls(filePaths != null ? filePaths : List.of()) // fileUrls 설정
+                .imgIds(imgIds != null ? imgIds : List.of())
+                .fileIds(fileIds != null ? fileIds : List.of())
                 .visible(visible)
                 .manager(manager)
                 .votes(vote != null ? List.of(vote) : null)
