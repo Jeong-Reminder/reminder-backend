@@ -26,11 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -127,8 +122,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement announcement = announcementRequestDTO.toEntity(manager,imgIds,fileIds, vote);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
-
-        notificationService.createNotification(authentication, notificationRequestDTO);
         return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);
     }
 
