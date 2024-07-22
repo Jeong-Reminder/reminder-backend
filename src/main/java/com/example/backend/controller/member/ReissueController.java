@@ -16,6 +16,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,7 +74,7 @@ public class ReissueController {
             return new ResponseEntity<>("invalid refresh token", HttpStatus.BAD_REQUEST);
         }
 
-        Boolean isExist = refreshRepository.existsByRefresh(refresh);
+        boolean isExist = refreshRepository.existsById(refresh);
         if (!isExist) {
 
             //response body
@@ -94,8 +97,11 @@ public class ReissueController {
         String newAccess = jwtUtil.createJwt("access", studentId, userRole,  600000L, memberId);
         String newRefresh = jwtUtil.createJwt("refresh", studentId, userRole, 86400000L, memberId);
 
-        refreshRepository.deleteByRefresh(refresh);
-        addRefreshEntity(studentId, newRefresh, 86400000L);
+        // 기존 refresh 토큰을 삭제
+        Optional<Refresh> refreshEntity = refreshRepository.findById(refresh);
+        refreshEntity.ifPresent(refreshRepository::delete);
+
+        addRefreshEntity(newRefresh);
 
         //response
         response.setHeader("access", newAccess);
@@ -118,14 +124,11 @@ public class ReissueController {
         return cookie;
     }
 
-    private void addRefreshEntity(String studentId, String refresh, Long expiredMs) {
-        long now = (new Date()).getTime();
-        Date date = new Date(now + expiredMs);
+    private void addRefreshEntity(String refresh) {
 
         Refresh refreshEntity = new Refresh();
-        refreshEntity.setStudentId(studentId);
+        refreshEntity.setId(refresh);
         refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date.toString());
 
         refreshRepository.save(refreshEntity);
     }

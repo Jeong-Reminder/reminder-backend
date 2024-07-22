@@ -1,9 +1,8 @@
 package com.example.backend.service.announcment.impl;
 
+import com.example.backend.dto.announcement.AnnouncementCategory;
 import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
-import com.example.backend.dto.announcement.AnnouncementCategory;
-import com.example.backend.dto.notification.NotificationRequestDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.comment.Comment;
@@ -21,13 +20,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -124,11 +127,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement announcement = announcementRequestDTO.toEntity(manager,imgIds,fileIds, vote);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
-        NotificationRequestDTO notificationRequestDTO = new NotificationRequestDTO();
-        notificationRequestDTO.setCategory(announcementRequestDTO.getAnnouncementCategory().name());
-        notificationRequestDTO.setTitle(announcementRequestDTO.getAnnouncementTitle());
-        notificationRequestDTO.setMessage(announcementRequestDTO.getAnnouncementTitle());
-        notificationRequestDTO.setAnnouncementId(savedAnnouncement.getId());
 
         notificationService.createNotification(authentication, notificationRequestDTO);
         return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);

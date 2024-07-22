@@ -28,6 +28,7 @@ public class MemberRequestDTO {
                 .level(level)
                 .status(status)
                 .userRole(UserRole.ROLE_USER)
+                .fcmToken(null)
                 .build();
     }
 

@@ -1,43 +1,53 @@
-package com.example.backend.controller;
+package com.example.backend.controller.notification;
 
-import com.example.backend.dto.notification.NotificationRequestDTO;
+import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.notification.NotificationResponseDTO;
+import com.example.backend.model.entity.notification.NotificationMessage;
+import com.example.backend.service.notification.FCM.FCMService;
 import com.example.backend.service.notification.NotificationService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
-@Controller
+@RestController
+@RequestMapping("/api/v1/notifications")
 public class NotificationController {
 
+    private final FCMService fcmService;
     private final NotificationService notificationService;
 
-    // WebSocket을 통해 클라이언트가 "/app/notifications"로 메시지를 전송하면 이 메서드가 호출됨
-    @MessageMapping("/notifications")
-    @SendTo("/topic/notifications")
-    public NotificationResponseDTO sendNotification(NotificationRequestDTO notificationRequestDTO, Authentication authentication) {
-        // 알림 생성 및 발행 로직
-        return notificationService.createNotification(authentication, notificationRequestDTO);
+    @PostMapping("/test-send")
+    public String sendNotification(@RequestParam String targetToken, @RequestBody NotificationMessage notificationMessage) {
+        fcmService.sendMessage(targetToken, notificationMessage);
+        return "Notification sent successfully!";
     }
 
-    // 특정 회원의 모든 읽지 않은 알림을 가져오는 엔드포인트
-    @GetMapping("/notifications")
-    public List<NotificationResponseDTO> getNotifications(Authentication authentication) {
-        return notificationService.getNotificationsForMember(authentication);
+    @GetMapping
+    public ResponseDTO<Object> getNotificationsByMember(Authentication authentication) {
+        List<NotificationResponseDTO> notificationResponseDTOList = notificationService.getMessagesByStudentId(authentication);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(notificationResponseDTOList)
+                .build();
     }
 
-    // 특정 알림을 읽음 상태로 변경하는 엔드포인트
-    @PutMapping("/notifications/{notificationId}/read")
-    public void markAsRead(@PathVariable Long notificationId, Authentication authentication) {
-        notificationService.markAsRead(authentication, notificationId);
+    @PutMapping("{messageId}")
+    public ResponseDTO<Object> isReadNotification(Authentication authentication,
+                                                  @PathVariable String messageId) {
+        notificationService.isReadMessage(authentication, messageId);
+        return ResponseDTO.builder()
+                .status(200)
+                .data(null)
+                .build();
     }
-
 }

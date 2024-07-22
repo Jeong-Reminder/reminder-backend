@@ -4,7 +4,12 @@ import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.announcement.AnnouncementCategory;
+import com.example.backend.model.entity.notification.NotificationMessage;
 import com.example.backend.service.announcment.AnnouncementService;
+import com.example.backend.service.notification.FCM.FCMService;
+import com.example.backend.service.notification.NotificationService;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +26,8 @@ import java.util.List;
 public class AnnouncementController {
 
     private final AnnouncementService announcementService;
+    private final NotificationService notificationService;
+    private final FCMService fcmService;
 
     @GetMapping
     public ResponseEntity<ResponseDTO<List<AnnouncementResponseDTO>>> getAllAnnouncements(Authentication authentication) {
@@ -71,6 +78,19 @@ public class AnnouncementController {
                 .status(HttpStatus.CREATED.value())
                 .data(announcement)
                 .build();
+        NotificationMessage message = NotificationMessage.builder()
+                .id(UUID.randomUUID().toString())
+                .title(announcement.getAnnouncementTitle())
+                .content(announcement.getAnnouncementContent())
+                .category("공지")
+                .targetId(announcement.getId())
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationService.addMessageAllStudent(message);
+        fcmService.sendMessageAllStudent(message);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

@@ -4,6 +4,8 @@ import com.example.backend.dto.recruitmentteam.TeamApplicationRequestDTO;
 import com.example.backend.dto.recruitmentteam.TeamApplicationResponseDTO;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
+import com.example.backend.model.entity.notification.Notification;
+import com.example.backend.model.entity.notification.NotificationMessage;
 import com.example.backend.model.entity.recruitmentteam.ApplicationStatus;
 import com.example.backend.model.entity.recruitmentteam.Recruitment;
 import com.example.backend.model.entity.recruitmentteam.TeamApplication;
@@ -11,7 +13,11 @@ import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamApplicationRepository;
 
+import com.example.backend.service.notification.FCM.FCMService;
+import com.example.backend.service.notification.NotificationService;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -23,6 +29,8 @@ public class TeamApplicationImplService implements TeamApplicationService {
     private final MemberRepository memberRepository;
     private final TeamApplicationRepository teamApplicationRepository;
     private final RecruitmentRepository recruitmentRepository;
+    private final NotificationService notificationService;
+    private final FCMService fcmService;
 
     @Override
     public TeamApplicationResponseDTO createTeamApplication(Authentication authentication,
@@ -54,7 +62,23 @@ public class TeamApplicationImplService implements TeamApplicationService {
             throw new IllegalStateException("모집이 마감된 모집글입니다.");
         }
 
+        Member leader = recruitment.getMember();
+
+        NotificationMessage message = NotificationMessage.builder()
+                .id(UUID.randomUUID().toString())
+                .title("팀원 지원 알림")
+                .content(member.getName() + "님이 " + recruitment.getRecruitmentTitle() + "에 팀원으로 지원하였습니다.")
+                .category("팀원모집")
+                .targetId(recruitmentId)
+                .isRead(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        notificationService.addMessageToStudent(message, leader.getStudentId());
+        fcmService.sendMessageToStudent(leader, message);
+
         TeamApplication saveTeamApplication = teamApplicationRepository.save(teamApplicationRequestDTO.toEntity(member, recruitment));
+
         return TeamApplicationResponseDTO.toResponseDTO(saveTeamApplication);
     }
 

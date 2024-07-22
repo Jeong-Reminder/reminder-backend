@@ -30,6 +30,8 @@ public class Member {
     @Enumerated(EnumType.STRING)
     @Column
     private UserRole userRole;
+    @Column
+    private String fcmToken;
 
     @OneToOne(mappedBy = "member", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private MemberProfile memberProfile;  // 프로필 정보
