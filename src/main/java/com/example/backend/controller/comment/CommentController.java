@@ -35,7 +35,7 @@ public class CommentController {
         }
     }
 
-    @PutMapping("/{announcementId}/update/{commentId}")
+    @PutMapping("/{announcementId}/{commentId}")
     public ResponseEntity<ResponseDTO<CommentResponseDTO>> updateComment(Authentication authentication,
                                                                          @PathVariable Long announcementId,
                                                                          @PathVariable Long commentId,
@@ -54,7 +54,7 @@ public class CommentController {
         }
     }
 
-    @DeleteMapping("/{announcementId}/delete/{commentId}")
+    @DeleteMapping("/{announcementId}/{commentId}")
     public ResponseEntity<ResponseDTO<Void>> deleteComment(Authentication authentication,
                                                            @PathVariable Long announcementId,
                                                            @PathVariable Long commentId) {

@@ -1,20 +1,14 @@
 package com.example.backend.model.entity.announcement;
 
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.LocalDateTime;
-@Data
 @Entity
-@Builder
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
 public class File {
 
@@ -22,17 +16,17 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private String originalFilename;
+    private String filePath;
+    private String fileType;
 
-    private Long size;
-
-    private String contentType;
-
-    private String path;
-
-    private LocalDateTime uploadDate;
-
-    public File(String path) {
-        this.path = path;
+    @ManyToOne
+    @JoinColumn(name = "announcement_id")
+    private Announcement announcement;
+    @Builder
+    public File(String originalFilename, String filePath, String fileType) {
+        this.originalFilename = originalFilename;
+        this.filePath = filePath;
+        this.fileType = fileType;
     }
 }
