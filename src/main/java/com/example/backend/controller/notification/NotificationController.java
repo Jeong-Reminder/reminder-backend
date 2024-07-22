@@ -42,7 +42,7 @@ public class NotificationController {
     }
 
     @PutMapping("{messageId}")
-    public ResponseDTO<Object> isReadNotification(Authentication authentication, 
+    public ResponseDTO<Object> isReadNotification(Authentication authentication,
                                                   @PathVariable String messageId) {
         notificationService.isReadMessage(authentication, messageId);
         return ResponseDTO.builder()
