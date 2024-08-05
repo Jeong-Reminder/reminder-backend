@@ -24,11 +24,13 @@ public class FCMService {
     public void sendMessageAllStudent(NotificationMessage notificationMessage) {
         List<Member> members = memberRepository.findByUserRole(UserRole.ROLE_USER);
         for (Member member : members) {
-            sendMessage(member.getFcmToken(), notificationMessage);
+            if (member.getFcmToken() != null)
+                sendMessage(member.getFcmToken(), notificationMessage);
         }
     }
 
     public void sendMessageToStudent(Member member, NotificationMessage message) {
-        sendMessage(member.getFcmToken(), message);
+        if (member.getFcmToken() != null)
+            sendMessage(member.getFcmToken(), message);
     }
 }

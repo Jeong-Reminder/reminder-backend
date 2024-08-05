@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
 @Repository
 public interface AnnouncementRepository extends JpaRepository<Announcement, Long> {
     @Query("SELECT a FROM Announcement a WHERE a.announcementCategory = :category")
