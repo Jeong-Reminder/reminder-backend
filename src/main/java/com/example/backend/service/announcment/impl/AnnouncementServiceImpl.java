@@ -5,27 +5,30 @@ import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.announcement.ContestCategory;
 import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.vote.Vote;
 import com.example.backend.model.repository.announcement.AnnouncementRepository;
+import com.example.backend.model.repository.announcement.ContestCategoryRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.service.announcment.AnnouncementService;
 import com.example.backend.service.announcment.FileService;
-import com.example.backend.service.notification.NotificationService;
 import com.example.backend.service.vote.VoteService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +38,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final MemberRepository memberRepository;
     private final FileService fileService;
     private final VoteService voteService;
-    private final NotificationService notificationService;
+    private final ContestCategoryRepository contestCategoryRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -88,6 +91,30 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
             throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
+        }
+
+        if (announcementRequestDTO.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)){
+            String announcementTitle = announcementRequestDTO.getAnnouncementTitle();
+            Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+            Matcher matcher = pattern.matcher(announcementTitle);
+
+            String contestCategoryName = null;
+
+            // 첫 번째 매칭된 부분을 찾습니다.
+            if (matcher.find()) {
+                // 매칭된 부분에서 대괄호 안의 내용만 가져옵니다.
+                contestCategoryName = matcher.group(1);
+            }
+
+            if (contestCategoryName == null) {
+                throw new IllegalArgumentException("공모전 카테고리의 공지사항 제목은 [공모전]으로 시작해야 합니다.");
+            }
+
+            ContestCategory contestCategory = ContestCategory.builder()
+                    .contestCategoryName(contestCategoryName)
+                    .build();
+
+            contestCategoryRepository.save(contestCategory);
         }
 
         List<Long> imgIds = new ArrayList<>();
@@ -252,5 +279,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         List<Vote> votes = Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new);
 
         return AnnouncementResponseDTO.toResponseDTO(announcement, votes);
+    }
+
+    @Override
+    public List<String> getContestCategoryName() {
+        return contestCategoryRepository.findAll().stream()
+                .map(ContestCategory::getContestCategoryName)
+                .collect(Collectors.toList());
     }
 }
