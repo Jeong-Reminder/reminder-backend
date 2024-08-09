@@ -14,11 +14,11 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "contest_category")
+@Entity
 public class ContestCategory {
 
     @Id
