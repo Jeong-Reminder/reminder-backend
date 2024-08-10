@@ -1,5 +1,6 @@
 package com.example.backend.service.announcment.impl;
 
+import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.repository.announcement.FileRepository;
 import com.example.backend.service.announcment.FileService;
@@ -48,6 +49,36 @@ public class FileServiceImpl implements FileService {
                 .build();
 
         File savedFile = fileRepository.save(uploadedFile);
+
+        String downloadUrl = "http://localhost:9000/api/v1/files/download/" + savedFile.getId();
+        savedFile.setSavedPath(downloadUrl);
+        fileRepository.save(savedFile);
+
+        return savedFile.getId();
+    }
+
+    @Override
+    public Long saveFile(MultipartFile file, Announcement announcement) throws IOException {
+        String originalFilename = file.getOriginalFilename();
+        String fileType = file.getContentType();
+        String newFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+        Path filePath = Paths.get(uploadDir, newFilename);
+
+        Files.copy(file.getInputStream(), filePath);
+
+        File uploadedFile = File.builder()
+                .originalFilename(originalFilename)
+                .filePath(filePath.toString())
+                .fileType(fileType)
+                .announcement(announcement)
+                .build();
+
+        File savedFile = fileRepository.save(uploadedFile);
+
+        String downloadUrl = "http://localhost:9000/api/v1/files/download/" + savedFile.getId();
+        savedFile.setSavedPath(downloadUrl);
+        fileRepository.save(savedFile);
+
         return savedFile.getId();
     }
 
@@ -68,7 +99,14 @@ public class FileServiceImpl implements FileService {
                         .fileType(fileType)
                         .build();
 
-                return fileRepository.save(uploadedFile);
+                File savedFile = fileRepository.save(uploadedFile);
+
+                // 파일 ID를 기반으로 다운로드 URL 설정
+                String downloadUrl = "http://localhost:9000/api/v1/files/download/" + savedFile.getId();
+                savedFile.setSavedPath(downloadUrl);
+                fileRepository.save(savedFile);
+
+                return savedFile;
             } catch (IOException e) {
                 throw new RuntimeException("Error uploading file: " + file.getOriginalFilename(), e);
             }

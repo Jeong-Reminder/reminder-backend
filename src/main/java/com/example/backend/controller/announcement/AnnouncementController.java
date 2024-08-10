@@ -67,8 +67,8 @@ public class AnnouncementController {
     public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> createAnnouncement(
             Authentication authentication,
             @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
-            @RequestParam("img") List<MultipartFile> img,
-            @RequestParam("file") List<MultipartFile> file) throws IOException {
+            @RequestParam(value = "img", required = false) List<MultipartFile> img,
+            @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
         announcementRequestDTO.setImg(img);
         announcementRequestDTO.setFile(file);
@@ -100,7 +100,7 @@ public class AnnouncementController {
             @PathVariable("announcement_id") Long id,
             @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
             @RequestParam(value = "img", required = false) List<MultipartFile> img,
-            @RequestParam("file") List<MultipartFile> file) throws IOException {
+            @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
         announcementRequestDTO.setImg(img);
         announcementRequestDTO.setFile(file);

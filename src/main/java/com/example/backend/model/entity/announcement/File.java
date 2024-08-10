@@ -19,14 +19,17 @@ public class File {
     private String originalFilename;
     private String filePath;
     private String fileType;
-
-    @ManyToOne
+    @Column(name = "saved_path")
+    private String savedPath;
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "announcement_id")
     private Announcement announcement;
+
     @Builder
-    public File(String originalFilename, String filePath, String fileType) {
+    public File(String originalFilename, String filePath, String fileType, String savedPath, Announcement announcement) {
         this.originalFilename = originalFilename;
         this.filePath = filePath;
         this.fileType = fileType;
+        this.announcement = announcement;
     }
 }

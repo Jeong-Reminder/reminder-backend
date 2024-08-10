@@ -14,6 +14,9 @@ public class CommentRequestDTO {
     private Long announcementId;
     private Long memberId;
 
+    public CommentRequestDTO(String content) {
+        this.content = content;
+    }
     public Comment toEntity(Member member, Announcement announcement) {
         return Comment.builder()
                 .content(this.content)

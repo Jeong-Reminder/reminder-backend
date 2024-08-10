@@ -5,6 +5,7 @@ import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
@@ -20,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -76,7 +78,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .collect(Collectors.toList());
     }
 
-
     @Override
     @Transactional
     public AnnouncementResponseDTO createAnnouncement(Authentication authentication, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
@@ -90,39 +91,44 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
         }
 
-        List<Long> imgIds = new ArrayList<>();
-        List<Long> fileIds = new ArrayList<>();
+        Announcement announcement = announcementRequestDTO.toEntity(manager, null, null);
+        Announcement savedAnnouncement = announcementRepository.save(announcement);
 
-        // 이미지 파일 처리
+        List<File> files = new ArrayList<>();
+
         if (announcementRequestDTO.getImg() != null) {
             for (MultipartFile imgFile : announcementRequestDTO.getImg()) {
                 if (!imgFile.isEmpty()) {
-                    Long imgId = fileService.saveFile(imgFile);
-                    imgIds.add(imgId);
+                    Long fileId = fileService.saveFile(imgFile, savedAnnouncement);  // Announcement와 연관된 파일 저장
+                    File file = fileService.getFile(fileId);
+                    files.add(file);
                 }
             }
         }
 
-        // 일반 파일 처리
         if (announcementRequestDTO.getFile() != null) {
             for (MultipartFile file : announcementRequestDTO.getFile()) {
                 if (!file.isEmpty()) {
-                    Long fileId = fileService.saveFile(file);
-                    fileIds.add(fileId);
+                    Long fileId = fileService.saveFile(file, savedAnnouncement);
+                    File savedFile = fileService.getFile(fileId);
+                    files.add(savedFile);
                 }
             }
         }
+
+        savedAnnouncement.setFiles(files);
 
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
         Vote vote = null;
         if (voteRequestDTO != null) {
             vote = voteService.createVote(authentication, voteRequestDTO);
+            savedAnnouncement.setVotes(List.of(vote));
         }
 
-        Announcement announcement = announcementRequestDTO.toEntity(manager,imgIds,fileIds, vote);
-        Announcement savedAnnouncement = announcementRepository.save(announcement);
+        // 5. Announcement 객체 업데이트 및 최종 저장
+        Announcement updatedAnnouncement = announcementRepository.save(savedAnnouncement);
 
-        return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);
+        return AnnouncementResponseDTO.toResponseDTO(updatedAnnouncement);
     }
 
     @Override
@@ -139,15 +145,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement existingAnnouncement = announcementRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
 
-        List<Long> imgIds = new ArrayList<>();
         List<Long> fileIds = new ArrayList<>();
 
         // 이미지 파일 처리
         if (announcementRequestDTO.getImg() != null) {
             for (MultipartFile imgFile : announcementRequestDTO.getImg()) {
                 if (!imgFile.isEmpty()) {
-                    Long imgId = fileService.saveFile(imgFile);
-                    imgIds.add(imgId);
+                    Long fileId = fileService.saveFile(imgFile);
+                    fileIds.add(fileId);
                 }
             }
         }
@@ -168,12 +173,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             vote = voteService.createVote(authentication, voteRequestDTO);
         }
 
-        existingAnnouncement.update(announcementRequestDTO, imgIds, fileIds, vote);
+        // 파일 ID들을 File 객체로 변환
+        List<File> files = fileIds.stream()
+                .map(fileService::getFile)
+                .collect(Collectors.toList());
+
+        existingAnnouncement.update(announcementRequestDTO, files, vote);
         Announcement updatedAnnouncement = announcementRepository.save(existingAnnouncement);
 
         return AnnouncementResponseDTO.toResponseDTO(updatedAnnouncement);
     }
-
 
     @Override
     @Transactional
