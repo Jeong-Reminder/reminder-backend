@@ -100,6 +100,7 @@ public class RecruitmentImplService implements RecruitmentService{
         recruitment.setStudentCount(recruitmentRequestDTO.getStudentCount());
         recruitment.setHopeField(recruitmentRequestDTO.getHopeField());
         recruitment.setKakaoUrl(recruitmentRequestDTO.getKakaoUrl());
+        recruitment.setEndTime(recruitmentRequestDTO.getEndTime());
 
         Recruitment saveRecruitment = recruitmentRepository.save(recruitment);
         return RecruitmentResponseDTO.toResponseDTO(saveRecruitment);

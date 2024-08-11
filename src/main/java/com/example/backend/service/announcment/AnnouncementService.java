@@ -19,4 +19,5 @@ public interface AnnouncementService {
     void showAnnouncement(Authentication authentication, Long id);
     AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId);
     List<AnnouncementResponseDTO> getHiddenAnnouncements(Authentication authentication);
+    List<String> getContestCategoryName();
 }

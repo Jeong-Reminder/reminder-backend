@@ -154,4 +154,14 @@ public class AnnouncementController {
                 .build();
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/contest-categort-name")
+    public ResponseEntity<ResponseDTO<List<String>>> getContestCategoryName() {
+        List<String> contestCategoryName = announcementService.getContestCategoryName();
+        ResponseDTO<List<String>> response = ResponseDTO.<List<String>>builder()
+                .status(HttpStatus.OK.value())
+                .data(contestCategoryName)
+                .build();
+        return ResponseEntity.ok(response);
+    }
 }
