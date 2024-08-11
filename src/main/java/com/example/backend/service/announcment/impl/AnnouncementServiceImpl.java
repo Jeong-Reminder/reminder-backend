@@ -6,7 +6,6 @@ import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.File;
-import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.vote.Vote;
@@ -14,7 +13,6 @@ import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.service.announcment.AnnouncementService;
 import com.example.backend.service.announcment.FileService;
-import com.example.backend.service.notification.NotificationService;
 import com.example.backend.service.vote.VoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -25,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,16 +36,14 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final MemberRepository memberRepository;
     private final FileService fileService;
     private final VoteService voteService;
-    private final NotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
     public List<AnnouncementResponseDTO> getAllAnnouncements(Authentication authentication) {
-        int currentYear = LocalDate.now().getYear();
-        int twoYearsAgo = currentYear - 2;
-
         return announcementRepository.findAll().stream()
-                .filter(announcement -> announcement.getCreatedTime().getYear() >= twoYearsAgo)
+                .filter(announcement -> isWithinTwoYears(announcement.getCreatedTime().getYear()))
+                .filter(Announcement::isVisible)
+                .sorted(Comparator.comparing(Announcement::getId))
                 .map(AnnouncementResponseDTO::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -54,174 +51,75 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementById(Authentication authentication, Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
+        Announcement announcement = findAnnouncementById(id);
+        if (!announcement.isVisible()) {
+            throw new IllegalArgumentException("해당 공지사항은 숨김 처리되어 조회할 수 없습니다.");
         }
-        Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
         return AnnouncementResponseDTO.toResponseDTO(announcement);
     }
-
 
     @Override
     @Transactional(readOnly = true)
     public List<AnnouncementResponseDTO> getAnnouncementsByCategory(Authentication authentication, AnnouncementCategory category) {
-        int currentYear = LocalDate.now().getYear();
-        int twoYearsAgo = currentYear - 2;
-
         return announcementRepository.findByAnnouncementCategory(category).stream()
-                .filter(announcement -> announcement.getCreatedTime().getYear() >= twoYearsAgo)
-                .map(announcement -> {
-                    List<Vote> votes = Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new);
-                    return AnnouncementResponseDTO.toResponseDTO(announcement, votes);
-                })
+                .filter(announcement -> isWithinTwoYears(announcement.getCreatedTime().getYear()))
+                .filter(Announcement::isVisible)
+                .sorted(Comparator.comparing(Announcement::getId))
+                .map(announcement -> AnnouncementResponseDTO.toResponseDTO(announcement, Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new)))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public AnnouncementResponseDTO createAnnouncement(Authentication authentication, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
-        String studentId = authentication.getName();
-        Member member = memberRepository.findByStudentId(studentId);
-        Long managerId = member.getId();
-        Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
-
-        if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
-        }
+        Member manager = validateAndGetAdmin(authentication);
 
         Announcement announcement = announcementRequestDTO.toEntity(manager, null, null);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
-        List<File> files = new ArrayList<>();
-
-        if (announcementRequestDTO.getImg() != null) {
-            for (MultipartFile imgFile : announcementRequestDTO.getImg()) {
-                if (!imgFile.isEmpty()) {
-                    Long fileId = fileService.saveFile(imgFile, savedAnnouncement);  // Announcement와 연관된 파일 저장
-                    File file = fileService.getFile(fileId);
-                    files.add(file);
-                }
-            }
-        }
-
-        if (announcementRequestDTO.getFile() != null) {
-            for (MultipartFile file : announcementRequestDTO.getFile()) {
-                if (!file.isEmpty()) {
-                    Long fileId = fileService.saveFile(file, savedAnnouncement);
-                    File savedFile = fileService.getFile(fileId);
-                    files.add(savedFile);
-                }
-            }
-        }
+        List<File> files = handleFiles(announcementRequestDTO.getImg(), savedAnnouncement);
+        files.addAll(handleFiles(announcementRequestDTO.getFile(), savedAnnouncement));
 
         savedAnnouncement.setFiles(files);
 
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
-        Vote vote = null;
         if (voteRequestDTO != null) {
-            vote = voteService.createVote(authentication, voteRequestDTO);
+            Vote vote = voteService.createVote(authentication, voteRequestDTO);
             savedAnnouncement.setVotes(List.of(vote));
         }
 
-        // 5. Announcement 객체 업데이트 및 최종 저장
-        Announcement updatedAnnouncement = announcementRepository.save(savedAnnouncement);
-
-        return AnnouncementResponseDTO.toResponseDTO(updatedAnnouncement);
+        return AnnouncementResponseDTO.toResponseDTO(announcementRepository.save(savedAnnouncement));
     }
 
     @Override
     @Transactional
     public AnnouncementResponseDTO updateAnnouncement(Authentication authentication, Long id, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
-        String studentId = authentication.getName();
-        Member member = memberRepository.findByStudentId(studentId);
-        Long managerId = member.getId();
-        Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
-        if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 업데이트 할 수 있습니다.");
-        }
-        Announcement existingAnnouncement = announcementRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
+        validateAndGetAdmin(authentication);
 
-        List<Long> fileIds = new ArrayList<>();
+        Announcement existingAnnouncement = findAnnouncementById(id);
+        List<File> files = handleFiles(announcementRequestDTO.getImg());
+        files.addAll(handleFiles(announcementRequestDTO.getFile()));
 
-        // 이미지 파일 처리
-        if (announcementRequestDTO.getImg() != null) {
-            for (MultipartFile imgFile : announcementRequestDTO.getImg()) {
-                if (!imgFile.isEmpty()) {
-                    Long fileId = fileService.saveFile(imgFile);
-                    fileIds.add(fileId);
-                }
-            }
-        }
-
-        // 일반 파일 처리
-        if (announcementRequestDTO.getFile() != null) {
-            for (MultipartFile file : announcementRequestDTO.getFile()) {
-                if (!file.isEmpty()) {
-                    Long fileId = fileService.saveFile(file);
-                    fileIds.add(fileId);
-                }
-            }
-        }
-
-        VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
         Vote vote = null;
-        if (voteRequestDTO != null) {
-            vote = voteService.createVote(authentication, voteRequestDTO);
+        if (announcementRequestDTO.getVoteRequest() != null) {
+            vote = voteService.createVote(authentication, announcementRequestDTO.getVoteRequest());
         }
-
-        // 파일 ID들을 File 객체로 변환
-        List<File> files = fileIds.stream()
-                .map(fileService::getFile)
-                .collect(Collectors.toList());
 
         existingAnnouncement.update(announcementRequestDTO, files, vote);
-        Announcement updatedAnnouncement = announcementRepository.save(existingAnnouncement);
-
-        return AnnouncementResponseDTO.toResponseDTO(updatedAnnouncement);
+        return AnnouncementResponseDTO.toResponseDTO(announcementRepository.save(existingAnnouncement));
     }
 
     @Override
     @Transactional
     public void deleteAnnouncement(Authentication authentication, Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
-        }
-
-        String studentId = authentication.getName();
-        Member member = memberRepository.findByStudentId(studentId);
-        Long managerId = member.getId();
-        Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
-        if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 삭제할 수 있습니다.");
-        }
-
-        Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
+        Announcement announcement = getAnnouncementEntityById(authentication, id);
         announcementRepository.delete(announcement);
     }
 
     @Override
     @Transactional
     public void hideAnnouncement(Authentication authentication, Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
-        }
-
-        String studentId = authentication.getName();
-        Member member = memberRepository.findByStudentId(studentId);
-        Long managerId = member.getId();
-        Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
-        if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 숨길 수 있습니다.");
-        }
-        Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
+        Announcement announcement = getAnnouncementEntityById(authentication, id);
         announcement.setVisible(false);
         announcementRepository.save(announcement);
     }
@@ -229,20 +127,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional
     public void showAnnouncement(Authentication authentication, Long id) {
-        if (id == null) {
-            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
-        }
-
-        String studentId = authentication.getName();
-        Member member = memberRepository.findByStudentId(studentId);
-        Long managerId = member.getId();
-        Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
-        if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 보이게 할 수 있습니다.");
-        }
-        Announcement announcement = announcementRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
+        Announcement announcement = getAnnouncementEntityById(authentication, id);
         announcement.setVisible(true);
         announcementRepository.save(announcement);
     }
@@ -250,16 +135,67 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Override
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId) {
-        if (announcementId == null) {
-            throw new IllegalArgumentException("ID는 null일 수 없습니다.");
-        }
-
-        Announcement announcement = announcementRepository.findById(announcementId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
-
-        List<Comment> comments = announcement.getComments() != null ? announcement.getComments() : new ArrayList<>();
+        Announcement announcement = findAnnouncementById(announcementId);
         List<Vote> votes = Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new);
-
         return AnnouncementResponseDTO.toResponseDTO(announcement, votes);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AnnouncementResponseDTO> getHiddenAnnouncements(Authentication authentication) {
+        validateAdmin(authentication);
+        return announcementRepository.findAll().stream()
+                .filter(announcement -> !announcement.isVisible())
+                .sorted(Comparator.comparing(Announcement::getId))
+                .map(AnnouncementResponseDTO::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    private boolean isWithinTwoYears(int year) {
+        int currentYear = LocalDate.now().getYear();
+        return year >= currentYear - 2;
+    }
+
+    private Announcement findAnnouncementById(Long id) {
+        return announcementRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 공지사항을 찾을 수 없습니다."));
+    }
+
+    private Member validateAndGetAdmin(Authentication authentication) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        if (member.getUserRole() != UserRole.ROLE_ADMIN) {
+            throw new IllegalArgumentException("관리자만 공지사항을 생성할 수 있습니다.");
+        }
+        return member;
+    }
+
+    private void validateAdmin(Authentication authentication) {
+        if (!authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new IllegalArgumentException("관리자만 숨겨진 공지사항을 조회할 수 있습니다.");
+        }
+    }
+
+    private Announcement getAnnouncementEntityById(Authentication authentication, Long id) {
+        validateAndGetAdmin(authentication);
+        return findAnnouncementById(id);
+    }
+
+    private List<File> handleFiles(List<MultipartFile> files, Announcement announcement) throws IOException {
+        List<File> savedFiles = new ArrayList<>();
+        if (files != null) {
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    Long fileId = fileService.saveFile(file, announcement);
+                    savedFiles.add(fileService.getFile(fileId));
+                }
+            }
+        }
+        return savedFiles;
+    }
+
+    private List<File> handleFiles(List<MultipartFile> files) throws IOException {
+        return handleFiles(files, null);
     }
 }

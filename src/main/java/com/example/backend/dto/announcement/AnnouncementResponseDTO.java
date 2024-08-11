@@ -78,8 +78,6 @@ public class AnnouncementResponseDTO {
                         : new ArrayList<>())
                 .build();
     }
-
-    // 파일들을 URL로 변환
     private static List<String> convertFilesToUrls(List<File> files) {
         return files != null
                 ? files.stream()
@@ -87,8 +85,6 @@ public class AnnouncementResponseDTO {
                 .collect(Collectors.toList())
                 : new ArrayList<>();
     }
-
-    // 파일들을 DTO로 변환
     private static List<FileResponseDTO> convertFilesToDTOs(List<File> files) {
         return files != null
                 ? files.stream()
