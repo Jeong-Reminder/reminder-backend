@@ -42,12 +42,6 @@ public class Announcement extends TimeZone {
     @Column(name = "announcement_level")
     private int announcementLevel;
 
-    @ElementCollection
-    private List<Long> imgIds;
-
-    @ElementCollection
-    private List<Long> fileIds;
-
     @Builder.Default
     @Column(name = "visible")
     private boolean visible = true;
@@ -68,17 +62,17 @@ public class Announcement extends TimeZone {
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recommend> recommends = new ArrayList<>();
 
-    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL)
-    private List<File> files;
+    @Builder.Default
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<File> files = new ArrayList<>();
 
-    public void update(AnnouncementRequestDTO announcementRequestDTO, List<Long> imgIds, List<Long> fileIds, Vote vote) {
+    public void update(AnnouncementRequestDTO announcementRequestDTO, List<File> files, Vote vote) {
         this.announcementTitle = announcementRequestDTO.getAnnouncementTitle();
         this.announcementContent = announcementRequestDTO.getAnnouncementContent();
         this.announcementCategory = announcementRequestDTO.getAnnouncementCategory();
         this.announcementImportant = announcementRequestDTO.getAnnouncementImportant();
         this.announcementLevel = announcementRequestDTO.getAnnouncementLevel();
-        this.imgIds = imgIds;
-        this.fileIds = fileIds;
+        this.files = files;
         this.visible = announcementRequestDTO.isVisible();
         if (vote != null) {
             this.votes = List.of(vote);

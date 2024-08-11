@@ -31,9 +31,6 @@ public class AnnouncementController {
 
     @GetMapping
     public ResponseEntity<ResponseDTO<List<AnnouncementResponseDTO>>> getAllAnnouncements(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
         List<AnnouncementResponseDTO> announcements = announcementService.getAllAnnouncements(authentication);
         ResponseDTO<List<AnnouncementResponseDTO>> response = ResponseDTO.<List<AnnouncementResponseDTO>>builder()
                 .status(HttpStatus.OK.value())
@@ -42,10 +39,12 @@ public class AnnouncementController {
         return ResponseEntity.ok(response);
     }
 
-
     @GetMapping("/{announcement_id}")
     public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> getAnnouncementById(Authentication authentication, @PathVariable("announcement_id") Long id) {
         AnnouncementResponseDTO announcement = announcementService.getAnnouncementById(authentication, id);
+        if (announcement == null || !announcement.isVisible()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .data(announcement)
@@ -63,12 +62,26 @@ public class AnnouncementController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/hidden")
+    public ResponseEntity<ResponseDTO<List<AnnouncementResponseDTO>>> getHiddenAnnouncements(Authentication authentication) {
+        if (authentication == null || !authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        List<AnnouncementResponseDTO> hiddenAnnouncements = announcementService.getHiddenAnnouncements(authentication);
+        ResponseDTO<List<AnnouncementResponseDTO>> response = ResponseDTO.<List<AnnouncementResponseDTO>>builder()
+                .status(HttpStatus.OK.value())
+                .data(hiddenAnnouncements)
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> createAnnouncement(
             Authentication authentication,
             @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
-            @RequestParam("img") List<MultipartFile> img,
-            @RequestParam("file") List<MultipartFile> file) throws IOException {
+            @RequestParam(value = "img", required = false) List<MultipartFile> img,
+            @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
         announcementRequestDTO.setImg(img);
         announcementRequestDTO.setFile(file);
@@ -100,7 +113,7 @@ public class AnnouncementController {
             @PathVariable("announcement_id") Long id,
             @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
             @RequestParam(value = "img", required = false) List<MultipartFile> img,
-            @RequestParam("file") List<MultipartFile> file) throws IOException {
+            @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
         announcementRequestDTO.setImg(img);
         announcementRequestDTO.setFile(file);
@@ -123,19 +136,21 @@ public class AnnouncementController {
     }
 
     @PutMapping("/hide/{announcement_id}")
-    public ResponseEntity<ResponseDTO<Void>> hideAnnouncement(Authentication authentication, @PathVariable("announcement_id") Long id) {
+    public ResponseEntity<ResponseDTO<String>> hideAnnouncement(Authentication authentication, @PathVariable("announcement_id") Long id) {
         announcementService.hideAnnouncement(authentication, id);
-        ResponseDTO<Void> response = ResponseDTO.<Void>builder()
+        ResponseDTO<String> response = ResponseDTO.<String>builder()
                 .status(HttpStatus.OK.value())
+                .data("해당 게시글 숨김 성공.")
                 .build();
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/show/{announcement_id}")
-    public ResponseEntity<ResponseDTO<Void>> showAnnouncement(Authentication authentication, @PathVariable("announcement_id") Long id) {
+    public ResponseEntity<ResponseDTO<String>> showAnnouncement(Authentication authentication, @PathVariable("announcement_id") Long id) {
         announcementService.showAnnouncement(authentication, id);
-        ResponseDTO<Void> response = ResponseDTO.<Void>builder()
+        ResponseDTO<String> response = ResponseDTO.<String>builder()
                 .status(HttpStatus.OK.value())
+                .data("해당 게시글 보임 성공.")
                 .build();
         return ResponseEntity.ok(response);
     }

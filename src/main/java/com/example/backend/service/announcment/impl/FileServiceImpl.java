@@ -1,5 +1,6 @@
 package com.example.backend.service.announcment.impl;
 
+import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.repository.announcement.FileRepository;
 import com.example.backend.service.announcment.FileService;
@@ -19,6 +20,7 @@ import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,20 +36,28 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public Long saveFile(MultipartFile file) throws IOException {
-        String originalFilename = file.getOriginalFilename();
-        String fileType = file.getContentType();
-        String newFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-        Path filePath = Paths.get(uploadDir, newFilename);
+        return saveFile(file, null);
+    }
 
-        Files.copy(file.getInputStream(), filePath);
+    @Override
+    public Long saveFile(MultipartFile file, Announcement announcement) throws IOException {
+        String originalFilename = sanitizeFilename(file.getOriginalFilename());
+        String newFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+        Path filePath = Paths.get(uploadDir).resolve(newFilename).normalize();
+
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         File uploadedFile = File.builder()
                 .originalFilename(originalFilename)
                 .filePath(filePath.toString())
-                .fileType(fileType)
+                .fileType(file.getContentType())
+                .announcement(announcement)
                 .build();
 
         File savedFile = fileRepository.save(uploadedFile);
+        savedFile.setSavedPath(buildDownloadUrl(savedFile.getId()));
+        fileRepository.save(savedFile);
+
         return savedFile.getId();
     }
 
@@ -55,20 +65,7 @@ public class FileServiceImpl implements FileService {
     public List<File> uploadFiles(List<MultipartFile> files) {
         return files.stream().map(file -> {
             try {
-                String originalFilename = file.getOriginalFilename();
-                String fileType = file.getContentType();
-                String newFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-                Path filePath = Paths.get(uploadDir, newFilename);
-
-                Files.copy(file.getInputStream(), filePath);
-
-                File uploadedFile = File.builder()
-                        .originalFilename(originalFilename)
-                        .filePath(filePath.toString())
-                        .fileType(fileType)
-                        .build();
-
-                return fileRepository.save(uploadedFile);
+                return getFileById(saveFile(file));
             } catch (IOException e) {
                 throw new RuntimeException("Error uploading file: " + file.getOriginalFilename(), e);
             }
@@ -77,34 +74,47 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public File getFile(Long id) {
-        return fileRepository.findById(id).orElseThrow(() -> new RuntimeException("File not found"));
+        return fileRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("File not found with id " + id));
     }
 
     @Override
     public ResponseEntity<Resource> downloadFile(Long id) {
         try {
-            File file = fileRepository.findById(id).orElseThrow(() -> new RuntimeException("파일을 찾지 못했습니다."));
-            Path filePath = Paths.get(file.getFilePath());
+            File file = getFile(id);
+            Path filePath = Paths.get(file.getFilePath()).normalize();
             Resource resource = new UrlResource(filePath.toUri());
 
-            if (resource.exists() && resource.isReadable()) {
-                String originalFilename = file.getOriginalFilename();
-                String encodedFilename = URLEncoder.encode(originalFilename, "UTF-8").replace("+", "%20");
-
-                String contentType = Files.probeContentType(filePath);
-                if (contentType == null) {
-                    contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-                }
-
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFilename + "\"")
-                        .body(resource);
-            } else {
+            if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
+
+            String encodedFilename = URLEncoder.encode(file.getOriginalFilename(), "UTF-8").replace("+", "%20");
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            }
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFilename + "\"")
+                    .body(resource);
+
         } catch (IOException e) {
-            throw new RuntimeException("다운로드 중 오류가 발생하였습니다.", e);
+            throw new RuntimeException("Error occurred while downloading the file.", e);
         }
+    }
+
+    private String sanitizeFilename(String filename) {
+        return filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+    }
+
+    private String buildDownloadUrl(Long fileId) {
+        return "http://localhost:9000/api/v1/files/download/" + fileId;
+    }
+
+    private File getFileById(Long fileId) {
+        return fileRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("File not found with id " + fileId));
     }
 }

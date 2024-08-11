@@ -37,7 +37,7 @@ public class AnnouncementResponseDTO {
                 .announcementCategory(announcement.getAnnouncementCategory())
                 .announcementImportant(announcement.getAnnouncementImportant())
                 .announcementLevel(announcement.getAnnouncementLevel())
-                .imgUrls(convertIdsToUrls(announcement.getImgIds()))
+                .imgUrls(convertFilesToUrls(announcement.getFiles()))
                 .files(convertFilesToDTOs(announcement.getFiles()))
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManager().getId())
@@ -62,7 +62,7 @@ public class AnnouncementResponseDTO {
                 .announcementCategory(announcement.getAnnouncementCategory())
                 .announcementImportant(announcement.getAnnouncementImportant())
                 .announcementLevel(announcement.getAnnouncementLevel())
-                .imgUrls(convertIdsToUrls(announcement.getImgIds()))
+                .imgUrls(convertFilesToUrls(announcement.getFiles()))
                 .files(convertFilesToDTOs(announcement.getFiles()))
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManager().getId())
@@ -78,24 +78,17 @@ public class AnnouncementResponseDTO {
                         : new ArrayList<>())
                 .build();
     }
-
-    private static List<String> convertIdsToUrls(List<Long> ids) {
-        return ids != null
-                ? ids.stream()
-                .map(id -> "http://localhost:9000/files/" + id)
+    private static List<String> convertFilesToUrls(List<File> files) {
+        return files != null
+                ? files.stream()
+                .map(file -> "http://localhost:9000/api/v1/files/download/" + file.getId())
                 .collect(Collectors.toList())
                 : new ArrayList<>();
     }
-
     private static List<FileResponseDTO> convertFilesToDTOs(List<File> files) {
         return files != null
                 ? files.stream()
-                .map(file -> FileResponseDTO.builder()
-                        .id(file.getId())
-                        .orgNm(file.getOriginalFilename())
-                        .saveNm(file.getFilePath())
-                        .savedPath("http://localhost:9000/files/download/" + file.getId())
-                        .build())
+                .map(FileResponseDTO::fromEntity)
                 .collect(Collectors.toList())
                 : new ArrayList<>();
     }
