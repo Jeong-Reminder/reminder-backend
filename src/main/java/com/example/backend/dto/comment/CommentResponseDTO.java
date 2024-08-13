@@ -13,6 +13,14 @@ public class CommentResponseDTO {
     private Long memberId;
     private String memberName;
 
+    public CommentResponseDTO(Comment comment) {
+        this.id=comment.getId();
+        this.content=comment.getContent();
+        this.announcementId=getAnnouncementId();
+        this.memberId=getMemberId();
+        this.memberName=getMemberName();
+    }
+
     public static CommentResponseDTO toResponseDTO(Comment comment) {
         return CommentResponseDTO.builder()
                 .id(comment.getId())

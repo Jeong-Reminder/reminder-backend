@@ -5,10 +5,9 @@ import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
+import com.example.backend.model.entity.announcement.ContestCategory;
 import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.entity.announcement.Image;
-import com.example.backend.model.entity.announcement.ContestCategory;
-import com.example.backend.model.entity.comment.Comment;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.vote.Vote;
@@ -24,20 +23,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -87,17 +81,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         Announcement announcement = announcementRequestDTO.toEntity(manager, null, null, null);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
-        if (announcementRequestDTO.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)){
+
+        if (announcementRequestDTO.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)) {
             String announcementTitle = announcementRequestDTO.getAnnouncementTitle();
             Pattern pattern = Pattern.compile("\\[(.*?)\\]");
             Matcher matcher = pattern.matcher(announcementTitle);
 
-        saveFilesAndImages(announcementRequestDTO, savedAnnouncement);
+            saveFilesAndImages(announcementRequestDTO, savedAnnouncement);
             String contestCategoryName = null;
 
-            // 첫 번째 매칭된 부분을 찾습니다.
             if (matcher.find()) {
-                // 매칭된 부분에서 대괄호 안의 내용만 가져옵니다.
                 contestCategoryName = matcher.group(1);
             }
 
@@ -111,13 +104,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
             contestCategoryRepository.save(contestCategory);
         }
-
-        List<Long> imgIds = new ArrayList<>();
-        List<Long> fileIds = new ArrayList<>();
-        List<File> files = handleFiles(announcementRequestDTO.getImg(), savedAnnouncement);
-        files.addAll(handleFiles(announcementRequestDTO.getFile(), savedAnnouncement));
-
-        savedAnnouncement.setFiles(files);
 
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
         if (voteRequestDTO != null) {
@@ -226,26 +212,31 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     private void saveFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
-        // 새로 추가할 파일 리스트를 가져옴
+        // 파일 저장 처리
         List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
         if (newFiles != null && !newFiles.isEmpty()) {
             for (MultipartFile newFile : newFiles) {
                 if (!newFile.isEmpty()) {
-                    fileService.saveFile(newFile, announcement);
+                    Long fileId = fileService.saveFile(newFile, announcement);
+                    File savedFile = fileService.getFile(fileId);
+                    announcement.getFiles().add(savedFile);
                 }
             }
         }
 
-        // 새로 추가할 이미지 리스트를 가져옴
+        // 이미지 저장 처리
         List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
         if (newImages != null && !newImages.isEmpty()) {
             for (MultipartFile newImage : newImages) {
                 if (!newImage.isEmpty()) {
-                    imageService.saveImage(newImage, announcement);
+                    Long imageId = imageService.saveImage(newImage, announcement);
+                    Image savedImage = imageService.getImage(imageId);
+                    announcement.getImages().add(savedImage);
                 }
             }
         }
     }
+
 
     private void updateFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
         // 유지해야 할 파일 및 이미지 ID 리스트 가져옴

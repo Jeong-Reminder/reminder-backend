@@ -42,7 +42,7 @@ public class AnnouncementController {
     @GetMapping("/{announcement_id}")
     public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> getAnnouncementById(Authentication authentication, @PathVariable("announcement_id") Long id) {
         AnnouncementResponseDTO announcement = announcementService.getAnnouncementById(authentication, id);
-        if (announcement == null || !announcement.getVisible()) {
+        if (announcement == null || !announcement.isVisible()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
@@ -83,10 +83,10 @@ public class AnnouncementController {
             @RequestParam(value = "img", required = false) List<MultipartFile> img,
             @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
-        if (img != null) {
+        if (img != null && !img.isEmpty()) {
             announcementRequestDTO.setNewImages(img);
         }
-        if (file != null) {
+        if (file != null && !file.isEmpty()) {
             announcementRequestDTO.setNewFiles(file);
         }
 
@@ -120,10 +120,10 @@ public class AnnouncementController {
             @RequestParam(value = "img", required = false) List<MultipartFile> img,
             @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
-        if (img != null) {
+        if (img != null && !img.isEmpty()) {
             announcementRequestDTO.setNewImages(img);
         }
-        if (file != null) {
+        if (file != null && !file.isEmpty()) {
             announcementRequestDTO.setNewFiles(file);
         }
 
@@ -164,7 +164,7 @@ public class AnnouncementController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/contest-categort-name")
+    @GetMapping("/contest-category-name")
     public ResponseEntity<ResponseDTO<List<String>>> getContestCategoryName() {
         List<String> contestCategoryName = announcementService.getContestCategoryName();
         ResponseDTO<List<String>> response = ResponseDTO.<List<String>>builder()

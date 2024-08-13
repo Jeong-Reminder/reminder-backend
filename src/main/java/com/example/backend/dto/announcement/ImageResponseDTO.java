@@ -1,23 +1,23 @@
 package com.example.backend.dto.announcement;
 
 import com.example.backend.model.entity.announcement.Image;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ImageResponseDTO {
     private Long id;
-    private String orgNm;
-    private String saveNm;
-    private String savedPath;
+    private String imageName;
+    private byte[] imageData;
 
-    public static ImageResponseDTO fromEntity(Image image) {
-        return ImageResponseDTO.builder()
-                .id(image.getId())
-                .orgNm(image.getOriginalFilename())
-                .saveNm(image.getFilePath())
-                .savedPath(image.getSavedPath())
-                .build();
+    public ImageResponseDTO(Image image, byte[] imageData) {
+        this.id = image.getId();
+        this.imageName = image.getOriginalFilename();
+        this.imageData = imageData;
     }
 }

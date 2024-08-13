@@ -9,10 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface ImageService {
-    Long saveImage(MultipartFile image) throws IOException;
     Long saveImage(MultipartFile image, Announcement announcement) throws IOException;
-    void deleteImageById(Long imageId);
     Image getImage(Long id);
-
-    ResponseEntity<Resource> downloadImage(Long id);
+    byte[] getImageData(Long id) throws IOException;
 }
