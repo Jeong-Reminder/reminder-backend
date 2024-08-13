@@ -5,6 +5,7 @@ import com.example.backend.dto.admin.MemberAdminResponseDTO;
 import com.example.backend.dto.member.MemberRequestDTO;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
+import com.example.backend.model.repository.announcement.ContestCategoryRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamRepository;
@@ -26,6 +27,7 @@ public class AdminImplService implements AdminService {
     private final RecruitmentRepository recruitmentRepository;
     private final MemberRepository memberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final ContestCategoryRepository contestCategoryRepository;
 
     @Override
     public List<MemberAdminResponseDTO> updateMember(Authentication authentication, MultipartFile file) throws IOException {
@@ -165,6 +167,7 @@ public class AdminImplService implements AdminService {
             throw new IllegalArgumentException("관리자 권한이 없습니다.");
         }
 
+        contestCategoryRepository.deleteAll();
         recruitmentRepository.deleteAll();
     }
 
@@ -178,6 +181,7 @@ public class AdminImplService implements AdminService {
             throw new IllegalArgumentException("관리자 권한이 없습니다.");
         }
 
+        contestCategoryRepository.deleteByContestCategoryName(category);
         recruitmentRepository.deleteByRecruitmentCategory(category);
     }
 
