@@ -5,9 +5,8 @@ import com.example.backend.dto.announcement.AnnouncementRequestDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
-import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.entity.announcement.ContestCategory;
-import com.example.backend.model.entity.comment.Comment;
+import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.vote.Vote;
@@ -17,11 +16,6 @@ import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.service.announcment.AnnouncementService;
 import com.example.backend.service.announcment.FileService;
 import com.example.backend.service.vote.VoteService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,12 +26,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@EnableScheduling
 @RequiredArgsConstructor
 public class AnnouncementServiceImpl implements AnnouncementService {
 
@@ -132,6 +129,27 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         validateAndGetAdmin(authentication);
 
         Announcement existingAnnouncement = findAnnouncementById(id);
+        if(existingAnnouncement.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)) {
+            String oldAnnouncementTitle = existingAnnouncement.getAnnouncementTitle();
+            String newAnnouncementTitle = announcementRequestDTO.getAnnouncementTitle();
+            Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+            Matcher oldMatcher = pattern.matcher(oldAnnouncementTitle);
+            Matcher newMatcher = pattern.matcher(newAnnouncementTitle);
+
+            String contestCategoryName = null;
+
+            if (oldMatcher.find()) {
+                contestCategoryName = oldMatcher.group(1);
+            }
+            if (newMatcher.find()) {
+                String newContestCategoryName = newMatcher.group(1);
+                if (!contestCategoryName.equals(newContestCategoryName)) {
+                    ContestCategory contestCategory = contestCategoryRepository.findByContestCategoryName(contestCategoryName);
+                    contestCategory.setContestCategoryName(newContestCategoryName);
+                    contestCategoryRepository.save(contestCategory);
+                }
+            }
+        }
         List<File> files = handleFiles(announcementRequestDTO.getImg());
         files.addAll(handleFiles(announcementRequestDTO.getFile()));
 
@@ -148,6 +166,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional
     public void deleteAnnouncement(Authentication authentication, Long id) {
         Announcement announcement = getAnnouncementEntityById(authentication, id);
+        if (announcement.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)){
+            String announcementTitle = announcement.getAnnouncementTitle();
+            Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+            Matcher matcher = pattern.matcher(announcementTitle);
+
+            String contestCategoryName = null;
+
+            // 첫 번째 매칭된 부분을 찾습니다.
+            if (matcher.find()) {
+                // 매칭된 부분에서 대괄호 안의 내용만 가져옵니다.
+                contestCategoryName = matcher.group(1);
+            }
+
+            contestCategoryRepository.deleteByContestCategoryName(contestCategoryName);
+        }
+
         announcementRepository.delete(announcement);
     }
 
@@ -239,5 +273,16 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         return contestCategoryRepository.findAll().stream()
                 .map(ContestCategory::getContestCategoryName)
                 .collect(Collectors.toList());
+    }
+
+    @Scheduled(cron = "0 0 0 1 1 *")
+    @Transactional
+    public void deleteOldAnnouncements() {
+        int twoYearsAgo = LocalDate.now().getYear() - 2;
+        List<Announcement> oldAnnouncements = announcementRepository.findAll().stream()
+                .filter(announcement -> announcement.getCreatedTime().getYear() < twoYearsAgo)
+                .collect(Collectors.toList());
+
+        announcementRepository.deleteAll(oldAnnouncements);
     }
 }

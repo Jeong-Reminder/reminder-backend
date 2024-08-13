@@ -5,6 +5,7 @@ import com.example.backend.dto.vote.VoteResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.entity.vote.Vote;
+import java.time.LocalDateTime;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class AnnouncementResponseDTO {
     private Long managerId;
     private List<CommentResponseDTO> comments;
     private List<VoteResponseDTO> votes;
+    private LocalDateTime createdTime;
 
     public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
         return AnnouncementResponseDTO.builder()
@@ -51,6 +53,7 @@ public class AnnouncementResponseDTO {
                         .map(VoteResponseDTO::toResponseDTO)
                         .collect(Collectors.toList())
                         : new ArrayList<>())
+                .createdTime(announcement.getCreatedTime())
                 .build();
     }
 
@@ -76,6 +79,7 @@ public class AnnouncementResponseDTO {
                         .map(VoteResponseDTO::toResponseDTO)
                         .collect(Collectors.toList())
                         : new ArrayList<>())
+                .createdTime(announcement.getCreatedTime())
                 .build();
     }
     private static List<String> convertFilesToUrls(List<File> files) {
