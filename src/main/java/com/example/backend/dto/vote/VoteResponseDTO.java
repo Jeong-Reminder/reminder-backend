@@ -23,6 +23,15 @@ public class VoteResponseDTO {
     private LocalDateTime endTime;
     private List<Long> voteItemIds;
 
+    public VoteResponseDTO(Vote vote) {
+        this.id=vote.getId();
+        this.subjectTitle=vote.getSubjectTitle();
+        this.repetition=vote.isRepetition();
+        this.additional=vote.isAdditional();
+        this.announcementId=getAnnouncementId();
+        this.endTime=vote.getEndTime();
+    }
+
     public static VoteResponseDTO toResponseDTO(Vote vote) {
         return VoteResponseDTO.builder()
                 .id(vote.getId())

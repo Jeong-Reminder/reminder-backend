@@ -16,18 +16,17 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String originalFilename;
+    @Column(nullable = false)
     private String filePath;
+    @Column(nullable = false)
     private String fileType;
-    @Setter
-    @Column(name = "saved_path")
-    private String savedPath;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "announcement_id")
+    @JoinColumn(name = "announcement_id", nullable = false)
     private Announcement announcement;
-
     @Builder
-    public File(String originalFilename, String filePath, String fileType, String savedPath, Announcement announcement) {
+    public File(String originalFilename, String filePath, String fileType, Announcement announcement) {
         this.originalFilename = originalFilename;
         this.filePath = filePath;
         this.fileType = fileType;

@@ -6,10 +6,6 @@ import com.example.backend.model.repository.announcement.FileRepository;
 import com.example.backend.service.announcment.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +24,6 @@ public class FileServiceImpl implements FileService {
 
     @Value("${file.dir}")
     private String uploadDir;
-
 
     @Override
     public Long saveFile(MultipartFile file, Announcement announcement) throws IOException {
@@ -51,43 +46,16 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void deleteFileById(Long fileId) {
-        File file = getFile(fileId);
-        fileRepository.delete(file);
-        try {
-            Files.deleteIfExists(Paths.get(file.getFilePath()));
-        } catch (IOException e) {
-            throw new RuntimeException("파일 삭제 중 오류가 발생했습니다: " + fileId, e);
-        }
-    }
-
-    @Override
     public File getFile(Long id) {
         return fileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 ID로 파일을 찾을 수 없습니다: " + id));
     }
 
     @Override
-    public ResponseEntity<byte[]> downloadFile(Long id) {
-        try {
-            File file = getFile(id);
-            Path filePath = Paths.get(file.getFilePath()).normalize();
-            byte[] fileContent = Files.readAllBytes(filePath);
-
-            String contentType = Files.probeContentType(filePath);
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.setContentDispositionFormData("attachment", URLEncoder.encode(file.getOriginalFilename(), "UTF-8").replace("+", "%20"));
-
-            return new ResponseEntity<>(fileContent, headers, HttpStatus.OK);
-
-        } catch (IOException e) {
-            throw new RuntimeException("파일 다운로드 중 오류가 발생했습니다.", e);
-        }
+    public byte[] getFileData(Long id) throws IOException {
+        File file = getFile(id);
+        Path filePath = Paths.get(file.getFilePath()).normalize();
+        return Files.readAllBytes(filePath); // 파일 내용을 바이트 배열로 읽어들임
     }
 
     private String sanitizeFilename(String filename) {

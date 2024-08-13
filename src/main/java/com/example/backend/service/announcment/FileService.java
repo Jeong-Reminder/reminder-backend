@@ -11,8 +11,7 @@ public interface FileService {
 
     Long saveFile(MultipartFile file, Announcement announcement) throws IOException;
 
-    void deleteFileById(Long fileId);
-
     File getFile(Long id);
-    ResponseEntity<byte[]> downloadFile(Long id);
+
+    byte[] getFileData(Long id) throws IOException;
 }
