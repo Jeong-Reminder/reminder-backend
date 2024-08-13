@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ContestCategoryRepository extends JpaRepository<ContestCategory, Long> {
     void deleteByContestCategoryName(String category);
+
+    ContestCategory findByContestCategoryName(String contestCategoryName);
 }
