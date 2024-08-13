@@ -62,17 +62,20 @@ public class Announcement extends TimeZone {
     @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Recommend> recommends = new ArrayList<>();
 
-    @Builder.Default
-    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<File> files = new ArrayList<>();
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<File> files;
 
-    public void update(AnnouncementRequestDTO announcementRequestDTO, List<File> files, Vote vote) {
+    @OneToMany(mappedBy = "announcement", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Image> images;
+
+    public void update(AnnouncementRequestDTO announcementRequestDTO, List<File> files, List<Image> images ,Vote vote) {
         this.announcementTitle = announcementRequestDTO.getAnnouncementTitle();
         this.announcementContent = announcementRequestDTO.getAnnouncementContent();
         this.announcementCategory = announcementRequestDTO.getAnnouncementCategory();
         this.announcementImportant = announcementRequestDTO.getAnnouncementImportant();
         this.announcementLevel = announcementRequestDTO.getAnnouncementLevel();
         this.files = files;
+        this.images = images;
         this.visible = announcementRequestDTO.isVisible();
         if (vote != null) {
             this.votes = List.of(vote);

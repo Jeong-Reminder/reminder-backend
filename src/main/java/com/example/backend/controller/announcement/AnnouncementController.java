@@ -8,8 +8,6 @@ import com.example.backend.model.entity.notification.NotificationMessage;
 import com.example.backend.service.announcment.AnnouncementService;
 import com.example.backend.service.notification.FCM.FCMService;
 import com.example.backend.service.notification.NotificationService;
-import java.time.LocalDateTime;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/announcement")
@@ -42,7 +42,7 @@ public class AnnouncementController {
     @GetMapping("/{announcement_id}")
     public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> getAnnouncementById(Authentication authentication, @PathVariable("announcement_id") Long id) {
         AnnouncementResponseDTO announcement = announcementService.getAnnouncementById(authentication, id);
-        if (announcement == null || !announcement.isVisible()) {
+        if (announcement == null || !announcement.getVisible()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
@@ -83,14 +83,19 @@ public class AnnouncementController {
             @RequestParam(value = "img", required = false) List<MultipartFile> img,
             @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
-        announcementRequestDTO.setImg(img);
-        announcementRequestDTO.setFile(file);
+        if (img != null) {
+            announcementRequestDTO.setNewImages(img);
+        }
+        if (file != null) {
+            announcementRequestDTO.setNewFiles(file);
+        }
 
         AnnouncementResponseDTO announcement = announcementService.createAnnouncement(authentication, announcementRequestDTO);
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
                 .status(HttpStatus.CREATED.value())
                 .data(announcement)
                 .build();
+
         NotificationMessage message = NotificationMessage.builder()
                 .id(UUID.randomUUID().toString())
                 .title(announcement.getAnnouncementTitle())
@@ -115,8 +120,12 @@ public class AnnouncementController {
             @RequestParam(value = "img", required = false) List<MultipartFile> img,
             @RequestParam(value = "file", required = false) List<MultipartFile> file) throws IOException {
 
-        announcementRequestDTO.setImg(img);
-        announcementRequestDTO.setFile(file);
+        if (img != null) {
+            announcementRequestDTO.setNewImages(img);
+        }
+        if (file != null) {
+            announcementRequestDTO.setNewFiles(file);
+        }
 
         AnnouncementResponseDTO announcement = announcementService.updateAnnouncement(authentication, id, announcementRequestDTO);
         ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()

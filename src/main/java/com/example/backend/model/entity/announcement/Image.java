@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class File {
+public class Image {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +27,11 @@ public class File {
     private Announcement announcement;
 
     @Builder
-    public File(String originalFilename, String filePath, String fileType, String savedPath, Announcement announcement) {
+    public Image(String originalFilename, String filePath, String fileType, String savedPath, Announcement announcement) {
         this.originalFilename = originalFilename;
         this.filePath = filePath;
         this.fileType = fileType;
+        this.savedPath = savedPath;
         this.announcement = announcement;
     }
 }
