@@ -13,4 +13,5 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
     @Query("SELECT a FROM Announcement a WHERE a.announcementCategory = :category")
     List<Announcement> findByAnnouncementCategory(@Param("category") AnnouncementCategory category);
 
+    Announcement findAnnouncementById(Long announcementId);
 }

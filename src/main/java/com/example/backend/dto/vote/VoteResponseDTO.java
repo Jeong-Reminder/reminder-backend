@@ -7,11 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -26,6 +24,18 @@ public class VoteResponseDTO {
     private List<Long> voteItemIds;
 
     public static VoteResponseDTO toResponseDTO(Vote vote) {
+        return VoteResponseDTO.builder()
+                .id(vote.getId())
+                .subjectTitle(vote.getSubjectTitle())
+                .repetition(vote.isRepetition())
+                .additional(vote.isAdditional())
+                .announcementId(vote.getAnnouncement().getId())
+                .endTime(vote.getEndTime())
+                .voteItemIds(parseVoteItemIds(vote.getVoteItemIds()))
+                .build();
+    }
+
+    public static VoteResponseDTO fromEntity(Vote vote) {
         return VoteResponseDTO.builder()
                 .id(vote.getId())
                 .subjectTitle(vote.getSubjectTitle())

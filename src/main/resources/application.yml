@@ -22,7 +22,6 @@ spring:
     username: user
     password: password
 
-
   main:
     allow-bean-definition-overriding: true
   scheduling:
@@ -67,19 +66,24 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
 jwt:
   secret: ${JWT_SECRET}
 
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
+jackson:
+  serialization:
+    write-dates-as-timestamps: false
+
 file:
   dir: ${FILE_DIR}
 
+image:
+  dir: ${IMAGE_DIR}  # 이미지 파일 저장 경로
+
 rabbitmq:
-    queue:
-      name: notification-queue
-    exchange:
-      name: notification-exchange
-    routing:
-      key : key
+  queue:
+    name: notification-queue
+  exchange:
+    name: notification-exchange
+  routing:
+    key : key

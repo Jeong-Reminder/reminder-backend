@@ -6,6 +6,7 @@ import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.File;
+import com.example.backend.model.entity.announcement.Image;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.UserRole;
 import com.example.backend.model.entity.vote.Vote;
@@ -13,6 +14,7 @@ import com.example.backend.model.repository.announcement.AnnouncementRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.service.announcment.AnnouncementService;
 import com.example.backend.service.announcment.FileService;
+import com.example.backend.service.announcment.ImageService;
 import com.example.backend.service.vote.VoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -27,7 +29,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 public class AnnouncementServiceImpl implements AnnouncementService {
@@ -35,6 +36,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     private final AnnouncementRepository announcementRepository;
     private final MemberRepository memberRepository;
     private final FileService fileService;
+    private final ImageService imageService;
     private final VoteService voteService;
 
     @Override
@@ -52,9 +54,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementById(Authentication authentication, Long id) {
         Announcement announcement = findAnnouncementById(id);
-        if (!announcement.isVisible()) {
-            throw new IllegalArgumentException("해당 공지사항은 숨김 처리되어 조회할 수 없습니다.");
-        }
+        validateVisibility(announcement);
         return AnnouncementResponseDTO.toResponseDTO(announcement);
     }
 
@@ -65,7 +65,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .filter(announcement -> isWithinTwoYears(announcement.getCreatedTime().getYear()))
                 .filter(Announcement::isVisible)
                 .sorted(Comparator.comparing(Announcement::getId))
-                .map(announcement -> AnnouncementResponseDTO.toResponseDTO(announcement, Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new)))
+                .map(AnnouncementResponseDTO::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -74,21 +74,19 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     public AnnouncementResponseDTO createAnnouncement(Authentication authentication, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
         Member manager = validateAndGetAdmin(authentication);
 
-        Announcement announcement = announcementRequestDTO.toEntity(manager, null, null);
+        Announcement announcement = announcementRequestDTO.toEntity(manager, null, null, null);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
-        List<File> files = handleFiles(announcementRequestDTO.getImg(), savedAnnouncement);
-        files.addAll(handleFiles(announcementRequestDTO.getFile(), savedAnnouncement));
-
-        savedAnnouncement.setFiles(files);
+        saveFilesAndImages(announcementRequestDTO, savedAnnouncement);
 
         VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
         if (voteRequestDTO != null) {
             Vote vote = voteService.createVote(authentication, voteRequestDTO);
             savedAnnouncement.setVotes(List.of(vote));
         }
+        Announcement savedannouncement = announcementRepository.findAnnouncementById(savedAnnouncement.getId());
 
-        return AnnouncementResponseDTO.toResponseDTO(announcementRepository.save(savedAnnouncement));
+        return AnnouncementResponseDTO.toResponseDTO(savedannouncement);
     }
 
     @Override
@@ -97,15 +95,15 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         validateAndGetAdmin(authentication);
 
         Announcement existingAnnouncement = findAnnouncementById(id);
-        List<File> files = handleFiles(announcementRequestDTO.getImg());
-        files.addAll(handleFiles(announcementRequestDTO.getFile()));
+
+        updateFilesAndImages(announcementRequestDTO, existingAnnouncement);
 
         Vote vote = null;
         if (announcementRequestDTO.getVoteRequest() != null) {
             vote = voteService.createVote(authentication, announcementRequestDTO.getVoteRequest());
         }
 
-        existingAnnouncement.update(announcementRequestDTO, files, vote);
+        existingAnnouncement.update(announcementRequestDTO, existingAnnouncement.getFiles(), existingAnnouncement.getImages(), vote);
         return AnnouncementResponseDTO.toResponseDTO(announcementRepository.save(existingAnnouncement));
     }
 
@@ -136,8 +134,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional(readOnly = true)
     public AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId) {
         Announcement announcement = findAnnouncementById(announcementId);
-        List<Vote> votes = Optional.ofNullable(announcement.getVotes()).orElseGet(ArrayList::new);
-        return AnnouncementResponseDTO.toResponseDTO(announcement, votes);
+        return AnnouncementResponseDTO.toResponseDTO(announcement);
     }
 
     @Override
@@ -171,8 +168,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     }
 
     private void validateAdmin(Authentication authentication) {
-        if (!authentication.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
+        if (authentication.getAuthorities().stream()
+                .noneMatch(grantedAuthority -> grantedAuthority.getAuthority().equals("ROLE_ADMIN"))) {
             throw new IllegalArgumentException("관리자만 숨겨진 공지사항을 조회할 수 있습니다.");
         }
     }
@@ -182,20 +179,59 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         return findAnnouncementById(id);
     }
 
-    private List<File> handleFiles(List<MultipartFile> files, Announcement announcement) throws IOException {
-        List<File> savedFiles = new ArrayList<>();
-        if (files != null) {
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    Long fileId = fileService.saveFile(file, announcement);
-                    savedFiles.add(fileService.getFile(fileId));
+    private void validateVisibility(Announcement announcement) {
+        if (!announcement.isVisible()) {
+            throw new IllegalArgumentException("해당 공지사항은 숨김 처리되어 조회할 수 없습니다.");
+        }
+    }
+
+    private void saveFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
+        // 새로 추가할 파일 리스트를 가져옴
+        List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
+        if (newFiles != null && !newFiles.isEmpty()) {
+            for (MultipartFile newFile : newFiles) {
+                if (!newFile.isEmpty()) {
+                    fileService.saveFile(newFile, announcement);
                 }
             }
         }
-        return savedFiles;
+
+        // 새로 추가할 이미지 리스트를 가져옴
+        List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
+        if (newImages != null && !newImages.isEmpty()) {
+            for (MultipartFile newImage : newImages) {
+                if (!newImage.isEmpty()) {
+                    imageService.saveImage(newImage, announcement);
+                }
+            }
+        }
     }
 
-    private List<File> handleFiles(List<MultipartFile> files) throws IOException {
-        return handleFiles(files, null);
+    private void updateFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
+        // 유지해야 할 파일 및 이미지 ID 리스트 가져옴
+        List<Long> fileIdsToKeep = announcementRequestDTO.getFileIds() != null ? announcementRequestDTO.getFileIds() : new ArrayList<>();
+        List<Long> imageIdsToKeep = announcementRequestDTO.getImageIds() != null ? announcementRequestDTO.getImageIds() : new ArrayList<>();
+
+        // 파일 업데이트
+        announcement.getFiles().removeIf(file -> !fileIdsToKeep.contains(file.getId()));
+        List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
+        if (newFiles != null && !newFiles.isEmpty()) {
+            for (MultipartFile newFile : newFiles) {
+                if (!newFile.isEmpty()) {
+                    fileService.saveFile(newFile, announcement);
+                }
+            }
+        }
+
+        // 이미지 업데이트
+        announcement.getImages().removeIf(image -> !imageIdsToKeep.contains(image.getId()));
+        List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
+        if (newImages != null && !newImages.isEmpty()) {
+            for (MultipartFile newImage : newImages) {
+                if (!newImage.isEmpty()) {
+                    imageService.saveImage(newImage, announcement);
+                }
+            }
+        }
     }
 }
