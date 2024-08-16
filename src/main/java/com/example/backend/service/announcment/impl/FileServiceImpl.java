@@ -10,12 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
@@ -55,7 +55,7 @@ public class FileServiceImpl implements FileService {
     public byte[] getFileData(Long id) throws IOException {
         File file = getFile(id);
         Path filePath = Paths.get(file.getFilePath()).normalize();
-        return Files.readAllBytes(filePath); // 파일 내용을 바이트 배열로 읽어들임
+        return Files.readAllBytes(filePath);
     }
 
     private String sanitizeFilename(String filename) {

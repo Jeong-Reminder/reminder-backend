@@ -21,4 +21,5 @@ public class VoteItemResponseDTO {
                 .content(voteItem.getContent())
                 .build();
     }
+
 }
