@@ -13,8 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,40 +31,121 @@ public class VoteServiceImpl implements VoteService {
 
     @Override
     @Transactional
-    public Vote createVote(Authentication authentication, VoteRequestDTO voteRequestDTO) {
+    public Vote createVote(Authentication authentication, VoteRequestDTO voteRequestDTO, Announcement announcement) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        if (member == null) {
+            throw new IllegalArgumentException("Member not found with studentId: " + studentId);
+        }
+        if (member.getUserRole() != UserRole.ROLE_ADMIN) {
+            throw new IllegalArgumentException("Only administrators can create votes.");
+        }
+
+        // Vote 엔티티 생성
+        Vote vote = voteRequestDTO.toEntity(announcement);
+
+        // VoteItem이 있을 경우에만 설정
+        if (voteRequestDTO.getVoteItemIds() != null && !voteRequestDTO.getVoteItemIds().isEmpty()) {
+            List<VoteItem> voteItems = voteRequestDTO.getVoteItemIds().stream()
+                    .map(voteItemId -> voteItemRepository.findById(voteItemId)
+                            .orElseThrow(() -> new IllegalArgumentException("VoteItem not found with ID: " + voteItemId)))
+                    .collect(Collectors.toList());
+
+            vote.setVoteItems(voteItems);
+        }
+
+        return voteRepository.save(vote);
+    }
+
+    @Override
+    @Transactional
+    public void vote(Authentication authentication, Long voteId, Long voteItemId) {
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
         Long managerId = member.getId();
         Member manager = memberRepository.findById(managerId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
-        if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 공지사항을 업데이트 할 수 있습니다.");
+        Vote vote = voteRepository.findById(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다: " + voteId));
+
+        // LocalDateTime으로 현재 시간과 비교
+        if (vote.getEndDateTime() != null && vote.getEndDateTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("투표가 종료되어 투표할 수 없습니다.");
         }
 
-        Announcement announcement = announcementRepository.findById(voteRequestDTO.getAnnouncementId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
-        Vote existingVote = voteRepository.findByAnnouncement(announcement);
-        if (existingVote != null) {
-            throw new IllegalArgumentException("해당 공지사항에는 이미 투표가 존재합니다.");
+        boolean hasVoted = voteStatusRepository.existsByVoteAndMember(vote, member);
+
+        if (!vote.isRepetition() && hasVoted) {
+            throw new IllegalArgumentException("해당 회원은 이미 이 투표에 참여하였습니다.");
         }
 
-        List<VoteItem> voteItems = (voteRequestDTO.getVoteItemIds() != null ? voteRequestDTO.getVoteItemIds() : List.of())
-                .stream()
-                .map(voteItemId -> voteItemRepository.findById((Long) voteItemId)
-                        .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다.")))
-                .toList();
+        VoteItem voteItem = voteItemRepository.findById(voteItemId)
+                .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다: " + voteItemId));
 
-        Vote vote = voteRequestDTO.toEntity(announcement);
+        VoteStatus voteStatus = new VoteStatus();
+        voteStatus.setVote(vote);
+        voteStatus.setMember(member);
+        voteStatus.setVoteItem(voteItem);
+        voteStatus.setStatus(true);
 
-        // voteItemIds 설정
-        if (!voteItems.isEmpty()) {
-            vote.setVoteItemIds(voteItems.stream().map(VoteItem::getId).map(String::valueOf).collect(Collectors.joining(",")));
+        voteStatusRepository.save(voteStatus);
+    }
+
+    @Override
+    @Transactional
+    public void vote(Authentication authentication, Long voteId, List<Long> voteItemIds) {
+        String studentId = authentication.getName();
+        Member member = memberRepository.findByStudentId(studentId);
+        Long managerId = member.getId();
+        Member manager = memberRepository.findById(managerId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
+        Vote vote = voteRepository.findById(voteId)
+                .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다: " + voteId));
+
+        if (vote.getEndDateTime() != null && vote.getEndDateTime().isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("투표가 종료되어 투표할 수 없습니다.");
+        }
+
+        boolean hasVoted = voteStatusRepository.existsByVoteAndMember(vote, member);
+
+        if (!vote.isRepetition() && hasVoted) {
+            throw new IllegalArgumentException("해당 회원은 이미 이 투표에 참여하였습니다.");
+        }
+
+        if (vote.isRepetition()) {
+            List<VoteStatus> newVoteStatuses = voteItemIds.stream()
+                    .map(voteItemId -> {
+                        VoteItem voteItem = voteItemRepository.findById(voteItemId)
+                                .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다: " + voteItemId));
+
+                        VoteStatus voteStatus = new VoteStatus();
+                        voteStatus.setVote(vote);
+                        voteStatus.setMember(member);
+                        voteStatus.setVoteItem(voteItem);
+                        voteStatus.setStatus(true);
+
+                        return voteStatus;
+                    })
+                    .collect(Collectors.toList());
+
+            voteStatusRepository.saveAll(newVoteStatuses);
         } else {
-            vote.setVoteItemIds("");
-        }
+            if (voteItemIds.size() != 1) {
+                throw new IllegalArgumentException("이 투표에서는 하나의 항목에만 투표할 수 있습니다.");
+            }
 
-        Vote savedVote = voteRepository.save(vote);
-        return savedVote;
+            Long voteItemId = voteItemIds.get(0);
+            VoteItem voteItem = voteItemRepository.findById(voteItemId)
+                    .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다: " + voteItemId));
+
+            VoteStatus voteStatus = new VoteStatus();
+            voteStatus.setVote(vote);
+            voteStatus.setMember(member);
+            voteStatus.setVoteItem(voteItem);
+            voteStatus.setStatus(true);
+
+            voteStatusRepository.save(voteStatus);
+        }
     }
 
     @Override
@@ -89,15 +172,18 @@ public class VoteServiceImpl implements VoteService {
 
         List<VoteItem> voteItems = voteRequestDTO.getVoteItemIds().stream()
                 .map(voteItemId -> voteItemRepository.findById(voteItemId)
-                        .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다.")))
-                .toList();
+                        .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다: " + voteItemId)))
+                .collect(Collectors.toList());
 
         vote.setSubjectTitle(voteRequestDTO.getSubjectTitle());
         vote.setRepetition(voteRequestDTO.isRepetition());
         vote.setAdditional(voteRequestDTO.isAdditional());
         vote.setAnnouncement(announcement);
-        vote.setEndTime(voteRequestDTO.getEndTime());
-        vote.setVoteItemIds(String.valueOf(new HashSet<>(voteItems)));
+        vote.setEndDateTime(voteRequestDTO.getEndDateTime());
+        vote.setVoteItemIds(voteItems.stream()
+                .map(VoteItem::getId)
+                .map(String::valueOf)
+                .collect(Collectors.joining(",")));
 
         Vote updatedVote = voteRepository.save(vote);
         return VoteResponseDTO.toResponseDTO(updatedVote);
@@ -112,24 +198,20 @@ public class VoteServiceImpl implements VoteService {
         Member manager = memberRepository.findById(managerId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
         if (manager.getUserRole() != UserRole.ROLE_ADMIN) {
-            throw new IllegalArgumentException("관리자만 삭제을 할 수 있습니다.");
+            throw new IllegalArgumentException("관리자만 삭제할 수 있습니다.");
         }
 
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
 
-        // Vote와 관련된 모든 VoteItem 항목을 삭제합니다.
         List<VoteItem> voteItems = voteItemRepository.findByVote(vote);
         voteItemRepository.deleteAll(voteItems);
 
-        // Vote와 관련된 모든 VoteStatus 항목을 삭제합니다.
         List<VoteStatus> voteStatuses = voteStatusRepository.findByVote(vote);
         voteStatusRepository.deleteAll(voteStatuses);
 
-        // Vote를 삭제합니다.
         voteRepository.delete(vote);
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -177,7 +259,7 @@ public class VoteServiceImpl implements VoteService {
 
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
-        if (vote.getEndTime() != null && vote.getEndTime().isBefore(LocalDateTime.now())) {
+        if (vote.getEndDateTime() != null && vote.getEndDateTime().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException("투표가 종료되어 항목을 추가할 수 없습니다.");
         }
 
@@ -218,10 +300,9 @@ public class VoteServiceImpl implements VoteService {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
 
-        vote.setEndTime(LocalDateTime.now());
+        vote.setEndDateTime(LocalDateTime.now());
         voteRepository.save(vote);
     }
-
 
     @Override
     @Transactional
@@ -256,7 +337,6 @@ public class VoteServiceImpl implements VoteService {
         vote.setVoteItemIds(updatedVoteItemIds);
         voteRepository.save(vote);
 
-        // 투표 항목 삭제
         voteItemRepository.delete(voteItem);
     }
 
@@ -276,8 +356,8 @@ public class VoteServiceImpl implements VoteService {
 
         List<VoteItem> newVoteItems = voteItemIds.stream()
                 .map(voteItemId -> voteItemRepository.findById(voteItemId)
-                        .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다.")))
-                .toList();
+                        .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다: " + voteItemId)))
+                .collect(Collectors.toList());
 
         List<VoteStatus> newVoteStatuses = newVoteItems.stream()
                 .map(voteItem -> {
@@ -290,38 +370,6 @@ public class VoteServiceImpl implements VoteService {
                 })
                 .collect(Collectors.toList());
 
-        // 새로운 투표 기록 저장
         voteStatusRepository.saveAll(newVoteStatuses);
     }
-
-    @Override
-    @Transactional
-    public void vote(Authentication authentication, Long voteId, Long voteItemId) {
-        String studentId = authentication.getName();
-        Member member = memberRepository.findByStudentId(studentId);
-        Long managerId = member.getId();
-        Member manager = memberRepository.findById(managerId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 ID의 회원을 찾을 수 없습니다: " + managerId));
-        Vote vote = voteRepository.findById(voteId)
-                .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
-        if (vote.getEndTime() != null && vote.getEndTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("투표가 종료되어 항목을 추가할 수 없습니다.");
-        }
-        VoteItem voteItem = voteItemRepository.findById(voteItemId)
-                .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다."));
-
-        boolean hasVoted = voteStatusRepository.existsByVoteAndMember(vote, member);
-        if (hasVoted) {
-            throw new IllegalArgumentException("해당 회원은 이미 이 투표에 투표하였습니다.");
-        }
-
-        VoteStatus voteStatus = new VoteStatus();
-        voteStatus.setVote(vote);
-        voteStatus.setMember(member);
-        voteStatus.setVoteItem(voteItem);
-        voteStatus.setStatus(true);
-
-        voteStatusRepository.save(voteStatus);
-    }
-
 }

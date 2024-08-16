@@ -24,7 +24,7 @@ public class ImageController {
     public ResponseEntity<Long> uploadImage(@RequestParam("image") MultipartFile image,
                                             @RequestParam("announcementId") Long announcementId) {
         try {
-            Long imageId = imageService.saveImage(image, null); // Announcement 객체는 서비스에서 처리하거나 직접 주입
+            Long imageId = imageService.saveImage(image, null);
             return new ResponseEntity<>(imageId, HttpStatus.CREATED);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

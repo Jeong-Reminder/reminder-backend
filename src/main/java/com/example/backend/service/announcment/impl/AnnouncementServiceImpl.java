@@ -79,21 +79,21 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     public AnnouncementResponseDTO createAnnouncement(Authentication authentication, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
         Member manager = validateAndGetAdmin(authentication);
 
-        Announcement announcement = announcementRequestDTO.toEntity(manager, null, null, null);
+        Announcement announcement = announcementRequestDTO.toEntity(manager, new ArrayList<>(), new ArrayList<>(), null);
         Announcement savedAnnouncement = announcementRepository.save(announcement);
 
+        saveFilesAndImages(announcementRequestDTO, savedAnnouncement);
+
+        VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
+        if (voteRequestDTO != null) {
+            Vote vote = voteService.createVote(authentication, voteRequestDTO, savedAnnouncement);
+            savedAnnouncement.setVotes(List.of(vote));
+        }
+
+        savedAnnouncement = announcementRepository.save(savedAnnouncement);
+
         if (announcementRequestDTO.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)) {
-            String announcementTitle = announcementRequestDTO.getAnnouncementTitle();
-            Pattern pattern = Pattern.compile("\\[(.*?)\\]");
-            Matcher matcher = pattern.matcher(announcementTitle);
-
-            saveFilesAndImages(announcementRequestDTO, savedAnnouncement);
-            String contestCategoryName = null;
-
-            if (matcher.find()) {
-                contestCategoryName = matcher.group(1);
-            }
-
+            String contestCategoryName = extractContestCategoryName(announcementRequestDTO.getAnnouncementTitle());
             if (contestCategoryName == null) {
                 throw new IllegalArgumentException("공모전 카테고리의 공지사항 제목은 [공모전]으로 시작해야 합니다.");
             }
@@ -101,18 +101,10 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             ContestCategory contestCategory = ContestCategory.builder()
                     .contestCategoryName(contestCategoryName)
                     .build();
-
             contestCategoryRepository.save(contestCategory);
         }
 
-        VoteRequestDTO voteRequestDTO = announcementRequestDTO.getVoteRequest();
-        if (voteRequestDTO != null) {
-            Vote vote = voteService.createVote(authentication, voteRequestDTO);
-            savedAnnouncement.setVotes(List.of(vote));
-        }
-        Announcement savedannouncement = announcementRepository.findAnnouncementById(savedAnnouncement.getId());
-
-        return AnnouncementResponseDTO.toResponseDTO(savedannouncement);
+        return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);
     }
 
     @Override
@@ -126,7 +118,8 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         Vote vote = null;
         if (announcementRequestDTO.getVoteRequest() != null) {
-            vote = voteService.createVote(authentication, announcementRequestDTO.getVoteRequest());
+            announcementRequestDTO.getVoteRequest().setAnnouncementId(existingAnnouncement.getId());
+            vote = voteService.createVote(authentication, announcementRequestDTO.getVoteRequest(), existingAnnouncement);
         }
 
         existingAnnouncement.update(announcementRequestDTO, existingAnnouncement.getFiles(), existingAnnouncement.getImages(), vote);
@@ -174,6 +167,84 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<String> getContestCategoryName() {
+        return contestCategoryRepository.findAll().stream()
+                .map(ContestCategory::getContestCategoryName)
+                .collect(Collectors.toList());
+    }
+
+    private void saveFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
+        List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
+        List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
+
+        if (newFiles != null) {
+            for (MultipartFile newFile : newFiles) {
+                if (!newFile.isEmpty()) {
+                    try {
+                        Long fileId = fileService.saveFile(newFile, announcement);
+                        File savedFile = fileService.getFile(fileId);
+                        announcement.getFiles().add(savedFile);
+                    } catch (IOException e) {
+                        throw e;
+                    }
+                }
+            }
+        }
+
+        if (newImages != null) {
+            for (MultipartFile newImage : newImages) {
+                if (!newImage.isEmpty()) {
+                    try {
+                        Long imageId = imageService.saveImage(newImage, announcement);
+                        Image savedImage = imageService.getImage(imageId);
+                        announcement.getImages().add(savedImage);
+                    } catch (IOException e) {
+                        throw e;
+                    }
+                }
+            }
+        }
+        announcementRepository.save(announcement);
+    }
+
+
+    private void updateFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
+        List<Long> fileIdsToKeep = announcementRequestDTO.getFileIds() != null ? announcementRequestDTO.getFileIds() : new ArrayList<>();
+        List<Long> imageIdsToKeep = announcementRequestDTO.getImageIds() != null ? announcementRequestDTO.getImageIds() : new ArrayList<>();
+
+        announcement.getFiles().removeIf(file -> !fileIdsToKeep.contains(file.getId()));
+        List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
+        if (newFiles != null && !newFiles.isEmpty()) {
+            for (MultipartFile newFile : newFiles) {
+                if (!newFile.isEmpty()) {
+                    fileService.saveFile(newFile, announcement);
+                }
+            }
+        }
+
+        announcement.getImages().removeIf(image -> !imageIdsToKeep.contains(image.getId()));
+        List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
+        if (newImages != null && !newImages.isEmpty()) {
+            for (MultipartFile newImage : newImages) {
+                if (!newImage.isEmpty()) {
+                    imageService.saveImage(newImage, announcement);
+                }
+            }
+        }
+
+        announcementRepository.save(announcement);
+    }
+
+    private String extractContestCategoryName(String title) {
+        Pattern pattern = Pattern.compile("\\[(.*?)\\]");
+        Matcher matcher = pattern.matcher(title);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
     private boolean isWithinTwoYears(int year) {
         int currentYear = LocalDate.now().getYear();
         return year >= currentYear - 2;
@@ -209,67 +280,5 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         if (!announcement.isVisible()) {
             throw new IllegalArgumentException("해당 공지사항은 숨김 처리되어 조회할 수 없습니다.");
         }
-    }
-
-    private void saveFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
-        // 파일 저장 처리
-        List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
-        if (newFiles != null && !newFiles.isEmpty()) {
-            for (MultipartFile newFile : newFiles) {
-                if (!newFile.isEmpty()) {
-                    Long fileId = fileService.saveFile(newFile, announcement);
-                    File savedFile = fileService.getFile(fileId);
-                    announcement.getFiles().add(savedFile);
-                }
-            }
-        }
-
-        // 이미지 저장 처리
-        List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
-        if (newImages != null && !newImages.isEmpty()) {
-            for (MultipartFile newImage : newImages) {
-                if (!newImage.isEmpty()) {
-                    Long imageId = imageService.saveImage(newImage, announcement);
-                    Image savedImage = imageService.getImage(imageId);
-                    announcement.getImages().add(savedImage);
-                }
-            }
-        }
-    }
-
-
-    private void updateFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
-        // 유지해야 할 파일 및 이미지 ID 리스트 가져옴
-        List<Long> fileIdsToKeep = announcementRequestDTO.getFileIds() != null ? announcementRequestDTO.getFileIds() : new ArrayList<>();
-        List<Long> imageIdsToKeep = announcementRequestDTO.getImageIds() != null ? announcementRequestDTO.getImageIds() : new ArrayList<>();
-
-        // 파일 업데이트
-        announcement.getFiles().removeIf(file -> !fileIdsToKeep.contains(file.getId()));
-        List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
-        if (newFiles != null && !newFiles.isEmpty()) {
-            for (MultipartFile newFile : newFiles) {
-                if (!newFile.isEmpty()) {
-                    fileService.saveFile(newFile, announcement);
-                }
-            }
-        }
-
-        // 이미지 업데이트
-        announcement.getImages().removeIf(image -> !imageIdsToKeep.contains(image.getId()));
-        List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
-        if (newImages != null && !newImages.isEmpty()) {
-            for (MultipartFile newImage : newImages) {
-                if (!newImage.isEmpty()) {
-                    imageService.saveImage(newImage, announcement);
-                }
-            }
-        }
-    }
-
-    @Override
-    public List<String> getContestCategoryName() {
-        return contestCategoryRepository.findAll().stream()
-                .map(ContestCategory::getContestCategoryName)
-                .collect(Collectors.toList());
     }
 }

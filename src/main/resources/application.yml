@@ -78,7 +78,7 @@ file:
   dir: ${FILE_DIR}
 
 image:
-  dir: ${IMAGE_DIR}  # 이미지 파일 저장 경로
+  dir: ${IMAGE_DIR}
 
 rabbitmq:
   queue:

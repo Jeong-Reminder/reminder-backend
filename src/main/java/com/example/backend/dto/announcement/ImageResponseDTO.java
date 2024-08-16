@@ -15,9 +15,8 @@ public class ImageResponseDTO {
     private String imageName;
     private byte[] imageData;
 
-    public ImageResponseDTO(Image image, byte[] imageData) {
+    public ImageResponseDTO(Image image) {
         this.id = image.getId();
         this.imageName = image.getOriginalFilename();
-        this.imageData = imageData;
     }
 }

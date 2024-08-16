@@ -11,6 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Getter
 @Builder
 @AllArgsConstructor
@@ -22,19 +23,13 @@ public class AnnouncementRequestDTO {
     private AnnouncementCategory announcementCategory;
     private Boolean announcementImportant;
     private int announcementLevel;
-
     @Builder.Default
     private List<MultipartFile> newImages = new ArrayList<>();
-
     @Builder.Default
     private List<MultipartFile> newFiles = new ArrayList<>();
 
-    @Builder.Default
-    private List<Long> fileIds = new ArrayList<>();
-
-    @Builder.Default
-    private List<Long> imageIds = new ArrayList<>();
-
+    private List<Long> fileIds;
+    private List<Long> imageIds;
     private boolean visible;
     private Long managerId;
     private VoteRequestDTO voteRequest;
@@ -50,7 +45,7 @@ public class AnnouncementRequestDTO {
                 .files(files != null ? files : List.of())
                 .visible(visible)
                 .manager(manager)
-                .votes(vote != null ? List.of(vote) : new ArrayList<>())  // votes를 null 대신 빈 리스트로 설정
+                .votes(vote != null ? List.of(vote) : new ArrayList<>())
                 .build();
     }
 }

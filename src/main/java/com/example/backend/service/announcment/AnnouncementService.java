@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.List;
 
 public interface AnnouncementService {
-
     List<AnnouncementResponseDTO> getAllAnnouncements(Authentication authentication);
 
     AnnouncementResponseDTO getAnnouncementById(Authentication authentication, Long id);
@@ -29,5 +28,6 @@ public interface AnnouncementService {
     AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId);
 
     List<AnnouncementResponseDTO> getHiddenAnnouncements(Authentication authentication);
+
     List<String> getContestCategoryName();
 }

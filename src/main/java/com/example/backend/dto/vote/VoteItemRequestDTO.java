@@ -8,11 +8,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class VoteItemRequestDTO {
+    private List<Long> voteItemIds;
     private String content;
 
     public VoteItem toEntity(Vote vote) {
