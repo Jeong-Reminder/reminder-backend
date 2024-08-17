@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VoteItemRequestDTO {
+    private Long announcementId;
     private List<Long> voteItemIds;
     private String content;
 
