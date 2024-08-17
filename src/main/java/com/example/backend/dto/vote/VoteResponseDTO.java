@@ -25,17 +25,11 @@ public class VoteResponseDTO {
     private Long announcementId;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime endDateTime;
-    private String status; // 투표 상태 (예: "OPEN", "CLOSED", "VOTED")
+    private boolean voteEnded;
     private List<Long> voteItemIds;
     private List<VoteItemResponseDTO> voteItems;
 
     public static VoteResponseDTO toResponseDTO(Vote vote, boolean hasVoted) {
-        String status = "OPEN";
-        if (vote.getEndDateTime() != null && vote.getEndDateTime().isBefore(LocalDateTime.now())) {
-            status = "CLOSED";
-        } else if (hasVoted) {
-            status = "VOTED";
-        }
 
         return VoteResponseDTO.builder()
                 .id(vote.getId())
@@ -44,7 +38,7 @@ public class VoteResponseDTO {
                 .additional(vote.isAdditional())
                 .announcementId(vote.getAnnouncement().getId())
                 .endDateTime(vote.getEndDateTime())
-                .status(status) // 상태 설정
+                .voteEnded(vote.isVoteEnded())
                 .voteItemIds(parseVoteItemIds(vote.getVoteItemIds()))
                 .voteItems(vote.getVoteItems() != null ? vote.getVoteItems().stream()
                         .map(VoteItemResponseDTO::toResponseDTO)
@@ -52,17 +46,6 @@ public class VoteResponseDTO {
                 .build();
     }
 
-    public VoteResponseDTO(Vote vote) {
-        this.id = vote.getId();
-        this.subjectTitle = vote.getSubjectTitle();
-        this.repetition = vote.isRepetition();
-        this.additional = vote.isAdditional();
-        this.announcementId = vote.getAnnouncement().getId();
-        this.endDateTime = vote.getEndDateTime();
-        this.status = "OPEN";
-        this.voteItemIds = vote.getVoteItems().stream().map(VoteItem::getId).collect(Collectors.toList());
-        this.voteItems = vote.getVoteItems().stream().map(VoteItemResponseDTO::new).collect(Collectors.toList());
-    }
     private static List<Long> parseVoteItemIds(String voteItemIds) {
         if (voteItemIds == null || voteItemIds.isEmpty()) {
             return List.of();

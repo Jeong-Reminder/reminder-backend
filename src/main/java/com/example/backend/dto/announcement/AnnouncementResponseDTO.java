@@ -54,7 +54,9 @@ public class AnnouncementResponseDTO {
                 .visible(announcement.isVisible())
                 .managerId(announcement.getManager().getId())
                 .comments(announcement.getComments().stream().map(CommentResponseDTO::new).collect(Collectors.toList()))
-                .votes(announcement.getVotes().stream().map(VoteResponseDTO::new).collect(Collectors.toList()))
+                .votes(announcement.getVotes().stream()
+                        .map(vote -> VoteResponseDTO.toResponseDTO(vote, false))
+                        .collect(Collectors.toList()))
                 .build();
     }
 }
