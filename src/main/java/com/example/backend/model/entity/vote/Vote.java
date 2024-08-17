@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 @Getter
@@ -36,6 +35,9 @@ public class Vote extends TimeZone {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endDateTime;
 
+    @Setter
+    @Column(name = "vote_ended")
+    private boolean voteEnded = false;
 
     private String voteItemIds;
 

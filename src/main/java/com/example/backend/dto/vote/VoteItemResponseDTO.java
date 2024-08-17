@@ -15,6 +15,10 @@ public class VoteItemResponseDTO {
     private Long id;
     private String content;
 
+    public VoteItemResponseDTO(VoteItem voteItem) {
+        this.id = voteItem.getId();
+        this.content = voteItem.getContent();
+    }
     public static VoteItemResponseDTO toResponseDTO(VoteItem voteItem) {
         return VoteItemResponseDTO.builder()
                 .id(voteItem.getId())

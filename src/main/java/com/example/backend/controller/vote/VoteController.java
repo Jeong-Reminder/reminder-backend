@@ -26,9 +26,13 @@ public class VoteController {
                                                                    @PathVariable Long announcementId,
                                                                    @RequestBody VoteRequestDTO voteRequestDTO) {
         try {
-            Announcement announcement = announcementRepository.getReferenceById(announcementId);
-            voteRequestDTO.setAnnouncementId(announcementId);
-            VoteResponseDTO responseDTO = VoteResponseDTO.toResponseDTO(voteService.createVote(authentication, voteRequestDTO, announcement));
+            Announcement announcement = announcementRepository.findById(announcementId)
+                    .orElseThrow(() -> new IllegalArgumentException("Announcement not found with ID: " + announcementId));
+
+            VoteResponseDTO responseDTO = VoteResponseDTO.toResponseDTO(
+                    voteService.createVote(authentication, voteRequestDTO, announcement),
+                    false
+            );
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     ResponseDTO.<VoteResponseDTO>builder()
                             .status(HttpStatus.CREATED.value())
@@ -45,13 +49,12 @@ public class VoteController {
         }
     }
 
-    // 투표 업데이트 시 사용
     @PutMapping("/{voteId}")
     public ResponseEntity<ResponseDTO<String>> updateVote(Authentication authentication,
                                                           @PathVariable Long voteId,
                                                           @RequestBody VoteRequestDTO voteRequestDTO) {
         try {
-            VoteResponseDTO responseDTO = voteService.updateVote(authentication, voteId, voteRequestDTO);
+            VoteResponseDTO updatedVote = voteService.updateVote(authentication, voteId, voteRequestDTO);
             return ResponseEntity.ok(
                     ResponseDTO.<String>builder()
                             .status(HttpStatus.OK.value())
@@ -68,7 +71,6 @@ public class VoteController {
         }
     }
 
-    // 투표 삭제
     @DeleteMapping("/{voteId}")
     public ResponseEntity<ResponseDTO<String>> deleteVote(Authentication authentication,
                                                           @PathVariable Long voteId) {
@@ -90,7 +92,6 @@ public class VoteController {
         }
     }
 
-    // 모든 투표 조회
     @GetMapping
     public ResponseEntity<ResponseDTO<List<VoteResponseDTO>>> getAllVotes(Authentication authentication) {
         List<VoteResponseDTO> votes = voteService.getAllVotes(authentication);
@@ -102,7 +103,7 @@ public class VoteController {
         );
     }
 
-    // 특정 투표 ID로 조회
+    // 특정 투표 조회
     @GetMapping("/{voteId}")
     public ResponseEntity<ResponseDTO<VoteResponseDTO>> getVoteById(Authentication authentication,
                                                                     @PathVariable Long voteId) {
@@ -147,7 +148,6 @@ public class VoteController {
         }
     }
 
-    // 투표 종료
     @PostMapping("/{voteId}/end")
     public ResponseEntity<ResponseDTO<String>> endVote(Authentication authentication,
                                                        @PathVariable Long voteId) {
@@ -169,7 +169,6 @@ public class VoteController {
         }
     }
 
-    // 투표 재실행
     @PostMapping("/{voteId}/recast")
     public ResponseEntity<ResponseDTO<String>> recastVote(Authentication authentication,
                                                           @PathVariable Long voteId,
@@ -179,7 +178,7 @@ public class VoteController {
             return ResponseEntity.ok(
                     ResponseDTO.<String>builder()
                             .status(HttpStatus.OK.value())
-                            .data("투표가 성공적으로 재실행되었습니다!")  // 한글 메시지 추가
+                            .data("투표가 성공적으로 재실행되었습니다!")
                             .build()
             );
         } catch (IllegalArgumentException e) {
@@ -201,7 +200,7 @@ public class VoteController {
             return ResponseEntity.ok(
                     ResponseDTO.<String>builder()
                             .status(HttpStatus.OK.value())
-                            .data("투표가 성공적으로 완료되었습니다!")  // 한글 메시지 추가
+                            .data("투표가 성공적으로 완료되었습니다!")
                             .build()
             );
         } catch (IllegalArgumentException e) {
@@ -214,7 +213,6 @@ public class VoteController {
         }
     }
 
-    // 투표 항목 삭제
     @DeleteMapping("/items/{voteItemId}")
     public ResponseEntity<ResponseDTO<String>> deleteVoteItem(Authentication authentication,
                                                               @PathVariable Long voteItemId) {

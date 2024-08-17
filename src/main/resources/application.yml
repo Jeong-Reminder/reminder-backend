@@ -1,5 +1,6 @@
 server:
   port: 9000
+  time-zone: Asia/Seoul
 
 spring:
   data:
@@ -24,8 +25,9 @@ spring:
 
   main:
     allow-bean-definition-overriding: true
-  scheduling:
-    enabled: true
+    scheduling:
+      enabled: true
+    time-zone: Asia/Seoul
 
   servlet:
     multipart:
