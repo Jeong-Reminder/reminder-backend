@@ -19,4 +19,6 @@ public class VoteItem {
 
     @Column(name = "content")
     private String content;
+    @Column(name = "voted", nullable = false)
+    private boolean voted = false;
 }

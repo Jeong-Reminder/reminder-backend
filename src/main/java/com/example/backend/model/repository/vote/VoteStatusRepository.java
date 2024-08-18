@@ -16,4 +16,6 @@ public interface VoteStatusRepository extends JpaRepository<VoteStatus, Long> {
     List<VoteStatus> findByVoteItem(VoteItem voteItem);
 
     List<VoteStatus> findByVote(Vote vote);
+
+    boolean existsByVoteAndMemberAndVoteItem(Vote vote, Member member, VoteItem voteItem);
 }
