@@ -1,7 +1,6 @@
 package com.example.backend.dto.vote;
 
 import com.example.backend.model.entity.vote.Vote;
-import com.example.backend.model.entity.vote.VoteItem;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,10 +26,11 @@ public class VoteResponseDTO {
     private LocalDateTime endDateTime;
     private boolean voteEnded;
     private List<Long> voteItemIds;
+    private boolean hasVoted;
     private List<VoteItemResponseDTO> voteItems;
 
-    public static VoteResponseDTO toResponseDTO(Vote vote, boolean hasVoted) {
-
+    // Updated method to handle hasVoted and voteItems
+    public static VoteResponseDTO toResponseDTO(Vote vote, boolean hasVoted, List<VoteItemResponseDTO> voteItems) {
         return VoteResponseDTO.builder()
                 .id(vote.getId())
                 .subjectTitle(vote.getSubjectTitle())
@@ -40,8 +40,29 @@ public class VoteResponseDTO {
                 .endDateTime(vote.getEndDateTime())
                 .voteEnded(vote.isVoteEnded())
                 .voteItemIds(parseVoteItemIds(vote.getVoteItemIds()))
+                .hasVoted(hasVoted)
+                .voteItems(voteItems)
+                .build();
+    }
+
+    // Method to handle legacy calls where voteItems are not provided
+    public static VoteResponseDTO toResponseDTO(Vote vote, boolean hasVoted) {
+        return VoteResponseDTO.builder()
+                .id(vote.getId())
+                .subjectTitle(vote.getSubjectTitle())
+                .repetition(vote.isRepetition())
+                .additional(vote.isAdditional())
+                .announcementId(vote.getAnnouncement().getId())
+                .endDateTime(vote.getEndDateTime())
+                .voteEnded(vote.isVoteEnded())
+                .voteItemIds(parseVoteItemIds(vote.getVoteItemIds()))
+                .hasVoted(hasVoted)
                 .voteItems(vote.getVoteItems() != null ? vote.getVoteItems().stream()
-                        .map(VoteItemResponseDTO::toResponseDTO)
+                        .map(voteItem -> {
+                            boolean itemHasVoted = false;
+                            List<String> voters = List.of();
+                            return VoteItemResponseDTO.toResponseDTO(voteItem, itemHasVoted, voters);
+                        })
                         .collect(Collectors.toList()) : List.of())
                 .build();
     }

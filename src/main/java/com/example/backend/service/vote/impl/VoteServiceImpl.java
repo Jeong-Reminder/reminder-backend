@@ -162,6 +162,10 @@ public class VoteServiceImpl implements VoteService {
         VoteItem voteItem = voteItemRepository.findById(voteItemId)
                 .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다: " + voteItemId));
 
+        if (!vote.getVoteItems().contains(voteItem)) {
+            throw new IllegalArgumentException("이 투표 항목은 해당 투표에 속하지 않습니다.");
+        }
+
         VoteStatus voteStatus = new VoteStatus();
         voteStatus.setVote(vote);
         voteStatus.setMember(member);
@@ -170,13 +174,12 @@ public class VoteServiceImpl implements VoteService {
 
         voteStatusRepository.save(voteStatus);
     }
+
     @Override
     @Transactional
     public void vote(Authentication authentication, Long voteId, List<Long> voteItemIds) {
-        // 투표 종료 여부를 먼저 확인
         Vote vote = checkVoteEndTime(voteId);
 
-        // 투표가 종료되었는지 확인 후 예외 발생
         if (vote.isVoteEnded()) {
             throw new IllegalArgumentException("이 투표는 이미 종료되었습니다.");
         }
@@ -185,6 +188,13 @@ public class VoteServiceImpl implements VoteService {
         boolean hasVoted = voteStatusRepository.existsByVoteAndMember(vote, member);
         if (!vote.isRepetition() && hasVoted) {
             throw new IllegalArgumentException("해당 회원은 이미 이 투표에 참여하였습니다.");
+        }
+        for (Long voteItemId : voteItemIds) {
+            VoteItem voteItem = voteItemRepository.findById(voteItemId)
+                    .orElseThrow(() -> new IllegalArgumentException("투표 항목을 찾을 수 없습니다: " + voteItemId));
+            if (!vote.getVoteItems().contains(voteItem)) {
+                throw new IllegalArgumentException("이 투표 항목은 해당 투표에 속하지 않습니다: " + voteItemId);
+            }
         }
 
         if (vote.isRepetition()) {
@@ -216,6 +226,7 @@ public class VoteServiceImpl implements VoteService {
             voteStatusRepository.save(voteStatus);
         }
     }
+
     @Override
     @Transactional
     public void recastVote(Authentication authentication, Long voteId, List<Long> voteItemIds) {
@@ -224,16 +235,13 @@ public class VoteServiceImpl implements VoteService {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
 
-        // 투표 종료 여부를 확인
         if (vote.isVoteEnded()) {
             throw new IllegalArgumentException("이 투표는 이미 종료되었습니다.");
         }
 
-        // 기존에 해당 사용자가 투표한 상태 삭제
         List<VoteStatus> existingVoteStatuses = voteStatusRepository.findByVoteAndMember(vote, member);
         voteStatusRepository.deleteAll(existingVoteStatuses);
 
-        // 새로운 투표 항목에 대해 투표 상태 생성
         List<VoteStatus> newVoteStatuses = voteItemIds.stream()
                 .map(voteItemId -> {
                     VoteItem voteItem = voteItemRepository.findById(voteItemId)
@@ -247,7 +255,6 @@ public class VoteServiceImpl implements VoteService {
                 }).collect(Collectors.toList());
 
         voteStatusRepository.saveAll(newVoteStatuses);
-
     }
 
     @Scheduled(cron = "0 * * * * *")
@@ -257,16 +264,9 @@ public class VoteServiceImpl implements VoteService {
 
         List<Vote> openVotes = voteRepository.findByVoteEndedFalseAndEndDateTimeBefore(now);
 
-        if (openVotes.isEmpty()) {
-            System.out.println("투표 중입니다 " + now);
-        } else {
-            System.out.println("투표가 종료되었습니다 " + now);
-        }
-
         for (Vote vote : openVotes) {
             vote.setVoteEnded(true);
             voteRepository.save(vote);
-            System.out.println("투표 id " + vote.getId() + "의 종료 시간은 " + LocalDateTime.now());
         }
     }
 
@@ -285,7 +285,6 @@ public class VoteServiceImpl implements VoteService {
         voteStatusRepository.deleteAll(voteStatuses);
 
         voteRepository.delete(vote);
-
     }
 
     @Override
@@ -312,8 +311,6 @@ public class VoteServiceImpl implements VoteService {
                 .collect(Collectors.joining(","));
         vote.setVoteItemIds(updatedVoteItemIds);
         voteRepository.save(vote);
-
-        System.out.println("Vote item with ID " + voteItemId + " has been deleted.");
     }
 
     private Vote checkVoteEndTime(Long voteId) {
@@ -335,6 +332,7 @@ public class VoteServiceImpl implements VoteService {
         }
         return member;
     }
+
     @Override
     @Transactional(readOnly = true)
     public List<VoteResponseDTO> getAllVotes(Authentication authentication) {
@@ -346,6 +344,7 @@ public class VoteServiceImpl implements VoteService {
                     return VoteResponseDTO.toResponseDTO(vote, hasVoted);
                 }).collect(Collectors.toList());
     }
+
     @Override
     @Transactional(readOnly = true)
     public VoteResponseDTO getVoteById(Authentication authentication, Long voteId) {
@@ -354,10 +353,23 @@ public class VoteServiceImpl implements VoteService {
         Vote vote = voteRepository.findById(voteId)
                 .orElseThrow(() -> new IllegalArgumentException("투표를 찾을 수 없습니다."));
 
-        boolean hasVoted = voteStatusRepository.existsByVoteAndMember(vote, member);
+        List<VoteItemResponseDTO> voteItemResponseDTOs = vote.getVoteItems().stream()
+                .map(voteItem -> {
+                    List<String> voters = voteStatusRepository.findByVoteItem(voteItem).stream()
+                            .map(voteStatus -> voteStatus.getMember().getStudentId())
+                            .collect(Collectors.toList());
 
-        return VoteResponseDTO.toResponseDTO(vote, hasVoted);
+                    boolean hasVotedForThisItem = voters.contains(member.getStudentId());
+
+                    return VoteItemResponseDTO.toResponseDTO(voteItem, hasVotedForThisItem, voters);
+                })
+                .collect(Collectors.toList());
+
+        boolean hasVotedForAnyItem = voteItemResponseDTOs.stream().anyMatch(VoteItemResponseDTO::isHasVoted);
+
+        return VoteResponseDTO.toResponseDTO(vote, hasVotedForAnyItem, voteItemResponseDTOs);
     }
+
     @Override
     @Transactional
     public void endVote(Authentication authentication, Long voteId) {
@@ -369,9 +381,6 @@ public class VoteServiceImpl implements VoteService {
         if (!vote.isVoteEnded()) {
             vote.setVoteEnded(true);
             voteRepository.save(vote);
-            System.out.println("Vote with ID " + vote.getId() + " has been forcibly closed.");
-        } else {
-            System.out.println("Vote with ID " + vote.getId() + " is already closed.");
         }
     }
 
