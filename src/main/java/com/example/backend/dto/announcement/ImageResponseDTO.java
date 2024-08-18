@@ -23,7 +23,7 @@ public class ImageResponseDTO {
         this.id = image.getId();
         this.imageName = image.getOriginalFilename();
         try {
-            this.imageData = fileService.getImageData(image.getId());
+            this.imageData = fileService.getImageData(image.getId()) == null ? null : fileService.getImageData(image.getId());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

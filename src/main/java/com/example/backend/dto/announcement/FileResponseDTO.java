@@ -23,7 +23,7 @@ public class FileResponseDTO {
         this.id = file.getId();
         this.originalFilename = file.getOriginalFilename();
         try {
-            this.fileData = fileService.getFileData(file.getId());
+            this.fileData = fileService.getFileData(file.getId()) == null ? null : fileService.getFileData(file.getId());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
