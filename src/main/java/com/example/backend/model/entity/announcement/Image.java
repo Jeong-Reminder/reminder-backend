@@ -1,5 +1,6 @@
 package com.example.backend.model.entity.announcement;
 
+import com.example.backend.dto.announcement.ImageResponseDTO;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,5 +31,13 @@ public class Image {
         this.filePath = filePath;
         this.fileType = fileType;
         this.announcement = announcement;
+    }
+
+    public static ImageResponseDTO toResponseDTO(Image image, byte[] imageData) {
+        return ImageResponseDTO.builder()
+                .id(image.id)
+                .imageName(image.originalFilename)
+                .imageData(imageData)
+                .build();
     }
 }

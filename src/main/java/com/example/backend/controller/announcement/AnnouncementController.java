@@ -2,10 +2,13 @@ package com.example.backend.controller.announcement;
 
 import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.announcement.AnnouncementRequestDTO;
-import com.example.backend.dto.announcement.AnnouncementResponseDTO;
+import com.example.backend.dto.announcement.AnnouncementDetailResponseDTO;
 import com.example.backend.dto.announcement.AnnouncementCategory;
+import com.example.backend.dto.announcement.AnnouncementResponseDTO;
 import com.example.backend.model.entity.notification.NotificationMessage;
 import com.example.backend.service.announcment.AnnouncementService;
+import com.example.backend.service.announcment.FileService;
+import com.example.backend.service.announcment.ImageService;
 import com.example.backend.service.notification.FCM.FCMService;
 import com.example.backend.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ public class AnnouncementController {
     private final NotificationService notificationService;
     private final FCMService fcmService;
 
+
     @GetMapping
     public ResponseEntity<ResponseDTO<List<AnnouncementResponseDTO>>> getAllAnnouncements(Authentication authentication) {
         List<AnnouncementResponseDTO> announcements = announcementService.getAllAnnouncements(authentication);
@@ -40,12 +44,13 @@ public class AnnouncementController {
     }
 
     @GetMapping("/{announcement_id}")
-    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> getAnnouncementById(Authentication authentication, @PathVariable("announcement_id") Long id) {
-        AnnouncementResponseDTO announcement = announcementService.getAnnouncementById(authentication, id);
+    public ResponseEntity<ResponseDTO<AnnouncementDetailResponseDTO>> getAnnouncementById(Authentication authentication, @PathVariable("announcement_id") Long id)
+            throws IOException {
+        AnnouncementDetailResponseDTO announcement = announcementService.getAnnouncementById(authentication, id);
         if (announcement == null || !announcement.isVisible()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
+        ResponseDTO<AnnouncementDetailResponseDTO> response = ResponseDTO.<AnnouncementDetailResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .data(announcement)
                 .build();
@@ -77,7 +82,7 @@ public class AnnouncementController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> createAnnouncement(
+    public ResponseEntity<ResponseDTO<AnnouncementDetailResponseDTO>> createAnnouncement(
             Authentication authentication,
             @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
             @RequestParam(value = "img", required = false) List<MultipartFile> img,
@@ -90,8 +95,8 @@ public class AnnouncementController {
             announcementRequestDTO.setNewFiles(file);
         }
 
-        AnnouncementResponseDTO announcement = announcementService.createAnnouncement(authentication, announcementRequestDTO);
-        ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
+        AnnouncementDetailResponseDTO announcement = announcementService.createAnnouncement(authentication, announcementRequestDTO);
+        ResponseDTO<AnnouncementDetailResponseDTO> response = ResponseDTO.<AnnouncementDetailResponseDTO>builder()
                 .status(HttpStatus.CREATED.value())
                 .data(announcement)
                 .build();
@@ -113,7 +118,7 @@ public class AnnouncementController {
     }
 
     @PutMapping("/{announcement_id}")
-    public ResponseEntity<ResponseDTO<AnnouncementResponseDTO>> updateAnnouncement(
+    public ResponseEntity<ResponseDTO<AnnouncementDetailResponseDTO>> updateAnnouncement(
             Authentication authentication,
             @PathVariable("announcement_id") Long id,
             @ModelAttribute AnnouncementRequestDTO announcementRequestDTO,
@@ -127,8 +132,8 @@ public class AnnouncementController {
             announcementRequestDTO.setNewFiles(file);
         }
 
-        AnnouncementResponseDTO announcement = announcementService.updateAnnouncement(authentication, id, announcementRequestDTO);
-        ResponseDTO<AnnouncementResponseDTO> response = ResponseDTO.<AnnouncementResponseDTO>builder()
+        AnnouncementDetailResponseDTO announcement = announcementService.updateAnnouncement(authentication, id, announcementRequestDTO);
+        ResponseDTO<AnnouncementDetailResponseDTO> response = ResponseDTO.<AnnouncementDetailResponseDTO>builder()
                 .status(HttpStatus.OK.value())
                 .data(announcement)
                 .build();

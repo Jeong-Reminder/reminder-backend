@@ -2,7 +2,10 @@ package com.example.backend.service.announcment.impl;
 
 import com.example.backend.dto.announcement.AnnouncementCategory;
 import com.example.backend.dto.announcement.AnnouncementRequestDTO;
+import com.example.backend.dto.announcement.AnnouncementDetailResponseDTO;
 import com.example.backend.dto.announcement.AnnouncementResponseDTO;
+import com.example.backend.dto.announcement.FileResponseDTO;
+import com.example.backend.dto.announcement.ImageResponseDTO;
 import com.example.backend.dto.vote.VoteRequestDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.ContestCategory;
@@ -57,10 +60,24 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional(readOnly = true)
-    public AnnouncementResponseDTO getAnnouncementById(Authentication authentication, Long id) {
+    public AnnouncementDetailResponseDTO getAnnouncementById(Authentication authentication, Long id)
+            throws IOException {
         Announcement announcement = findAnnouncementById(id);
         validateVisibility(announcement);
-        return AnnouncementResponseDTO.toResponseDTO(announcement);
+        List<FileResponseDTO> fileResponseDTOS = new ArrayList<>();
+        List<ImageResponseDTO> imageResponseDTOS = new ArrayList<>();
+
+        if(announcement.getFiles() != null) {
+            for (File file : announcement.getFiles()) {
+                fileResponseDTOS.add(File.toResponseDTO(file,fileService.getFileData(file.getId())));
+            }
+        }
+        if(announcement.getImages() != null) {
+            for (Image image : announcement.getImages()) {
+                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+            }
+        }
+        return AnnouncementDetailResponseDTO.toResponseDTO(announcement, fileResponseDTOS, imageResponseDTOS);
     }
 
     @Override
@@ -76,7 +93,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional
-    public AnnouncementResponseDTO createAnnouncement(Authentication authentication, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
+    public AnnouncementDetailResponseDTO createAnnouncement(Authentication authentication, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
         Member manager = validateAndGetAdmin(authentication);
 
         Announcement announcement = announcementRequestDTO.toEntity(manager, new ArrayList<>(), new ArrayList<>(), null);
@@ -92,6 +109,20 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         savedAnnouncement = announcementRepository.save(savedAnnouncement);
 
+        List<FileResponseDTO> fileResponseDTOS = new ArrayList<>();
+        List<ImageResponseDTO> imageResponseDTOS = new ArrayList<>();
+
+        if(savedAnnouncement.getFiles() != null) {
+            for (File file : savedAnnouncement.getFiles()) {
+                fileResponseDTOS.add(File.toResponseDTO(file, fileService.getFileData(file.getId())));
+            }
+        }
+        if(savedAnnouncement.getImages() != null) {
+            for (Image image : savedAnnouncement.getImages()) {
+                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+            }
+        }
+
         if (announcementRequestDTO.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)) {
             String contestCategoryName = extractContestCategoryName(announcementRequestDTO.getAnnouncementTitle());
             if (contestCategoryName == null) {
@@ -104,12 +135,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
             contestCategoryRepository.save(contestCategory);
         }
 
-        return AnnouncementResponseDTO.toResponseDTO(savedAnnouncement);
+        return AnnouncementDetailResponseDTO.toResponseDTO(savedAnnouncement, fileResponseDTOS, imageResponseDTOS);
     }
 
     @Override
     @Transactional
-    public AnnouncementResponseDTO updateAnnouncement(Authentication authentication, Long id, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
+    public AnnouncementDetailResponseDTO updateAnnouncement(Authentication authentication, Long id, AnnouncementRequestDTO announcementRequestDTO) throws IOException {
         validateAndGetAdmin(authentication);
 
         Announcement existingAnnouncement = findAnnouncementById(id);
@@ -123,7 +154,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
 
         existingAnnouncement.update(announcementRequestDTO, existingAnnouncement.getFiles(), existingAnnouncement.getImages(), vote);
-        return AnnouncementResponseDTO.toResponseDTO(announcementRepository.save(existingAnnouncement));
+
+        Announcement announcement = announcementRepository.save(existingAnnouncement);
+        List<FileResponseDTO> fileResponseDTOS = new ArrayList<>();
+        List<ImageResponseDTO> imageResponseDTOS = new ArrayList<>();
+
+        if(announcement.getFiles() != null) {
+            for (File file : announcement.getFiles()) {
+                fileResponseDTOS.add(File.toResponseDTO(file, fileService.getFileData(file.getId())));
+            }
+        }
+        if(announcement.getImages() != null) {
+            for (Image image : announcement.getImages()) {
+                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+            }
+        }
+        return AnnouncementDetailResponseDTO.toResponseDTO(announcement, fileResponseDTOS, imageResponseDTOS);
     }
 
     @Override
@@ -151,9 +197,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional(readOnly = true)
-    public AnnouncementResponseDTO getAnnouncementWithComments(Long announcementId) {
+    public AnnouncementDetailResponseDTO getAnnouncementWithComments(Long announcementId) throws IOException {
         Announcement announcement = findAnnouncementById(announcementId);
-        return AnnouncementResponseDTO.toResponseDTO(announcement);
+        List<FileResponseDTO> fileResponseDTOS = new ArrayList<>();
+        List<ImageResponseDTO> imageResponseDTOS = new ArrayList<>();
+
+        if(announcement.getFiles() != null) {
+            for (File file : announcement.getFiles()) {
+                fileResponseDTOS.add(File.toResponseDTO(file, fileService.getFileData(file.getId())));
+            }
+        }
+        if(announcement.getImages() != null) {
+            for (Image image : announcement.getImages()) {
+                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+            }
+        }
+        return AnnouncementDetailResponseDTO.toResponseDTO(announcement, fileResponseDTOS, imageResponseDTOS);
     }
 
     @Override
