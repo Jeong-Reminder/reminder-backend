@@ -1,6 +1,14 @@
 package com.example.backend.model.entity.announcement;
 
-import jakarta.persistence.*;
+import com.example.backend.dto.announcement.FileResponseDTO;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,5 +39,13 @@ public class File {
         this.filePath = filePath;
         this.fileType = fileType;
         this.announcement = announcement;
+    }
+
+    public static FileResponseDTO toResponseDTO(File file, byte[] fileData) {
+        return FileResponseDTO.builder()
+                .id(file.id)
+                .originalFilename(file.originalFilename)
+                .fileData(fileData)
+                .build();
     }
 }
