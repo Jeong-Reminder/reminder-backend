@@ -6,6 +6,7 @@ import com.example.backend.model.repository.announcement.ImageRepository;
 import com.example.backend.service.announcment.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,21 +16,20 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
-
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
     private final ImageRepository imageRepository;
+    private final Environment env;
 
     @Value("${image.dir}")
     private String uploadDir;
 
     @Override
     public Long saveImage(MultipartFile image, Announcement announcement) throws IOException {
-        String originalFilename = image.getOriginalFilename();
-        String sanitizedFilename = sanitizeFilename(originalFilename);
-        String newFilename = UUID.randomUUID().toString() + "_" + sanitizedFilename;
+        String originalFilename = sanitizeFilename(image.getOriginalFilename());
+        String newFilename = UUID.randomUUID().toString() + "_" + originalFilename;
         Path imagePath = Paths.get(uploadDir).resolve(newFilename).normalize();
 
         Files.copy(image.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
@@ -42,6 +42,14 @@ public class ImageServiceImpl implements ImageService {
                 .build();
 
         Image savedImage = imageRepository.save(uploadedImage);
+
+        String serverHost = env.getProperty("server.address", "localhost");
+        String serverPort = env.getProperty("server.port", "9000");
+        String imageUrl = "http://" + serverHost + ":" + serverPort + "/api/v1/images/download/" + savedImage.getId();
+
+        savedImage.setImageUrl(imageUrl);
+        imageRepository.save(savedImage);
+
         return savedImage.getId();
     }
 
@@ -55,7 +63,7 @@ public class ImageServiceImpl implements ImageService {
     public byte[] getImageData(Long id) throws IOException {
         Image image = getImage(id);
         Path imagePath = Paths.get(image.getFilePath()).normalize();
-        return Files.readAllBytes(imagePath); // 이미지 데이터를 바이트 배열로 읽어들임
+        return Files.readAllBytes(imagePath);
     }
 
     private String sanitizeFilename(String filename) {

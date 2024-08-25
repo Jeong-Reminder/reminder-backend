@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/v1/files")
@@ -23,24 +26,16 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping("/download/{id}")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) {
-        try {
-            File file = fileService.getFile(id);
-            byte[] fileData = fileService.getFileData(id);
+    public ResponseEntity<byte[]> downloadFile(@PathVariable Long id) throws IOException {
+        File file = fileService.getFile(id);
 
-            String contentType = file.getFileType();
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
+        Path filePath = Paths.get(file.getFilePath()).normalize();
+        byte[] fileData = Files.readAllBytes(filePath);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.setContentDispositionFormData("attachment", URLEncoder.encode(file.getOriginalFilename(), "UTF-8").replace("+", "%20"));
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getOriginalFilename() + "\"");
+        headers.add(HttpHeaders.CONTENT_TYPE, file.getFileType());
 
-            return new ResponseEntity<>(fileData, headers, HttpStatus.OK);
-
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return new ResponseEntity<>(fileData, headers, HttpStatus.OK);
     }
 }

@@ -6,6 +6,7 @@ import com.example.backend.model.repository.announcement.FileRepository;
 import com.example.backend.service.announcment.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,24 +15,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
 
     private final FileRepository fileRepository;
+    private final Environment env;
 
     @Value("${file.dir}")
     private String uploadDir;
 
     @Override
     public Long saveFile(MultipartFile file, Announcement announcement) throws IOException {
-        String originalFilename = file.getOriginalFilename();
-        String sanitizedFilename = sanitizeFilename(originalFilename);
-        String newFilename = UUID.randomUUID().toString() + "_" + sanitizedFilename;
-        Path filePath = Paths.get(uploadDir).resolve(newFilename).normalize();
-
+        String originalFilename = sanitizeFilename(file.getOriginalFilename());
+        Path filePath = Paths.get(uploadDir).resolve(originalFilename).normalize();
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
         File uploadedFile = File.builder()
@@ -42,6 +40,14 @@ public class FileServiceImpl implements FileService {
                 .build();
 
         File savedFile = fileRepository.save(uploadedFile);
+
+        String serverHost = env.getProperty("server.address", "localhost");
+        String serverPort = env.getProperty("server.port", "9000");
+        String fileUrl = "http://" + serverHost + ":" + serverPort + "/api/v1/files/download/" + savedFile.getId();
+
+        savedFile.setFileUrl(fileUrl);
+        fileRepository.save(savedFile);
+
         return savedFile.getId();
     }
 
@@ -59,6 +65,13 @@ public class FileServiceImpl implements FileService {
     }
 
     private String sanitizeFilename(String filename) {
-        return filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String name = filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String extension = "";
+        int extensionIndex = filename.lastIndexOf('.');
+        if (extensionIndex > 0) {
+            name = filename.substring(0, extensionIndex);
+            extension = filename.substring(extensionIndex);
+        }
+        return name + extension;
     }
 }

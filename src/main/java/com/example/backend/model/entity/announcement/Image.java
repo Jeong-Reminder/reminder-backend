@@ -20,16 +20,17 @@ public class Image {
     private String originalFilename;
     private String filePath; // 파일 경로를 저장
     private String fileType;
-
+    private String imageUrl;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "announcement_id")
     private Announcement announcement;
 
     @Builder
-    public Image(String originalFilename, String filePath, String fileType, Announcement announcement) {
+    public Image(String originalFilename, String filePath, String fileType, String imageUrl,Announcement announcement) {
         this.originalFilename = originalFilename;
         this.filePath = filePath;
         this.fileType = fileType;
+        this.imageUrl=imageUrl;
         this.announcement = announcement;
     }
 
@@ -38,6 +39,7 @@ public class Image {
                 .id(image.id)
                 .imageName(image.originalFilename)
                 .imageData(imageData)
+                .imageUrl(image.imageUrl)
                 .build();
     }
 }
