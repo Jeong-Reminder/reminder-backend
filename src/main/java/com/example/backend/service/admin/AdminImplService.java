@@ -9,6 +9,7 @@ import com.example.backend.model.repository.announcement.ContestCategoryReposito
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamRepository;
+import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -158,6 +159,7 @@ public class AdminImplService implements AdminService {
     }
 
     @Override
+    @Transactional
     public void deleteRecruitment(Authentication authentication) {
         String studentId = authentication.getName();
 
@@ -186,6 +188,7 @@ public class AdminImplService implements AdminService {
     }
 
     @Override
+    @Transactional
     public void deleteTeam(Authentication authentication) {
         String studentId = authentication.getName();
 

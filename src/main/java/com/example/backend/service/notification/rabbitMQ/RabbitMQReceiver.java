@@ -13,31 +13,37 @@ public class RabbitMQReceiver {
 
     @RabbitListener(queues = "${rabbitmq.queue.name}")
     public void receiveMessage(NotificationMessageWrapper wrapper) {
-        sendFCMMessage(wrapper.getTargetToken(), wrapper.getNotificationMessage());
+        if (wrapper.getTargetToken() != null && !wrapper.getTargetToken().isEmpty()) {
+            sendFCMMessage(wrapper.getTargetToken(), wrapper.getNotificationMessage());
+        } else {
+            System.err.println("Invalid target token: " + wrapper.getTargetToken());
+        }
     }
 
     private void sendFCMMessage(String targetToken, NotificationMessage notificationMessage) {
-        Notification notification = Notification.builder()
-                .setTitle(notificationMessage.getTitle())
-                .setBody(notificationMessage.getContent())
-                .setImage(null)
-                .build();
-
-        Message message = Message.builder()
-                .setNotification(notification)
-                .putData("id", notificationMessage.getId())
-                .putData("title", notificationMessage.getTitle())
-                .putData("content", notificationMessage.getContent())
-                .putData("category", notificationMessage.getCategory())
-                .putData("targetId", String.valueOf(notificationMessage.getTargetId()))
-                .putData("createdAt", notificationMessage.getCreatedAt().toString())
-                .putData("isRead", String.valueOf(notificationMessage.isRead()))
-                .setToken(targetToken)
-                .build();
-
         try {
+            Notification notification = Notification.builder()
+                    .setTitle(notificationMessage.getTitle())
+                    .setBody(notificationMessage.getContent())
+                    .setImage(null)
+                    .build();
+
+            Message message = Message.builder()
+                    .setNotification(notification)
+                    .putData("id", notificationMessage.getId())
+                    .putData("title", notificationMessage.getTitle())
+                    .putData("content", notificationMessage.getContent())
+                    .putData("category", notificationMessage.getCategory())
+                    .putData("targetId", String.valueOf(notificationMessage.getTargetId()))
+                    .putData("createdAt", notificationMessage.getCreatedAt().toString())
+                    .putData("isRead", String.valueOf(notificationMessage.isRead()))
+                    .setToken(targetToken)
+                    .build();
+
             String response = FirebaseMessaging.getInstance().send(message);
             System.out.println("Successfully sent message: " + response);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error sending Firebase message: Invalid argument - " + e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
         }
