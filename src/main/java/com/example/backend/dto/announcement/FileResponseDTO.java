@@ -17,5 +17,5 @@ public class FileResponseDTO {
     private Long id;
     private String originalFilename;
     private byte[] fileData;
-
+    private String fileUrl;
 }

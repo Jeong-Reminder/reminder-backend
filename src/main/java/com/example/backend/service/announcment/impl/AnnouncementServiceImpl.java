@@ -60,8 +60,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional(readOnly = true)
-    public AnnouncementDetailResponseDTO getAnnouncementById(Authentication authentication, Long id)
-            throws IOException {
+    public AnnouncementDetailResponseDTO getAnnouncementById(Authentication authentication, Long id) throws IOException {
         Announcement announcement = findAnnouncementById(id);
         validateVisibility(announcement);
         List<FileResponseDTO> fileResponseDTOS = new ArrayList<>();
@@ -69,16 +68,27 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         if(announcement.getFiles() != null) {
             for (File file : announcement.getFiles()) {
-                fileResponseDTOS.add(File.toResponseDTO(file,fileService.getFileData(file.getId())));
+                fileResponseDTOS.add(FileResponseDTO.builder()
+                        .id(file.getId())
+                        .originalFilename(file.getOriginalFilename())
+                        .fileData(fileService.getFileData(file.getId()))
+                        .fileUrl(file.getFileUrl())
+                        .build());
             }
         }
         if(announcement.getImages() != null) {
             for (Image image : announcement.getImages()) {
-                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+                imageResponseDTOS.add(ImageResponseDTO.builder()
+                        .id(image.getId())
+                        .imageName(image.getOriginalFilename())
+                        .imageData(imageService.getImageData(image.getId()))
+                        .imageUrl(image.getImageUrl())
+                        .build());
             }
         }
         return AnnouncementDetailResponseDTO.toResponseDTO(announcement, fileResponseDTOS, imageResponseDTOS);
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -114,12 +124,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         if(savedAnnouncement.getFiles() != null) {
             for (File file : savedAnnouncement.getFiles()) {
-                fileResponseDTOS.add(File.toResponseDTO(file, fileService.getFileData(file.getId())));
+                fileResponseDTOS.add(FileResponseDTO.builder()
+                        .id(file.getId())
+                        .originalFilename(file.getOriginalFilename())
+                        .fileData(fileService.getFileData(file.getId()))
+                        .fileUrl(file.getFileUrl())
+                        .build());
             }
         }
         if(savedAnnouncement.getImages() != null) {
             for (Image image : savedAnnouncement.getImages()) {
-                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+                imageResponseDTOS.add(ImageResponseDTO.builder()
+                        .id(image.getId())
+                        .imageName(image.getOriginalFilename())
+                        .imageData(imageService.getImageData(image.getId()))
+                        .imageUrl(image.getImageUrl())
+                        .build());
             }
         }
 
@@ -137,6 +157,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         return AnnouncementDetailResponseDTO.toResponseDTO(savedAnnouncement, fileResponseDTOS, imageResponseDTOS);
     }
+
 
     @Override
     @Transactional
@@ -161,12 +182,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         if(announcement.getFiles() != null) {
             for (File file : announcement.getFiles()) {
-                fileResponseDTOS.add(File.toResponseDTO(file, fileService.getFileData(file.getId())));
+                fileResponseDTOS.add(FileResponseDTO.builder()
+                        .id(file.getId())
+                        .originalFilename(file.getOriginalFilename())
+                        .fileData(fileService.getFileData(file.getId()))
+                        .fileUrl(file.getFileUrl())
+                        .build());
             }
         }
         if(announcement.getImages() != null) {
             for (Image image : announcement.getImages()) {
-                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+                imageResponseDTOS.add(ImageResponseDTO.builder()
+                        .id(image.getId())
+                        .imageName(image.getOriginalFilename())
+                        .imageData(imageService.getImageData(image.getId()))
+                        .imageUrl(image.getImageUrl())
+                        .build());
             }
         }
         return AnnouncementDetailResponseDTO.toResponseDTO(announcement, fileResponseDTOS, imageResponseDTOS);
@@ -204,12 +235,22 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         if(announcement.getFiles() != null) {
             for (File file : announcement.getFiles()) {
-                fileResponseDTOS.add(File.toResponseDTO(file, fileService.getFileData(file.getId())));
+                fileResponseDTOS.add(FileResponseDTO.builder()
+                        .id(file.getId())
+                        .originalFilename(file.getOriginalFilename())
+                        .fileData(fileService.getFileData(file.getId()))
+                        .fileUrl(file.getFileUrl())
+                        .build());
             }
         }
         if(announcement.getImages() != null) {
             for (Image image : announcement.getImages()) {
-                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+                imageResponseDTOS.add(ImageResponseDTO.builder()
+                        .id(image.getId())
+                        .imageName(image.getOriginalFilename())
+                        .imageData(imageService.getImageData(image.getId()))
+                        .imageUrl(image.getImageUrl())
+                        .build());
             }
         }
         return AnnouncementDetailResponseDTO.toResponseDTO(announcement, fileResponseDTOS, imageResponseDTOS);
@@ -266,7 +307,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         }
         announcementRepository.save(announcement);
     }
-
 
     private void updateFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
         List<Long> fileIdsToKeep = announcementRequestDTO.getFileIds() != null ? announcementRequestDTO.getFileIds() : new ArrayList<>();

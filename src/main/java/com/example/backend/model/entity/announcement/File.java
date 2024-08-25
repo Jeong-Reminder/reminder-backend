@@ -30,14 +30,16 @@ public class File {
     private String filePath;
     @Column(nullable = false)
     private String fileType;
+    private String fileUrl;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "announcement_id", nullable = false)
     private Announcement announcement;
     @Builder
-    public File(String originalFilename, String filePath, String fileType, Announcement announcement) {
+    public File(String originalFilename, String filePath, String fileType,String fileUrl, Announcement announcement) {
         this.originalFilename = originalFilename;
         this.filePath = filePath;
         this.fileType = fileType;
+        this.fileUrl=fileUrl;
         this.announcement = announcement;
     }
 
@@ -46,6 +48,7 @@ public class File {
                 .id(file.id)
                 .originalFilename(file.originalFilename)
                 .fileData(fileData)
+                .fileUrl(file.fileUrl)
                 .build();
     }
 }
