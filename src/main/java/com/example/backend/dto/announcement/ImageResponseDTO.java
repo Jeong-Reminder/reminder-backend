@@ -18,4 +18,5 @@ public class ImageResponseDTO {
     private Long id;
     private String imageName;
     private byte[] imageData;
+    private String imageUrl;
 }
