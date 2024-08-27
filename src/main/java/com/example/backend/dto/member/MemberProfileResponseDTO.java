@@ -1,5 +1,6 @@
 package com.example.backend.dto.member;
 
+import com.example.backend.dto.recruitmentteam.TeamResponseDTO;
 import java.util.List;
 
 import com.example.backend.model.entity.member.MemberProfile;
@@ -22,6 +23,7 @@ public class MemberProfileResponseDTO {
     private String githubLink;
     private String developmentField; // 예: "Java, JavaScript, C, C++"
     private String developmentTool;     // 예: "IntelliJ, VSCode"
+    private List<TeamResponseDTO> team;
 
     public static MemberProfileResponseDTO toResponseDTO(MemberProfile memberProfile) {
        return MemberProfileResponseDTO.builder()
@@ -29,10 +31,11 @@ public class MemberProfileResponseDTO {
                .memberId(memberProfile.getMember().getId())
                .memberName(memberProfile.getMember().getName())
                .memberLevel(memberProfile.getMember().getLevel())
-                .hopeJob(memberProfile.getHopeJob())
+               .hopeJob(memberProfile.getHopeJob())
                .githubLink(memberProfile.getGithubLink())
                .developmentField(memberProfile.getDevelopmentField())
                .developmentTool(memberProfile.getDevelopmentTool())
+               .team(null)
                .build();
     }
 
