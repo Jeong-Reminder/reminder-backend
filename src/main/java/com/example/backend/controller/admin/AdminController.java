@@ -3,6 +3,8 @@ package com.example.backend.controller.admin;
 import com.example.backend.dto.ResponseDTO;
 import com.example.backend.dto.admin.MemberAdminResponseDTO;
 import com.example.backend.dto.member.MemberRequestDTO;
+import com.example.backend.dto.recruitmentteam.TeamResponseDTO;
+import com.example.backend.model.entity.recruitmentteam.Team;
 import com.example.backend.service.admin.AdminService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -92,6 +94,16 @@ public class AdminController {
         return ResponseDTO.builder()
                 .status(200)
                 .data(category+"모집글 삭제 완료")
+                .build();
+    }
+
+    @GetMapping("/team-get")
+    public ResponseDTO<Object> getTeams(Authentication authentication) {
+        List<TeamResponseDTO> teamResponseDTOS = adminService.getTeams(authentication);
+
+        return ResponseDTO.builder()
+                .status(200)
+                .data(teamResponseDTOS)
                 .build();
     }
 
