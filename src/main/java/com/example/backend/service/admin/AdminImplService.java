@@ -3,14 +3,19 @@ package com.example.backend.service.admin;
 import com.example.backend.config.ExcelUtil;
 import com.example.backend.dto.admin.MemberAdminResponseDTO;
 import com.example.backend.dto.member.MemberRequestDTO;
+import com.example.backend.dto.recruitmentteam.TeamResponseDTO;
 import com.example.backend.model.entity.member.Member;
+import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.member.UserRole;
+import com.example.backend.model.entity.recruitmentteam.Team;
+import com.example.backend.model.entity.recruitmentteam.TeamMember;
 import com.example.backend.model.repository.announcement.ContestCategoryRepository;
 import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamRepository;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -212,5 +217,29 @@ public class AdminImplService implements AdminService {
         }
 
         teamRepository.deleteByTeamCategory(category);
+    }
+
+    @Override
+    public List<TeamResponseDTO> getTeams(Authentication authentication) {
+        String studentId = authentication.getName();
+
+        Member adminMember = memberRepository.findByStudentId(studentId);
+
+        if (adminMember.getUserRole().equals(UserRole.ROLE_USER)) {
+            throw new IllegalArgumentException("관리자 권한이 없습니다.");
+        }
+
+        List<Team> teams = teamRepository.findAll();
+        List<TeamResponseDTO> teamResponseDTOS = new ArrayList<>();
+        for(Team team : teams){
+            List<MemberProfile> memberProfiles = new ArrayList<>();
+            List<TeamMember> teamMembers = team.getTeamMembers();
+            for(TeamMember teamMember : teamMembers){
+                memberProfiles.add(teamMember.getMember().getMemberProfile());
+            }
+            teamResponseDTOS.add(TeamResponseDTO.toResponseDTO(memberProfiles,team));
+        }
+
+        return teamResponseDTOS;
     }
 }
