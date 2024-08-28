@@ -68,13 +68,14 @@ public class MemberProfileImplService implements MemberProfileService {
             memberProfileResponseDTO.setTeam(null);
         }else{
             List<MemberProfile> profiles = new ArrayList<>();
+            List<TeamResponseDTO> teamResponseDTOS = new ArrayList<>();
             for(TeamMember teamMember : teamMembers){
                 Team team = teamRepository.findById(teamMember.getTeam().getId()).get();
                 profiles.add(teamMember.getMember().getMemberProfile());
 
-                memberProfileResponseDTO.getTeam().add(TeamResponseDTO.toResponseDTO(profiles,team));
+                teamResponseDTOS.add(TeamResponseDTO.toResponseDTO(profiles,team));
             }
-
+            memberProfileResponseDTO.setTeam(teamResponseDTOS);
         }
         return memberProfileResponseDTO;
     }
@@ -89,13 +90,14 @@ public class MemberProfileImplService implements MemberProfileService {
             memberProfileResponseDTO.setTeam(null);
         }else{
             List<MemberProfile> profiles = new ArrayList<>();
+            List<TeamResponseDTO> teamResponseDTOS = new ArrayList<>();
             for(TeamMember teamMember : teamMembers){
                 Team team = teamRepository.findById(teamMember.getTeam().getId()).get();
                 profiles.add(teamMember.getMember().getMemberProfile());
 
-                memberProfileResponseDTO.getTeam().add(TeamResponseDTO.toResponseDTO(profiles,team));
+                teamResponseDTOS.add(TeamResponseDTO.toResponseDTO(profiles,team));
             }
-
+            memberProfileResponseDTO.setTeam(teamResponseDTOS);
         }
         return memberProfileResponseDTO;
     }
