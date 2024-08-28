@@ -19,14 +19,14 @@ public class TeamResponseDTO {
     private Long id;
     private String teamName;
     private String teamCategory;
-    private List<TeamMemberProfileResponseDTO> techStacks;
+    private List<TeamMemberProfileResponseDTO> teamMember;
 
     public static TeamResponseDTO toResponseDTO(List<MemberProfile> memberProfiles, Team team) {
         return TeamResponseDTO.builder()
                 .id(team.getId())
                 .teamName(team.getTeamName())
                 .teamCategory(team.getTeamCategory())
-                .techStacks(TeamMemberProfileResponseDTO.toResponseDTOList(memberProfiles,team.getTeamMembers()))
+                .teamMember(TeamMemberProfileResponseDTO.toResponseDTOList(memberProfiles,team.getTeamMembers()))
                 .build();
     }
 }

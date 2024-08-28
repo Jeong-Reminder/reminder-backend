@@ -61,17 +61,19 @@ public class MemberProfileImplService implements MemberProfileService {
     public MemberProfileResponseDTO getMemberProfile(Authentication authentication) {
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
-        List<TeamMember> teamMembers = teamMemberRepository.findByMemberId(member.getId());
+        List<TeamMember> myTeams = teamMemberRepository.findByMemberId(member.getId());
 
         MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.findByMemberId(member.getId()));
-        if(teamMembers.isEmpty()) {
+        if(myTeams.isEmpty()) {
             memberProfileResponseDTO.setTeam(null);
         }else{
             List<MemberProfile> profiles = new ArrayList<>();
             List<TeamResponseDTO> teamResponseDTOS = new ArrayList<>();
-            for(TeamMember teamMember : teamMembers){
-                Team team = teamRepository.findById(teamMember.getTeam().getId()).get();
-                profiles.add(teamMember.getMember().getMemberProfile());
+            for(TeamMember myTeam : myTeams){
+                Team team = teamRepository.findById(myTeam.getTeam().getId()).get();
+                for(TeamMember teamMember : team.getTeamMembers()){
+                    profiles.add(teamMember.getMember().getMemberProfile());
+                }
 
                 teamResponseDTOS.add(TeamResponseDTO.toResponseDTO(profiles,team));
             }
@@ -83,17 +85,19 @@ public class MemberProfileImplService implements MemberProfileService {
     @Override
     public MemberProfileResponseDTO getMemberProfileByMemberId(Long memberId) {
 
-        List<TeamMember> teamMembers = teamMemberRepository.findByMemberId(memberId);
+        List<TeamMember> myTeams = teamMemberRepository.findByMemberId(memberId);
 
         MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.findByMemberId(memberId));
-        if(teamMembers.isEmpty()) {
+        if(myTeams.isEmpty()) {
             memberProfileResponseDTO.setTeam(null);
         }else{
             List<MemberProfile> profiles = new ArrayList<>();
             List<TeamResponseDTO> teamResponseDTOS = new ArrayList<>();
-            for(TeamMember teamMember : teamMembers){
-                Team team = teamRepository.findById(teamMember.getTeam().getId()).get();
-                profiles.add(teamMember.getMember().getMemberProfile());
+            for(TeamMember myTeam : myTeams){
+                Team team = teamRepository.findById(myTeam.getTeam().getId()).get();
+                for(TeamMember teamMember : team.getTeamMembers()){
+                    profiles.add(teamMember.getMember().getMemberProfile());
+                }
 
                 teamResponseDTOS.add(TeamResponseDTO.toResponseDTO(profiles,team));
             }
