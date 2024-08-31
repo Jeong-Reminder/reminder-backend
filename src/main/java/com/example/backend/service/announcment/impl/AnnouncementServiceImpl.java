@@ -60,26 +60,23 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
     @Override
     @Transactional(readOnly = true)
-    public AnnouncementDetailResponseDTO getAnnouncementById(Authentication authentication, Long id) throws IOException {
+    public AnnouncementDetailResponseDTO getAnnouncementById(Authentication authentication, Long id)
+            throws IOException {
         Announcement announcement = findAnnouncementById(id);
         validateVisibility(announcement);
+        List<FileResponseDTO> fileResponseDTOS = new ArrayList<>();
+        List<ImageResponseDTO> imageResponseDTOS = new ArrayList<>();
 
-        List<FileResponseDTO> fileResponseDTOS = announcement.getFiles().stream()
-                .map(file -> FileResponseDTO.builder()
-                        .id(file.getId())
-                        .originalFilename(file.getOriginalFilename())
-                        .fileUrl(file.getFileUrl())
-                        .build())
-                .collect(Collectors.toList());
-
-        List<ImageResponseDTO> imageResponseDTOS = announcement.getImages().stream()
-                .map(image -> ImageResponseDTO.builder()
-                        .id(image.getId())
-                        .imageName(image.getOriginalFilename())
-                        .imageUrl(image.getImageUrl())
-                        .build())
-                .collect(Collectors.toList());
-
+        if(announcement.getFiles() != null) {
+            for (File file : announcement.getFiles()) {
+                fileResponseDTOS.add(File.toResponseDTO(file,fileService.getFileData(file.getId())));
+            }
+        }
+        if(announcement.getImages() != null) {
+            for (Image image : announcement.getImages()) {
+                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+            }
+        }
         return AnnouncementDetailResponseDTO.toResponseDTO(announcement, fileResponseDTOS, imageResponseDTOS);
     }
 
@@ -112,21 +109,19 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         savedAnnouncement = announcementRepository.save(savedAnnouncement);
 
-        List<FileResponseDTO> fileResponseDTOS = savedAnnouncement.getFiles().stream()
-                .map(file -> FileResponseDTO.builder()
-                        .id(file.getId())
-                        .originalFilename(file.getOriginalFilename())
-                        .fileUrl(file.getFileUrl())
-                        .build())
-                .collect(Collectors.toList());
+        List<FileResponseDTO> fileResponseDTOS = new ArrayList<>();
+        List<ImageResponseDTO> imageResponseDTOS = new ArrayList<>();
 
-        List<ImageResponseDTO> imageResponseDTOS = savedAnnouncement.getImages().stream()
-                .map(image -> ImageResponseDTO.builder()
-                        .id(image.getId())
-                        .imageName(image.getOriginalFilename())
-                        .imageUrl(image.getImageUrl())
-                        .build())
-                .collect(Collectors.toList());
+        if(savedAnnouncement.getFiles() != null) {
+            for (File file : savedAnnouncement.getFiles()) {
+                fileResponseDTOS.add(File.toResponseDTO(file, fileService.getFileData(file.getId())));
+            }
+        }
+        if(savedAnnouncement.getImages() != null) {
+            for (Image image : savedAnnouncement.getImages()) {
+                imageResponseDTOS.add(Image.toResponseDTO(image, imageService.getImageData(image.getId())));
+            }
+        }
 
         if (announcementRequestDTO.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)) {
             String contestCategoryName = extractContestCategoryName(announcementRequestDTO.getAnnouncementTitle());
