@@ -18,19 +18,21 @@ public class Image {
     private Long id;
 
     private String originalFilename;
-    private String filePath; // 파일 경로를 저장
-    private String fileType;
+    private String imagePath; // 파일 경로를 저장
+    private String imageType;
     private String imageUrl;
+    private String imageHash;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "announcement_id")
     private Announcement announcement;
 
     @Builder
-    public Image(String originalFilename, String filePath, String fileType, String imageUrl,Announcement announcement) {
+    public Image(String originalFilename, String imagePath, String imageType, String imageUrl,String imageHash,Announcement announcement) {
         this.originalFilename = originalFilename;
-        this.filePath = filePath;
-        this.fileType = fileType;
+        this.imagePath = imagePath;
+        this.imageType = imageType;
         this.imageUrl=imageUrl;
+        this.imageHash = imageHash;
         this.announcement = announcement;
     }
 

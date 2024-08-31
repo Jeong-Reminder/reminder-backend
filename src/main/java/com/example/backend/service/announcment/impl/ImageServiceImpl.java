@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -15,7 +16,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.UUID;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
@@ -23,21 +26,27 @@ public class ImageServiceImpl implements ImageService {
     private final ImageRepository imageRepository;
     private final Environment env;
 
-    @Value("${image.dir}")
+    @Value("${file.dir}")
     private String uploadDir;
 
     @Override
     public Long saveImage(MultipartFile image, Announcement announcement) throws IOException {
-        String originalFilename = sanitizeFilename(image.getOriginalFilename());
-        String newFilename = UUID.randomUUID().toString() + "_" + originalFilename;
-        Path imagePath = Paths.get(uploadDir).resolve(newFilename).normalize();
+        String imageHash = generateFileHash(image);
+        Image existingImage = imageRepository.findByImageHash(imageHash);
 
+        if (existingImage != null) {
+            return existingImage.getId(); // Return existing image ID
+        }
+
+        String originalFilename = sanitizeFilename(image.getOriginalFilename());
+        Path imagePath = Paths.get(uploadDir).resolve(originalFilename).normalize();
         Files.copy(image.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
 
         Image uploadedImage = Image.builder()
                 .originalFilename(originalFilename)
-                .filePath(imagePath.toString())
-                .fileType(image.getContentType())
+                .imagePath(imagePath.toString())
+                .imageType(image.getContentType())
+                .imageHash(imageHash)
                 .announcement(announcement)
                 .build();
 
@@ -62,11 +71,37 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public byte[] getImageData(Long id) throws IOException {
         Image image = getImage(id);
-        Path imagePath = Paths.get(image.getFilePath()).normalize();
+        Path imagePath = Paths.get(image.getImagePath()).normalize();
         return Files.readAllBytes(imagePath);
     }
 
     private String sanitizeFilename(String filename) {
-        return filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String name = filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String extension = "";
+        int extensionIndex = filename.lastIndexOf('.');
+        if (extensionIndex > 0) {
+            name = filename.substring(0, extensionIndex);
+            extension = filename.substring(extensionIndex);
+        }
+        return name + extension;
+    }
+
+    private String generateFileHash(MultipartFile file) throws IOException {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] fileBytes = file.getBytes();
+            byte[] hashBytes = digest.digest(fileBytes);
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Hash algorithm not found", e);
+        }
     }
 }

@@ -37,7 +37,7 @@ public class ImageController {
             Image image = imageService.getImage(id);
             byte[] imageData = imageService.getImageData(id);
 
-            String contentType = image.getFileType();
+            String contentType = image.getImageType();
             if (contentType == null) {
                 contentType = "application/octet-stream";
             }
