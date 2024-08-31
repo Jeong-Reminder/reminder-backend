@@ -8,10 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriUtils;
 
 import java.io.IOException;
-import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/v1/images")
@@ -19,17 +19,6 @@ import java.net.URLEncoder;
 public class ImageController {
 
     private final ImageService imageService;
-
-    @PostMapping("/upload")
-    public ResponseEntity<Long> uploadImage(@RequestParam("image") MultipartFile image,
-                                            @RequestParam("announcementId") Long announcementId) {
-        try {
-            Long imageId = imageService.saveImage(image, null);
-            return new ResponseEntity<>(imageId, HttpStatus.CREATED);
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
 
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> downloadImage(@PathVariable Long id) {
@@ -42,9 +31,13 @@ public class ImageController {
                 contentType = "application/octet-stream";
             }
 
+            String encodedFileName = UriUtils.encode(image.getOriginalFilename(), StandardCharsets.UTF_8);
+
+            String contentDisposition = "attachment; filename*=UTF-8''" + encodedFileName;
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.setContentDispositionFormData("attachment", URLEncoder.encode(image.getOriginalFilename(), "UTF-8").replace("+", "%20"));
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
 
             return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
 
