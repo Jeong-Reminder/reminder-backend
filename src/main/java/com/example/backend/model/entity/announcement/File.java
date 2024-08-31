@@ -31,15 +31,17 @@ public class File {
     @Column(nullable = false)
     private String fileType;
     private String fileUrl;
+    private String fileHash;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "announcement_id", nullable = false)
     private Announcement announcement;
     @Builder
-    public File(String originalFilename, String filePath, String fileType,String fileUrl, Announcement announcement) {
+    public File(String originalFilename, String filePath, String fileType,String fileUrl,String fileHash, Announcement announcement) {
         this.originalFilename = originalFilename;
         this.filePath = filePath;
         this.fileType = fileType;
         this.fileUrl=fileUrl;
+        this.fileHash = fileHash;
         this.announcement = announcement;
     }
 
