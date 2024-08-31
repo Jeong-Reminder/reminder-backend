@@ -27,8 +27,8 @@ public class AnnouncementResponseDTO {
     private String announcementCategory;
     private boolean announcementImportant;
     private int announcementLevel;
-    private List<FileResponseDTO> files; // 수정된 필드
-    private List<ImageResponseDTO> images; // 수정된 필드
+    private List<FileResponseDTO> files;
+    private List<ImageResponseDTO> images;
     private LocalDateTime createdTime;
 
     public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
