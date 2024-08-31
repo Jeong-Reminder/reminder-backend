@@ -1,3 +1,4 @@
+
 package com.example.backend.dto.announcement;
 
 import com.example.backend.dto.vote.VoteRequestDTO;
