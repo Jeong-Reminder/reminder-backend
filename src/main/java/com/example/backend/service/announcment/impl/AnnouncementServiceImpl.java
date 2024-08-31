@@ -154,7 +154,6 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         List<Long> imageIdsToKeep = announcementRequestDTO.getImageIds() != null ? announcementRequestDTO.getImageIds() : new ArrayList<>();
 
         existingAnnouncement.getFiles().removeIf(file -> !fileIdsToKeep.contains(file.getId()));
-
         existingAnnouncement.getImages().removeIf(image -> !imageIdsToKeep.contains(image.getId()));
 
         saveFilesAndImages(announcementRequestDTO, existingAnnouncement);
@@ -164,23 +163,42 @@ public class AnnouncementServiceImpl implements AnnouncementService {
         Announcement updatedAnnouncement = announcementRepository.save(existingAnnouncement);
 
         List<FileResponseDTO> fileResponseDTOS = updatedAnnouncement.getFiles().stream()
-                .map(file -> FileResponseDTO.builder()
-                        .id(file.getId())
-                        .originalFilename(file.getOriginalFilename())
-                        .fileUrl(file.getFileUrl())
-                        .build())
+                .map(file -> {
+                    byte[] fileData = new byte[0];
+                    try {
+                        fileData = fileService.getFileData(file.getId());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return FileResponseDTO.builder()
+                            .id(file.getId())
+                            .originalFilename(file.getOriginalFilename())
+                            .fileData(fileData)
+                            .fileUrl(file.getFileUrl())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         List<ImageResponseDTO> imageResponseDTOS = updatedAnnouncement.getImages().stream()
-                .map(image -> ImageResponseDTO.builder()
-                        .id(image.getId())
-                        .imageName(image.getOriginalFilename())
-                        .imageUrl(image.getImageUrl())
-                        .build())
+                .map(image -> {
+                    byte[] imageData = new byte[0];
+                    try {
+                        imageData = imageService.getImageData(image.getId());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return ImageResponseDTO.builder()
+                            .id(image.getId())
+                            .imageName(image.getOriginalFilename())
+                            .imageData(imageData)
+                            .imageUrl(image.getImageUrl())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return AnnouncementDetailResponseDTO.toResponseDTO(updatedAnnouncement, fileResponseDTOS, imageResponseDTOS);
     }
+
 
     @Override
     @Transactional
