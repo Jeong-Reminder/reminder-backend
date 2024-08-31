@@ -28,7 +28,7 @@ public class CommentTest {
         member = entityManager.persistAndFlush(member);
 
         announcement = new Announcement();
-        announcement.setTitle("Test Announcement");
+        announcement.setAnnouncementTitle("Test Announcement");
         announcement = entityManager.persistAndFlush(announcement);
     }
 

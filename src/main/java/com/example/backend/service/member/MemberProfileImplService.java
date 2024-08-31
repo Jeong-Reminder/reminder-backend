@@ -2,10 +2,17 @@ package com.example.backend.service.member;
 
 import com.example.backend.dto.member.MemberProfileRequestDTO;
 import com.example.backend.dto.member.MemberProfileResponseDTO;
+import com.example.backend.dto.recruitmentteam.TeamResponseDTO;
 import com.example.backend.model.entity.member.Member;
 import com.example.backend.model.entity.member.MemberProfile;
+import com.example.backend.model.entity.recruitmentteam.Team;
+import com.example.backend.model.entity.recruitmentteam.TeamMember;
 import com.example.backend.model.repository.member.MemberProfileRepository;
 import com.example.backend.model.repository.member.MemberRepository;
+import com.example.backend.model.repository.recruitmentteam.TeamMemberRepository;
+import com.example.backend.model.repository.recruitmentteam.TeamRepository;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -16,6 +23,8 @@ public class MemberProfileImplService implements MemberProfileService {
 
     private final MemberProfileRepository memberProfileRepository;
     private final MemberRepository memberRepository;
+    private final TeamRepository teamRepository;
+    private final TeamMemberRepository teamMemberRepository;
 
     @Override
     public MemberProfileResponseDTO createProfile(Authentication authentication,
@@ -25,9 +34,7 @@ public class MemberProfileImplService implements MemberProfileService {
 
         MemberProfile memberProfile = memberProfileRequestDTO.toEntity(member);
 
-        MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.save(memberProfile));
-
-        return memberProfileResponseDTO;
+        return MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.save(memberProfile));
     }
 
     @Override
@@ -47,25 +54,55 @@ public class MemberProfileImplService implements MemberProfileService {
         memberProfile.setGithubLink(memberProfileRequestDTO.getGithubLink());
         memberProfile.setHopeJob(memberProfileRequestDTO.getHopeJob());
 
-        MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.save(memberProfile));
-
-        return memberProfileResponseDTO;
+        return MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.save(memberProfile));
     }
 
     @Override
     public MemberProfileResponseDTO getMemberProfile(Authentication authentication) {
         String studentId = authentication.getName();
         Member member = memberRepository.findByStudentId(studentId);
+        List<TeamMember> myTeams = teamMemberRepository.findByMemberId(member.getId());
 
         MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.findByMemberId(member.getId()));
+        if(myTeams.isEmpty()) {
+            memberProfileResponseDTO.setTeam(null);
+        }else{
+            List<MemberProfile> profiles = new ArrayList<>();
+            List<TeamResponseDTO> teamResponseDTOS = new ArrayList<>();
+            for(TeamMember myTeam : myTeams){
+                Team team = teamRepository.findById(myTeam.getTeam().getId()).get();
+                for(TeamMember teamMember : team.getTeamMembers()){
+                    profiles.add(teamMember.getMember().getMemberProfile());
+                }
 
+                teamResponseDTOS.add(TeamResponseDTO.toResponseDTO(profiles,team));
+            }
+            memberProfileResponseDTO.setTeam(teamResponseDTOS);
+        }
         return memberProfileResponseDTO;
     }
 
     @Override
     public MemberProfileResponseDTO getMemberProfileByMemberId(Long memberId) {
-        MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.findByMemberId(memberId));
 
+        List<TeamMember> myTeams = teamMemberRepository.findByMemberId(memberId);
+
+        MemberProfileResponseDTO memberProfileResponseDTO = MemberProfileResponseDTO.toResponseDTO(memberProfileRepository.findByMemberId(memberId));
+        if(myTeams.isEmpty()) {
+            memberProfileResponseDTO.setTeam(null);
+        }else{
+            List<MemberProfile> profiles = new ArrayList<>();
+            List<TeamResponseDTO> teamResponseDTOS = new ArrayList<>();
+            for(TeamMember myTeam : myTeams){
+                Team team = teamRepository.findById(myTeam.getTeam().getId()).get();
+                for(TeamMember teamMember : team.getTeamMembers()){
+                    profiles.add(teamMember.getMember().getMemberProfile());
+                }
+
+                teamResponseDTOS.add(TeamResponseDTO.toResponseDTO(profiles,team));
+            }
+            memberProfileResponseDTO.setTeam(teamResponseDTOS);
+        }
         return memberProfileResponseDTO;
     }
 }

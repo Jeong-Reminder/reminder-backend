@@ -3,6 +3,10 @@ package com.example.backend.dto.announcement;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.entity.announcement.Image;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +29,7 @@ public class AnnouncementResponseDTO {
     private int announcementLevel;
     private List<FileResponseDTO> files; // 수정된 필드
     private List<ImageResponseDTO> images; // 수정된 필드
+    private LocalDateTime createdTime;
 
     public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
         List<FileResponseDTO> fileResponseDTOS = announcement.getFiles() != null ?
@@ -54,6 +59,7 @@ public class AnnouncementResponseDTO {
                 .announcementLevel(announcement.getAnnouncementLevel())
                 .files(fileResponseDTOS)
                 .images(imageResponseDTOS)
+                .createdTime(announcement.getCreatedTime())
                 .build();
     }
 }
