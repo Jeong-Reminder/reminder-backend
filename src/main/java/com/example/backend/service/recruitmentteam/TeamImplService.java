@@ -48,10 +48,13 @@ public class TeamImplService implements TeamService{
         Team saveTeam = teamRepository.save(team);
 
         List<TeamMember> teamMembers = teamRequestDTO.toTeamMemberEntity(saveTeam, acceptMembers);
-        teamMemberRepository.saveAll(teamMembers);
+        if (teamMembers == null || teamMembers.isEmpty()) {
+            throw new IllegalStateException("Team members could not be created from the request.");
+        }
+        List<TeamMember> saveTeamMembers = teamMemberRepository.saveAll(teamMembers);
 
         List<MemberProfile> profiles = new ArrayList<>();
-        for(TeamMember teamMember : teamMembers) {
+        for(TeamMember teamMember : saveTeamMembers) {
             profiles.add(teamMember.getMember().getMemberProfile());
         }
 
