@@ -145,55 +145,79 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         Announcement existingAnnouncement = findAnnouncementById(id);
 
-        List<Long> fileIdsToKeep = announcementRequestDTO.getFileIds() != null ? announcementRequestDTO.getFileIds() : new ArrayList<>();
-        List<Long> imageIdsToKeep = announcementRequestDTO.getImageIds() != null ? announcementRequestDTO.getImageIds() : new ArrayList<>();
+        List<File> filesToDelete = existingAnnouncement.getFiles().stream()
+                .toList();
 
-        existingAnnouncement.getFiles().removeIf(file -> !fileIdsToKeep.contains(file.getId()));
-        existingAnnouncement.getImages().removeIf(image -> !imageIdsToKeep.contains(image.getId()));
+        List<Image> imagesToDelete = existingAnnouncement.getImages().stream()
+                .toList();
 
-        saveFilesAndImages(announcementRequestDTO, existingAnnouncement);
+        filesToDelete.forEach(file -> {
+            try {
+                fileService.deleteFileData(file.getId());
+                fileService.deleteFile(file.getId());
+                existingAnnouncement.getFiles().remove(file);
+            } catch (Exception e) {
+                throw new RuntimeException("파일 삭제 중 오류 발생: " + file.getId(), e);
+            }
+        });
+
+        imagesToDelete.forEach(image -> {
+            try {
+                imageService.deleteImageData(image.getId());
+                imageService.deleteImage(image.getId());
+                existingAnnouncement.getImages().remove(image);
+            } catch (Exception e) {
+                throw new RuntimeException("이미지 삭제 중 오류 발생: " + image.getId(), e);
+            }
+        });
+
+        boolean hasNewFiles = announcementRequestDTO.getNewFiles() != null
+                && !announcementRequestDTO.getNewFiles().isEmpty()
+                && announcementRequestDTO.getNewFiles().stream().anyMatch(newFile -> !newFile.isEmpty());
+
+        boolean hasNewImages = announcementRequestDTO.getNewImages() != null
+                && !announcementRequestDTO.getNewImages().isEmpty()
+                && announcementRequestDTO.getNewImages().stream().anyMatch(newImage -> !newImage.isEmpty());
+
+        if (hasNewFiles || hasNewImages) {
+            saveFilesAndImages(announcementRequestDTO, existingAnnouncement);
+        }
 
         existingAnnouncement.update(announcementRequestDTO, existingAnnouncement.getFiles(), existingAnnouncement.getImages(), null);
-
         Announcement updatedAnnouncement = announcementRepository.save(existingAnnouncement);
 
         List<FileResponseDTO> fileResponseDTOS = updatedAnnouncement.getFiles().stream()
                 .map(file -> {
-                    byte[] fileData = new byte[0];
                     try {
-                        fileData = fileService.getFileData(file.getId());
+                        return FileResponseDTO.builder()
+                                .id(file.getId())
+                                .originalFilename(file.getOriginalFilename())
+                                .fileData(fileService.getFileData(file.getId()))
+                                .fileUrl(file.getFileUrl())
+                                .build();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    return FileResponseDTO.builder()
-                            .id(file.getId())
-                            .originalFilename(file.getOriginalFilename())
-                            .fileData(fileData)
-                            .fileUrl(file.getFileUrl())
-                            .build();
                 })
                 .collect(Collectors.toList());
 
         List<ImageResponseDTO> imageResponseDTOS = updatedAnnouncement.getImages().stream()
                 .map(image -> {
-                    byte[] imageData = new byte[0];
                     try {
-                        imageData = imageService.getImageData(image.getId());
+                        return ImageResponseDTO.builder()
+                                .id(image.getId())
+                                .imageName(image.getOriginalFilename())
+                                .imageData(imageService.getImageData(image.getId()))
+                                .imageUrl(image.getImageUrl())
+                                .build();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    return ImageResponseDTO.builder()
-                            .id(image.getId())
-                            .imageName(image.getOriginalFilename())
-                            .imageData(imageData)
-                            .imageUrl(image.getImageUrl())
-                            .build();
                 })
                 .collect(Collectors.toList());
 
         return AnnouncementDetailResponseDTO.toResponseDTO(updatedAnnouncement, fileResponseDTOS, imageResponseDTOS);
     }
-
 
     @Override
     @Transactional
@@ -259,19 +283,23 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 .map(ContestCategory::getContestCategoryName)
                 .collect(Collectors.toList());
     }
-
     private void saveFilesAndImages(AnnouncementRequestDTO announcementRequestDTO, Announcement announcement) throws IOException {
         List<MultipartFile> newFiles = announcementRequestDTO.getNewFiles();
         List<MultipartFile> newImages = announcementRequestDTO.getNewImages();
 
+        List<File> files= new ArrayList<>();
+        List<Image> images=new ArrayList<>();
         if (newFiles != null) {
             for (MultipartFile newFile : newFiles) {
                 if (!newFile.isEmpty()) {
                     Long fileId = fileService.saveFile(newFile, announcement);
                     File savedFile = fileService.getFile(fileId);
-                    announcement.getFiles().add(savedFile);
+                    if (announcement.getFiles().stream().noneMatch(file -> file.getId().equals(savedFile.getId()))) {
+                        files.add(savedFile);
+                    }
                 }
             }
+            announcement.setFiles(files);
         }
 
         if (newImages != null) {
@@ -279,9 +307,12 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 if (!newImage.isEmpty()) {
                     Long imageId = imageService.saveImage(newImage, announcement);
                     Image savedImage = imageService.getImage(imageId);
-                    announcement.getImages().add(savedImage);
+                    if (announcement.getImages().stream().noneMatch(image -> image.getId().equals(savedImage.getId()))) {
+                        images.add(savedImage);
+                    }
                 }
             }
+            announcement.setImages(images);
         }
         announcementRepository.save(announcement);
     }

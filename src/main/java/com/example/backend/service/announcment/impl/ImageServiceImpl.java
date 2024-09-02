@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +36,10 @@ public class ImageServiceImpl implements ImageService {
         Image existingImage = imageRepository.findByImageHash(imageHash);
 
         if (existingImage != null) {
-            return existingImage.getId(); // Return existing image ID
+            return existingImage.getId();
         }
 
-        String originalFilename = sanitizeFilename(image.getOriginalFilename());
+        String originalFilename = sanitizeFilename(Objects.requireNonNull(image.getOriginalFilename()));
         Path imagePath = Paths.get(uploadDir).resolve(originalFilename).normalize();
         Files.copy(image.getInputStream(), imagePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -65,7 +66,7 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public Image getImage(Long id) {
         return imageRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 ID로 이미지를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new RuntimeException("Image with ID " + id + " not found"));
     }
 
     @Override
@@ -73,6 +74,32 @@ public class ImageServiceImpl implements ImageService {
         Image image = getImage(id);
         Path imagePath = Paths.get(image.getImagePath()).normalize();
         return Files.readAllBytes(imagePath);
+    }
+
+    @Override
+    @Transactional
+    public void deleteImage(Long id) {
+        Image image = getImage(id);
+        Path imagePath = Paths.get(image.getImagePath()).normalize();
+
+        try {
+            Files.deleteIfExists(imagePath);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete image file", e);
+        }
+
+        imageRepository.delete(image);
+    }
+    @Override
+    public void deleteImageData(Long id) {
+        Image image = getImage(id);
+        Path imagePath = Paths.get(image.getImagePath()).normalize();
+
+        try {
+            Files.deleteIfExists(imagePath);
+        } catch (IOException e) {
+            throw new RuntimeException("이미지 파일을 삭제하는 데 실패했습니다: " + imagePath, e);
+        }
     }
 
     private String sanitizeFilename(String filename) {
