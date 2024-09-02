@@ -12,4 +12,8 @@ public interface FileService {
     File getFile(Long id);
 
     byte[] getFileData(Long id) throws IOException;
+
+    void deleteFile(Long id);
+
+    void deleteFileData(Long id);
 }

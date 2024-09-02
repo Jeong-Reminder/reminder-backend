@@ -18,7 +18,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Optional;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +39,7 @@ public class FileServiceImpl implements FileService {
             return existingFile.getId();
         }
 
-        String originalFilename = sanitizeFilename(file.getOriginalFilename());
+        String originalFilename = sanitizeFilename(Objects.requireNonNull(file.getOriginalFilename()));
         Path filePath = Paths.get(uploadDir).resolve(originalFilename).normalize();
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
@@ -66,7 +66,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public File getFile(Long id) {
         return fileRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("해당 ID로 파일을 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> new RuntimeException("File with ID " + id + " not found"));
     }
 
     @Override
@@ -74,6 +74,34 @@ public class FileServiceImpl implements FileService {
         File file = getFile(id);
         Path filePath = Paths.get(file.getFilePath()).normalize();
         return Files.readAllBytes(filePath);
+    }
+
+    @Override
+    @Transactional
+    public void deleteFile(Long id) {
+        File file = getFile(id);
+        Path filePath = Paths.get(file.getFilePath()).normalize();
+
+        try {
+            Files.deleteIfExists(filePath);
+            fileRepository.delete(file);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 시스템에서 파일을 삭제하는 데 실패했습니다", e);
+        } catch (Exception e) {
+            throw new RuntimeException("데이터베이스에서 파일을 삭제하는 데 실패했습니다", e);
+        }
+    }
+
+    @Override
+    public void deleteFileData(Long id) {
+        File file = getFile(id);
+        Path filePath = Paths.get(file.getFilePath()).normalize();
+
+        try {
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            throw new RuntimeException("파일 시스템에서 파일을 삭제하는 데 실패했습니다: " + filePath, e);
+        }
     }
 
     private String sanitizeFilename(String filename) {
