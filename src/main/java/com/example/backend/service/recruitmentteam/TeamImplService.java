@@ -58,7 +58,7 @@ public class TeamImplService implements TeamService{
             profiles.add(teamMember.getMember().getMemberProfile());
         }
 
-        return TeamResponseDTO.toResponseDTO(profiles, saveTeam);
+        return TeamResponseDTO.toCreateResponseDTO(profiles,teamMembers, saveTeam);
     }
 
     @Override

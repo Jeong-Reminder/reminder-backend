@@ -4,6 +4,7 @@ import com.example.backend.dto.member.MemberProfileResponseDTO;
 import com.example.backend.dto.member.TeamMemberProfileResponseDTO;
 import com.example.backend.model.entity.member.MemberProfile;
 import com.example.backend.model.entity.recruitmentteam.Team;
+import com.example.backend.model.entity.recruitmentteam.TeamMember;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,15 @@ public class TeamResponseDTO {
                 .teamName(team.getTeamName())
                 .teamCategory(team.getTeamCategory())
                 .teamMember(TeamMemberProfileResponseDTO.toResponseDTOList(memberProfiles,team.getTeamMembers()))
+                .build();
+    }
+
+    public static TeamResponseDTO toCreateResponseDTO(List<MemberProfile> memberProfiles, List<TeamMember> teamMembers, Team team) {
+        return TeamResponseDTO.builder()
+                .id(team.getId())
+                .teamName(team.getTeamName())
+                .teamCategory(team.getTeamCategory())
+                .teamMember(TeamMemberProfileResponseDTO.toResponseDTOList(memberProfiles,teamMembers))
                 .build();
     }
 }
