@@ -29,8 +29,6 @@ public class AnnouncementRequestDTO {
     @Builder.Default
     private List<MultipartFile> newFiles = new ArrayList<>();
 
-    private List<Long> fileIds;
-    private List<Long> imageIds;
     private boolean visible;
     private Long managerId;
     private VoteRequestDTO voteRequest;

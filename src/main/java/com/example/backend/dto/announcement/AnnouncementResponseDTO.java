@@ -5,6 +5,7 @@ import com.example.backend.dto.vote.VoteResponseDTO;
 import com.example.backend.model.entity.announcement.Announcement;
 import com.example.backend.model.entity.announcement.File;
 import com.example.backend.model.entity.announcement.Image;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class AnnouncementResponseDTO {
     private String announcementCategory;
     private boolean announcementImportant;
     private int announcementLevel;
+    private LocalDateTime createdTime;
 
     public static AnnouncementResponseDTO toResponseDTO(Announcement announcement) {
         return AnnouncementResponseDTO.builder()
@@ -34,6 +36,7 @@ public class AnnouncementResponseDTO {
                 .announcementCategory(announcement.getAnnouncementCategory() != null ? announcement.getAnnouncementCategory().toString() : null)
                 .announcementImportant(announcement.getAnnouncementImportant())
                 .announcementLevel(announcement.getAnnouncementLevel())
+                .createdTime(announcement.getCreatedTime())
                 .build();
     }
 }
