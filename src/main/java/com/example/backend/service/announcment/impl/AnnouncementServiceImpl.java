@@ -216,6 +216,20 @@ public class AnnouncementServiceImpl implements AnnouncementService {
                 })
                 .collect(Collectors.toList());
 
+        if(announcementRequestDTO.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)){
+            String contestCategoryName = extractContestCategoryName(announcementRequestDTO.getAnnouncementTitle());
+            if(contestCategoryName == null){
+                throw new IllegalArgumentException("공모전 카테고리의 공지사항 제목은 [공모전]으로 시작해야 합니다.");
+            }
+            String existingContestCategoryName = extractContestCategoryName(existingAnnouncement.getAnnouncementTitle());
+
+            if(!contestCategoryName.equals(existingContestCategoryName)){
+                ContestCategory contestCategory = contestCategoryRepository.findByContestCategoryName(existingContestCategoryName);
+                contestCategory.setContestCategoryName(contestCategoryName);
+                contestCategoryRepository.save(contestCategory);
+            }
+        }
+
         return AnnouncementDetailResponseDTO.toResponseDTO(updatedAnnouncement, fileResponseDTOS, imageResponseDTOS);
     }
 
@@ -223,6 +237,13 @@ public class AnnouncementServiceImpl implements AnnouncementService {
     @Transactional
     public void deleteAnnouncement(Authentication authentication, Long id) {
         Announcement announcement = getAnnouncementEntityById(authentication, id);
+
+        if(announcement.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)) {
+            String contestTitle = extractContestCategoryName(announcement.getAnnouncementTitle());
+            
+            ContestCategory contestCategory = contestCategoryRepository.findByContestCategoryName(contestTitle);;
+            contestCategoryRepository.delete(contestCategory);
+        }
         announcementRepository.delete(announcement);
     }
 
