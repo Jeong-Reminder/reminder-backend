@@ -13,6 +13,8 @@ import com.example.backend.model.repository.member.MemberRepository;
 import com.example.backend.model.repository.recruitmentteam.AcceptMemberRepository;
 import com.example.backend.model.repository.recruitmentteam.RecruitmentRepository;
 import com.example.backend.model.repository.recruitmentteam.TeamApplicationRepository;
+import com.example.backend.service.notification.FCM.FCMService;
+import com.example.backend.service.notification.NotificationService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +30,8 @@ public class AcceptMemberImplService implements AcceptMemberService{
     private final MemberRepository memberRepository;
     private final RecruitmentRepository recruitmentRepository;
     private final TeamApplicationRepository teamApplicationRepository;
+    private final NotificationService notificationService;
+    private final FCMService fcmService;
 
     @Override
     public AcceptMemberResponseDTO acceptMember(Authentication authentication, boolean accept,
@@ -70,6 +74,9 @@ public class AcceptMemberImplService implements AcceptMemberService{
                     .createdAt(LocalDateTime.now())
                     .isRead(false)
                     .build();
+
+            notificationService.addMessageToStudent(message, acceptMember.getStudentId());
+            fcmService.sendMessageToStudent(acceptMember, message);
 
             // 같은 카테고리에 있는 다른 모집 글의 모든 수락된 멤버의 지원글 삭제
             deleteAcceptedApplicationsFromOtherRecruitments(recruitment.getRecruitmentCategory(), acceptMember.getId());

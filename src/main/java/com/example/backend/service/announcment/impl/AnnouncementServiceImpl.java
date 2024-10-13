@@ -240,7 +240,7 @@ public class AnnouncementServiceImpl implements AnnouncementService {
 
         if(announcement.getAnnouncementCategory().equals(AnnouncementCategory.CONTEST)) {
             String contestTitle = extractContestCategoryName(announcement.getAnnouncementTitle());
-            
+
             ContestCategory contestCategory = contestCategoryRepository.findByContestCategoryName(contestTitle);;
             contestCategoryRepository.delete(contestCategory);
         }
